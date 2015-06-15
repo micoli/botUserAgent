@@ -1,5 +1,8 @@
 print("JS >>>> START");
+setTimeout(function(){
+	print("TIMEOUT 3000");
 
+},3000);
 var init=function(a){
 	print("JS >>>> init");
 	botUserAgent.register();
