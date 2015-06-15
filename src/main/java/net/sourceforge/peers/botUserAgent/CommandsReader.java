@@ -1,4 +1,4 @@
-package net.sourceforge.peers.sipagent;
+package net.sourceforge.peers.botUserAgent;
 
 import java.io.BufferedReader;
 import java.io.IOException;

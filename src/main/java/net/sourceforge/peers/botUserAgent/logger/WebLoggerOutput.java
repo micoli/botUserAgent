@@ -17,7 +17,7 @@
     Copyright 2013 Yohann Martineau 
 */
 
-package net.sourceforge.peers.sipagent;
+package net.sourceforge.peers.botUserAgent.logger;
 
 public interface WebLoggerOutput {
 
