@@ -60,6 +60,7 @@ public class Main {
 
 			ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 			engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/runtime.js"));
+			engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/run.js"));
 	
 			List<PeerConfig> peersList = GlobalConfig.readPeersConf();
 	

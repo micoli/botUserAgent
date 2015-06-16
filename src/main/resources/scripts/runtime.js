@@ -180,75 +180,11 @@ context.XMLHttpRequest = function() {
 })(this);
 
 
+this.bots ={};
 
-this.behaviour = Backbone.Model.extend({
-	defaults: {
-		id: '',
-		config:{},
-		ua:{}
-	},
-
-	initialize: function() {
-		print("init ",this.get('id'));
-		this.get('ua').register();
-	},
-	
-	registering : function(args /*sipRequest,config*/){
-		print("JS >>>> registering",args[1].getUserPart());
-	},
-	registerSuccessful : function(args /*sipResponse,config*/){
-		print("JS >>>> registerSuccessful",args[1]);
-		print("JS >>>> registerSuccessful",args[1].getUserPart());
-		//botUserAgent.call("sip:201@10.80.0.95");
-	},
-	registerFailed : function(args/*sipResponse,config*/){
-		print("JS >>>> registerFailed",args[1]);
-		print("JS >>>> registerFailed",args[1].getUserPart());
-	},
-
-	incomingCall : function(sipRequest,provResponse){
-	},
-
-	remoteHangup : function(sipRequest){
-	},
-
-	ringing : function(sipResponse){
-	},
-
-	calleePickup : function(sipResponse){
-	},
-	error : function(sipResponse){
-	},
-
-	setInviteSipRequest : function(sipRequest){
-	}
-
-});
-
-/*var agent2Model = agentModel.extend({
-	defaults: {
-		id: '',
-		bornDateTime:0
-	},
-
-	initialize: function() {
-		print("init 2");
-		this.on('change:id', function() {
-			print("change2 id",this.get('id'));
-		});
-	}
-});
-model = new agent2Model({})
-model.set('id',33333);
-*/
 var initBot = function (id,config){}
 var botCb = function (id,method,args){}
-
-this.bots =new Backbone.Collection();
-this.botsUserAgent ={};
-
 var javaLog = function(log){}
-
 var javaNetworkLog = function(log){}
 
 print("loaded3");

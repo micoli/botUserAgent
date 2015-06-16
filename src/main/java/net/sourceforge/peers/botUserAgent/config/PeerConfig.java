@@ -92,16 +92,19 @@ public class PeerConfig implements Config {
 	public void setKey(String key,String value){
 		switch (key){
 			case "id":
-				this.id=value;
+				this.setId(value);
 			break;
 			case "user":
-				this.userPart=value;
+				this.setUserPart(value);
 			break;
 			case "domain":
-				this.domain=value;
+				this.setDomain(value);
 			break;
 			case "password":
-				this.password=value;
+				this.setPassword(value);
+			break;
+			case "behaviour":
+				this.setBehaviour(value);
 			break;
 		}
 	}

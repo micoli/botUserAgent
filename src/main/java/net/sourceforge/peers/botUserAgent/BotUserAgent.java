@@ -261,7 +261,13 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 	public void javaLog(final String message) {
 		executorService.submit(new Runnable() {
 			public void run() {
-				JSCallback("javaLog", new Object[]{message});
+				try {
+					((Invocable) engine).invokeFunction("javaLog", new Object[]{message});
+				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
+				} catch (ScriptException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}
@@ -269,7 +275,13 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 	public void javaNetworkLog(final String message) {
 		executorService.submit(new Runnable() {
 			public void run() {
-				JSCallback("javaNetworkLog", new Object[]{message});
+				try {
+					((Invocable) engine).invokeFunction("javaNetworkLog", new Object[]{message});
+				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
+				} catch (ScriptException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}

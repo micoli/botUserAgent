@@ -4,17 +4,19 @@
 		"domain":"10.80.0.95"
 	},
 	"peers"	:[{
-		"id"		: "001",
-		"user"		: "bfh2lt",
-		"password"	: "72BCK9"
+		"id"		: "200",
+		"user"		: "r0iql1",
+		"password"	: "MJNP1Z"
 	},{
-		"id"		: "002",
-		"user"		: "u02",
-		"password"	: "pass02",
-		"domain"	:"10.80.0.96"
+		"id"		: "201",
+		"user"		: "9795vo",
+		"password"	: "7NG6QA",
+		"domain"	: "10.80.0.95",
+		"behaviour"	: "behaviour2"
 	},{
-		"id"		: "003",
-		"user"		: "u03",
-		"password"	: "pass03"
+		"id"		: "202",
+		"user"		: "jp0hwv",
+		"password"	: "X3RO6F",
+		"behaviour"	: "behaviour2"
 	}]
 }
