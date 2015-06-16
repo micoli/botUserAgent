@@ -61,11 +61,11 @@ public class Main {
 		try {
 			while (iterator.hasNext()) {
 				PeerConfig config = iterator.next();
-				System.out.println(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getScript());
+				System.out.println(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
 
 				ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 				engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/runtime.js"));
-				engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/"+config.getScript()));
+				engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/"+config.getBehaviour()+".js"));
 				new BotUserAgent(engine,executorService,config);
 			}
 		} catch (NullPointerException e) {

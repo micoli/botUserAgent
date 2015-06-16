@@ -59,11 +59,11 @@ public class GlobalConfig{
 		while (iterator.hasNext()) {
 			PeerConfig config = new PeerConfig();
 			JSONObject jsonPeer = iterator.next();
-			setPeerKey(config,"id"		,jsonPeer,jsonConf);
-			setPeerKey(config,"user"	,jsonPeer,jsonConf);
-			setPeerKey(config,"password",jsonPeer,jsonConf);
-			setPeerKey(config,"domain"	,jsonPeer,jsonConf);
-			setPeerKey(config,"script"	,jsonPeer,jsonConf);
+			setPeerKey(config,"id"			,jsonPeer,jsonConf);
+			setPeerKey(config,"user"		,jsonPeer,jsonConf);
+			setPeerKey(config,"password"	,jsonPeer,jsonConf);
+			setPeerKey(config,"domain"		,jsonPeer,jsonConf);
+			setPeerKey(config,"behaviour"	,jsonPeer,jsonConf);
 			peers.add(config);
 		}
 		return peers;

@@ -10,7 +10,7 @@ import net.sourceforge.peers.sip.syntaxencoding.SipURI;
 public class PeerConfig implements Config {
 
 	private String 		id				= "-";
-	private String 		script			= "script.js";
+	private String 		behaviour		= "behaviour";
 	private InetAddress publicIpAddress	= null;
 	private InetAddress localIpAddress	= null;
 	private String		userPart		= "";
@@ -49,8 +49,8 @@ public class PeerConfig implements Config {
 		return this.id;
 	}
 
-	public String getScript() {
-		return this.script;
+	public String getBehaviour() {
+		return this.behaviour;
 	}
 
 	public String getUserPart() {
@@ -111,8 +111,8 @@ public class PeerConfig implements Config {
 	public void setId(String id) {
 		this.id = id;
 	}
-	public void setscript(String script) {
-		this.script = script;
+	public void setBehaviour(String behaviour) {
+		this.behaviour = behaviour;
 	}
 	public void setUserPart(String userPart) {
 		this.userPart=userPart;

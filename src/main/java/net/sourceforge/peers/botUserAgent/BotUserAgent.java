@@ -14,6 +14,7 @@ import javax.script.ScriptException;
 import net.sourceforge.peers.Config;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
+import net.sourceforge.peers.botUserAgent.config.PeerConfig;
 import net.sourceforge.peers.botUserAgent.logger.WebLogger;
 import net.sourceforge.peers.botUserAgent.logger.WebLoggerOutput;
 import net.sourceforge.peers.javaxsound.JavaxSoundManager;
@@ -41,9 +42,9 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 	private ScriptEngine	engine;
 	private ExecutorService executorService;
 	private Logger			logger;
-	private Config			config;
+	private PeerConfig		config;
 
-	public BotUserAgent(ScriptEngine engine,ExecutorService executorService,Config config) {
+	public BotUserAgent(ScriptEngine engine,ExecutorService executorService,PeerConfig config) {
 		this.executorService= executorService;
 		this.config= config;
 		this.engine = engine;
@@ -62,7 +63,7 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 		commandsReader = new CommandsReader(this);
 		commandsReader.start();
 
-		JSCallback("init",new Object[] { this.config});
+		JSCallback("initBot",new Object[] { this.config});
 	}
 
 	public void instantiatePeers() {
@@ -211,7 +212,7 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 
 	private void JSCallback(String method,Object[] arguments){
 		try {
-			((Invocable) engine).invokeFunction(method, arguments);
+			((Invocable) engine).invokeFunction("botCb",new Object[] {config.getId(),method, arguments});
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		} catch (ScriptException e) {
