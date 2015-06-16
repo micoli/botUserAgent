@@ -9,7 +9,7 @@ this.behaviour = Backbone.Model.extend({
 		print("init ",this.get('id'));
 		this.get('ua').register();
 	},
-	
+
 	registering : function(args /*sipRequest,config*/){
 		print(this.id+" :: registering",args[1].getUserPart());
 	},
@@ -18,7 +18,7 @@ this.behaviour = Backbone.Model.extend({
 		print(this.id+" :: registerSuccessful",args[1].getUserPart());
 		setTimeout(function(){
 			that.get('ua').call("sip:101@10.80.0.95");
-		},5000);
+		},500);
 	},
 	registerFailed : function(args/*sipResponse,config*/){
 		print(this.id+" :: registerFailed",args[1].getUserPart());

@@ -61,9 +61,9 @@ public class Main {
 			ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 			engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/runtime.js"));
 			engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/run.js"));
-	
+
 			List<PeerConfig> peersList = GlobalConfig.readPeersConf();
-	
+
 			iterator = peersList.iterator();
 			while (iterator.hasNext()) {
 				PeerConfig config = iterator.next();
@@ -72,10 +72,14 @@ public class Main {
 					engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/"+config.getBehaviour()+".js"));
 				}
 			}
-			
+
 			iterator = peersList.iterator();
 			while (iterator.hasNext()) {
 				PeerConfig config = iterator.next();
+				if(!GlobalConfig.config.getInetAddress("bindAddr").equals(GlobalConfig.optBindAddr.getDefault())){
+					//System.out.println("local IP : "+GlobalConfig.config.getInetAddress("bindAddr").toString());
+					config.setLocalInetAddress(GlobalConfig.config.getInetAddress("bindAddr"));
+				}
 				System.out.println(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
 				new BotUserAgent(engine,executorService,config);
 			}

@@ -23,7 +23,7 @@ public class GlobalConfig{
 	public static JSAPResult config;
 	private static JSAP jsap = new JSAP();
 	private static FlaggedOption optPeersConfigFile;
-	private static FlaggedOption optBindAddr;
+	public static FlaggedOption optBindAddr;
 	private static FlaggedOption optScriptPath;
 	private static FlaggedOption optLogDebug;
 	private static FlaggedOption optLogInfo;
