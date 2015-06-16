@@ -7,7 +7,7 @@ load('src/main/resources/scripts/backbone-min.js');
 var Timer = Java.type('java.util.Timer');
 var Phaser = Java.type('java.util.concurrent.Phaser');
 var TimeUnit = Java.type('java.util.concurrent.TimeUnit');
-var AsyncHttpClient = Java.type('com.ning.http.client.AsyncHttpClient');
+//var AsyncHttpClient = Java.type('com.ning.http.client.AsyncHttpClient');
 
 var timer = new Timer('jsEventLoop', false);
 var phaser = new Phaser();
@@ -95,7 +95,7 @@ context.shutdown = function() {
 	timer.cancel();
 	phaser.forceTermination();
 };
-
+/*
 context.XMLHttpRequest = function() {
 	var method, url, async, user, password, headers = {};
 
@@ -175,35 +175,35 @@ context.XMLHttpRequest = function() {
 		}
 	}));
 	};
-};
+};*/
 
 })(this);
 
 
 
-var agentModel = Backbone.Model.extend({
+this.behaviour = Backbone.Model.extend({
 	defaults: {
 		id: '',
-		bornDateTime:0
+		config:{},
+		ua:{}
 	},
 
 	initialize: function() {
 		print("init ",this.get('id'));
+		this.get('ua').register();
 	},
-	init:function(a){
-		print("JS >>>> init");
-		botUserAgent.register();
+	
+	registering : function(args /*sipRequest,config*/){
+		print("JS >>>> registering",args[1].getUserPart());
 	},
-
-	registering : function(sipRequest,config){
-		print("JS >>>> registering",config.getUserPart());
-	},
-	registerSuccessful : function(sipResponse,config){
-		print("JS >>>> registerSuccessful",config.getUserPart());
+	registerSuccessful : function(args /*sipResponse,config*/){
+		print("JS >>>> registerSuccessful",args[1]);
+		print("JS >>>> registerSuccessful",args[1].getUserPart());
 		//botUserAgent.call("sip:201@10.80.0.95");
 	},
-	registerFailed : function(sipResponse,config){
-		print("JS >>>> registerFailed",config.getUserPart());
+	registerFailed : function(args/*sipResponse,config*/){
+		print("JS >>>> registerFailed",args[1]);
+		print("JS >>>> registerFailed",args[1].getUserPart());
 	},
 
 	incomingCall : function(sipRequest,provResponse){
@@ -217,7 +217,6 @@ var agentModel = Backbone.Model.extend({
 
 	calleePickup : function(sipResponse){
 	},
-
 	error : function(sipResponse){
 	},
 
@@ -242,4 +241,14 @@ var agentModel = Backbone.Model.extend({
 model = new agent2Model({})
 model.set('id',33333);
 */
+var initBot = function (id,config){}
+var botCb = function (id,method,args){}
+
+this.bots =new Backbone.Collection();
+this.botsUserAgent ={};
+
+var javaLog = function(log){}
+
+var javaNetworkLog = function(log){}
+
 print("loaded3");

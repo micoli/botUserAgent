@@ -45,12 +45,11 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 	private PeerConfig		config;
 
 	public BotUserAgent(ScriptEngine engine,ExecutorService executorService,PeerConfig config) {
-		this.executorService= executorService;
-		this.config= config;
-		this.engine = engine;
-		this.engine.getBindings(ScriptContext.ENGINE_SCOPE).put("botUserAgent", this);
-
 		logger = new WebLogger(this);
+		this.executorService= executorService;
+		this.config = config;
+		this.engine = engine;
+		//this.engine.getBindings(ScriptContext.ENGINE_SCOPE).put("botsUserAgent["+this.config.getId()+"]", this);
 
 		JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, null);
 
@@ -63,7 +62,13 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 		commandsReader = new CommandsReader(this);
 		commandsReader.start();
 
-		JSCallback("initBot",new Object[] { this.config});
+		try {
+			((Invocable) engine).invokeFunction("initBot",new Object[] {this.config.getId(), this.config,this});
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void instantiatePeers() {
@@ -212,7 +217,7 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 
 	private void JSCallback(String method,Object[] arguments){
 		try {
-			((Invocable) engine).invokeFunction("botCb",new Object[] {config.getId(),method, arguments});
+			((Invocable) engine).invokeFunction("botCb",config.getId(),method, arguments);
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		} catch (ScriptException e) {

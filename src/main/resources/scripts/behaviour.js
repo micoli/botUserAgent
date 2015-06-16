@@ -1,25 +1,17 @@
 print("JS >>>> START");
 
-setTimeout(function(){
+/*setTimeout(function(){
 	print("TIMEOUT 3000");
-},3000);
+},3000);*/
 
-
-
-var javaLog = function(log){
-	//print("debuglog >>>> ",log);
-}
-
-var javaNetworkLog = function(log){
-	//print("javaNetworkLog >>>> ",log);
-}
-
-var init = function (config){
+var initBot = function (id,config,userAgent){
+	print('initBot : ',id,config.behaviour);
+	this.bots.add(new this[config.behaviour]({id : config.getId(),config:config,ua:userAgent}) );
 }
 
 var botCb = function (id,method,args){
-	print(id+"::"+method);
+	print("botCb",id,method);
+	//this.bots.get(id)[method](args);
 }
 
-
-var model = new agentModel({});
+//var model = new agentModel({});

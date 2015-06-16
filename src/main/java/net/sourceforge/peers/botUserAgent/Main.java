@@ -25,7 +25,9 @@ package net.sourceforge.peers.botUserAgent;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,11 +36,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import net.sourceforge.peers.Config;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
 
-import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import com.martiansoftware.jsap.JSAPException;
@@ -48,24 +48,34 @@ import com.martiansoftware.jsap.JSAPException;
  */
 public class Main {
 
+	@SuppressWarnings("restriction")
 	public static void main(String[] args) throws JSAPException, FileNotFoundException, IOException, ParseException {
+		HashMap<String, String> loadedBehaviours = new LinkedHashMap<String, String> ();
+		Iterator<PeerConfig> iterator;
 		ExecutorService	executorService = Executors.newCachedThreadPool();
-
-		if(!GlobalConfig.parseArgs(args)){
-			System.exit(1);
-		}
-
-		List<PeerConfig> peersList = GlobalConfig.readPeersConf();
-
-		Iterator<PeerConfig> iterator = peersList.iterator();
 		try {
+			if(!GlobalConfig.parseArgs(args)){
+				System.exit(1);
+			}
+
+			ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+			engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/runtime.js"));
+	
+			List<PeerConfig> peersList = GlobalConfig.readPeersConf();
+	
+			iterator = peersList.iterator();
+			while (iterator.hasNext()) {
+				PeerConfig config = iterator.next();
+				if(!loadedBehaviours.containsKey(config.getBehaviour())){
+					loadedBehaviours.put(config.getBehaviour(),config.getBehaviour());
+					engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/"+config.getBehaviour()+".js"));
+				}
+			}
+			
+			iterator = peersList.iterator();
 			while (iterator.hasNext()) {
 				PeerConfig config = iterator.next();
 				System.out.println(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
-
-				ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-				engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/runtime.js"));
-				engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/"+config.getBehaviour()+".js"));
 				new BotUserAgent(engine,executorService,config);
 			}
 		} catch (NullPointerException e) {
