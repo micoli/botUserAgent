@@ -1,0 +1,22 @@
+{
+	"name"	: "test01",
+	"default":{
+		"domain":"10.80.0.95"
+	},
+	"peers"	:[{
+		"id"		: "200",
+		"user"		: "r0iql1",
+		"password"	: "MJNP1Z"
+	},{
+		"id"		: "201",
+		"user"		: "9795vo",
+		"password"	: "7NG6QA",
+		"domain"	: "10.80.0.95",
+		"behaviour"	: "behaviour2"
+	},{
+		"id"		: "202",
+		"user"		: "jp0hwv",
+		"password"	: "X3RO6F",
+		"behaviour"	: "behaviour2"
+	}]
+}
