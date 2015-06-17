@@ -3,7 +3,6 @@ package net.sourceforge.peers.botUserAgent;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,7 +42,6 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 
 	private UserAgent		userAgent;
 	private SipRequest		sipRequest;
-	private CommandsReader	commandsReader;
 	private Logger			logger;
 	private PeerConfig		config;
 	private SipHeaderFieldName[]	sipHeaderList;
@@ -73,9 +71,6 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
-
-		commandsReader = new CommandsReader(this);
-		commandsReader.start();
 
 		JSExec("initBot",new Object[] {this.config.getId(), this.config,this});
 	}
