@@ -77,7 +77,7 @@ public class BotsManager  {
 			return false;
 		}
 		if(!botUserAgents.containsKey(tokens[0])){
-			System.out.println("Agent not found");
+			System.out.println("Agent ["+tokens[0]+"] not found");
 			return false;
 		}
 		return botUserAgents.get(tokens[0]).sendCommand(tokens[1],Arrays.copyOfRange(tokens,2,tokens.length));
