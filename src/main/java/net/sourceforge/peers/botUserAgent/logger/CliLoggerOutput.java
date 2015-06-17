@@ -1,6 +1,6 @@
 package net.sourceforge.peers.botUserAgent.logger;
 
-public interface WebLoggerOutput {
+public interface CliLoggerOutput {
 
 	public void javaLog(String message);
 	public void javaNetworkLog(String message);

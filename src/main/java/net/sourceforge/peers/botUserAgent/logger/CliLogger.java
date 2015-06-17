@@ -27,9 +27,9 @@ import java.util.Date;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 
-public class WebLogger implements Logger {
+public class CliLogger implements Logger {
 
-	private WebLoggerOutput out;
+	private CliLoggerOutput out;
 	private SimpleDateFormat logFormatter;
 	private SimpleDateFormat networkFormatter;
 	public boolean logDebug=true;
@@ -37,7 +37,7 @@ public class WebLogger implements Logger {
 	public boolean logError=true;
 	public boolean logTraceNetwork=false;
 
-	public WebLogger(WebLoggerOutput out) {
+	public CliLogger(CliLoggerOutput out) {
 		this.out = out;
 		logFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
 		networkFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");

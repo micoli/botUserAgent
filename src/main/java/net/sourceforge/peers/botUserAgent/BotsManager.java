@@ -3,6 +3,7 @@ package net.sourceforge.peers.botUserAgent;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -13,17 +14,18 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.json.simple.parser.ParseException;
-
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
+
+import org.json.simple.parser.ParseException;
 
 public class BotsManager  {
 	private HashMap<String, String> loadedBehaviours;
 	private HashMap<String, BotUserAgent> botUserAgents;
 	private Iterator<PeerConfig> iterator;
 	private CommandsReader	commandsReader;
-
+	
+	@SuppressWarnings("restriction")
 	public void run() throws IOException, ParseException {
 		ExecutorService	executorService = Executors.newCachedThreadPool();
 		ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
@@ -69,7 +71,15 @@ public class BotsManager  {
 	}
 
 	public boolean runCommand(String command) {
-		//String callee = command.substring(command.lastIndexOf(' ') + 1);
-		return false;
+		String[] tokens = command.split(" ");
+		if(tokens.length<2){
+			System.out.println("Not enough arguments");
+			return false;
+		}
+		if(!botUserAgents.containsKey(tokens[0])){
+			System.out.println("Agent not found");
+			return false;
+		}
+		return botUserAgents.get(tokens[0]).sendCommand(tokens[1],Arrays.copyOfRange(tokens,2,tokens.length));
 	}
 }

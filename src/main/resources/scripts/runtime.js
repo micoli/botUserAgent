@@ -179,12 +179,8 @@ context.XMLHttpRequest = function() {
 
 })(this);
 
-
-this.bots ={};
-
-var initBot = function (id,config){}
-var botCb = function (id,method,args){}
-var javaLog = function(log){}
+this.bots = {};
+var initBot	= function (id,config){}
+var botCb	= function (id,method,args){}
+var javaLog	= function(log){}
 var javaNetworkLog = function(log){}
-
-print("loaded3");

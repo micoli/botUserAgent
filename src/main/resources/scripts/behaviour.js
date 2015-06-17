@@ -13,11 +13,12 @@ this.behaviour = Backbone.Model.extend({
 	registering : function(sipRequest,config){
 		print(this.id+" :: registering",config.getUserPart());
 	},
+	
 	registerSuccessful : function(sipResponse,config){
 		var that = this;
 		print(this.id+" :: registerSuccessful",config.getUserPart());
 		setTimeout(function(){
-			that.get('ua').call("sip:101@10.80.0.95");
+			//that.get('ua').call("sip:101@10.80.0.95");
 		},500);
 	},
 	registerFailed : function(sipResponse,config){
@@ -45,6 +46,16 @@ this.behaviour = Backbone.Model.extend({
 
 	setInviteSipRequest : function(sipRequest){
 		print(this.id+" :: setInviteSipRequest",sipRequest);
+	},
+	
+	externalCommand : function(method, args){
+		print(this.id+" :: externalCommand ",method);
+		_.each(args,function(v,k){
+			print(">> args ["+k+"] "+v);
+		})
+		if(method=='call'){
+			// 201 call 101@10.80.0.95
+			this.get('ua').call("sip:"+args[0]);
+		}
 	}
-
 });

@@ -14,8 +14,8 @@ import javax.script.ScriptException;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
-import net.sourceforge.peers.botUserAgent.logger.WebLogger;
-import net.sourceforge.peers.botUserAgent.logger.WebLoggerOutput;
+import net.sourceforge.peers.botUserAgent.logger.CliLogger;
+import net.sourceforge.peers.botUserAgent.logger.CliLoggerOutput;
 import net.sourceforge.peers.javaxsound.JavaxSoundManager;
 import net.sourceforge.peers.media.AbstractSoundManager;
 import net.sourceforge.peers.media.MediaManager;
@@ -36,7 +36,7 @@ import net.sourceforge.peers.sip.transport.SipResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-public class BotUserAgent implements SipListener,WebLoggerOutput {
+public class BotUserAgent implements SipListener,CliLoggerOutput {
 	private ScriptEngine	engine;
 	private ExecutorService executorService;
 
@@ -47,7 +47,7 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 	private SipHeaderFieldName[]	sipHeaderList;
 
 	public BotUserAgent(ScriptEngine engine,ExecutorService executorService,PeerConfig config) {
-		logger = new WebLogger(this);
+		logger = new CliLogger(this);
 		this.executorService= executorService;
 		this.config = config;
 		this.engine = engine;
@@ -308,6 +308,7 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 		JSCallback("error",new Object[] { sipResponse});
 	}
 
+	//CliLoggerOutput
 	public void javaLog(final String message) {
 		executorService.submit(new Runnable() {
 			public void run() {
@@ -315,7 +316,8 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 			}
 		});
 	}
-
+	
+	//CliLoggerOutput
 	public void javaNetworkLog(final String message) {
 		executorService.submit(new Runnable() {
 			public void run() {
@@ -337,5 +339,10 @@ public class BotUserAgent implements SipListener,WebLoggerOutput {
 		SipHeaderFieldName sipHeaderFieldName = new SipHeaderFieldName(RFC3261.HDR_FROM);
 		SipHeaderFieldValue from = sipHeaders.get(sipHeaderFieldName);
 		return from.getValue();
+	}
+
+	public boolean sendCommand(String command, String[] args) {
+		JSCallback("externalCommand", new Object[] {command,args});
+		return true;
 	}
 }
