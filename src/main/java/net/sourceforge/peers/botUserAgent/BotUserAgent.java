@@ -36,6 +36,7 @@ import net.sourceforge.peers.sip.transport.SipResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+@SuppressWarnings("restriction")
 public class BotUserAgent implements SipListener,CliLoggerOutput {
 	private ScriptEngine	engine;
 	private ExecutorService executorService;

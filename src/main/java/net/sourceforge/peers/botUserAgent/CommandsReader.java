@@ -6,9 +6,6 @@ import java.io.InputStreamReader;
 
 public class CommandsReader extends Thread {
 
-	public static final String CALL = "call";
-	public static final String HANGUP = "hangup";
-
 	private boolean isRunning;
 	private BotsManager	botsManager;
 
