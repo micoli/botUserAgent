@@ -1,16 +1,17 @@
-package net.sourceforge.peers.botUserAgent;
+package net.sourceforge.peers.botUserAgent.interfaces;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class CommandsReader extends Thread {
+import net.sourceforge.peers.botUserAgent.BotsManager;
+import net.sourceforge.peers.botUserAgent.misc.ManagedThread;
 
-	private boolean isRunning;
+public class ConsoleCommands extends ManagedThread {
 	private BotsManager	botsManager;
 
-	public CommandsReader(BotsManager botsManager) {
-		this.botsManager=botsManager;
+	public ConsoleCommands(BotsManager botsManager) {
+		this.botsManager = botsManager;
 	}
 
 	@Override
@@ -27,19 +28,7 @@ public class CommandsReader extends Thread {
 				break;
 			}
 			command = command.trim();
-			if (botsManager.runCommand(command)) {
-				System.out.println("");
-			} else {
-				System.out.println("Unknown command " + command);
-			}
+			System.out.println(botsManager.runCommand(command));
 		}
-	}
-
-	public synchronized boolean isRunning() {
-		return isRunning;
-	}
-
-	public synchronized void setRunning(boolean isRunning) {
-		this.isRunning = isRunning;
 	}
 }

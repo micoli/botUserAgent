@@ -16,6 +16,8 @@ import javax.script.ScriptException;
 
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
+import net.sourceforge.peers.botUserAgent.interfaces.ConsoleCommands;
+import net.sourceforge.peers.botUserAgent.interfaces.NetworkCommands;
 
 import org.json.simple.parser.ParseException;
 
@@ -23,9 +25,9 @@ public class BotsManager  {
 	private HashMap<String, String> loadedBehaviours;
 	private HashMap<String, BotUserAgent> botUserAgents;
 	private Iterator<PeerConfig> iterator;
-	private CommandsReader	commandsReader;
-	
-	@SuppressWarnings("restriction")
+	private ConsoleCommands	consoleCommands;
+	private NetworkCommands	oTCPCommandsReader;
+
 	public void run() throws IOException, ParseException {
 		ExecutorService	executorService = Executors.newCachedThreadPool();
 		ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
@@ -57,8 +59,10 @@ public class BotsManager  {
 				System.out.println(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
 				botUserAgents.put(config.getId(),new BotUserAgent(engine,executorService,config));
 			}
-			commandsReader = new CommandsReader(this);
-			commandsReader.start();
+			consoleCommands = new ConsoleCommands(this);
+			consoleCommands.start();
+			oTCPCommandsReader = new NetworkCommands(this);
+			oTCPCommandsReader.start();
 
 		} catch (NullPointerException e) {
 			e.printStackTrace();
@@ -70,16 +74,22 @@ public class BotsManager  {
 
 	}
 
-	public boolean runCommand(String command) {
+	public String runCommand(String command) {
 		String[] tokens = command.split(" ");
 		if(tokens.length<2){
-			System.out.println("Not enough arguments");
-			return false;
+			return "Not enough arguments";
 		}
+
 		if(!botUserAgents.containsKey(tokens[0])){
-			System.out.println("Agent ["+tokens[0]+"] not found");
-			return false;
+			return "Agent ["+tokens[0]+"] not found";
 		}
-		return botUserAgents.get(tokens[0]).sendCommand(tokens[1],Arrays.copyOfRange(tokens,2,tokens.length));
+
+		try{
+			botUserAgents.get(tokens[0]).sendCommand(tokens[1],Arrays.copyOfRange(tokens,2,tokens.length));
+		}catch(Exception e){
+			//e.printStackTrace();
+			return "Error : " + e.getMessage();
+		}
+		return "OK";
 	}
 }

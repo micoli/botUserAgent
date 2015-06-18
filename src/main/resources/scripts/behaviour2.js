@@ -1,7 +1,12 @@
 this.behaviour2 = this.behaviour.extend({
 	registerSuccessful : function(sipResponse,config){
+		var that = this;
 		print(this.id+" :: registerSuccessful",config.getUserPart()+" behaviour2");
+		setTimeout(function(){
+			//that.get('ua').call("sip:101@10.80.0.95");
+		},500);
 	},
+
 	remoteHangup : function(sipRequest){
 		var that = this;
 		//LE LOURD
@@ -15,6 +20,5 @@ this.behaviour2 = this.behaviour.extend({
 				that.get('ua').call("sip:"+m[1]+"@10.80.0.95");
 			},500);
 		}
-	},
-
+	}
 });

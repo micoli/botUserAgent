@@ -6,6 +6,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -36,20 +38,21 @@ import net.sourceforge.peers.sip.transport.SipResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-@SuppressWarnings("restriction")
 public class BotUserAgent implements SipListener,CliLoggerOutput {
-	private ScriptEngine	engine;
-	private ExecutorService executorService;
+	private ScriptEngine				engine;
+	private ExecutorService				executorService;
+	private ScheduledExecutorService	scheduledExecutor;
 
-	private UserAgent		userAgent;
-	private SipRequest		sipRequest;
-	private Logger			logger;
-	private PeerConfig		config;
-	private SipHeaderFieldName[]	sipHeaderList;
+	private UserAgent					userAgent;
+	private SipRequest					sipRequest;
+	private Logger						logger;
+	private PeerConfig					config;
+	private SipHeaderFieldName[]		sipHeaderList;
 
 	public BotUserAgent(ScriptEngine engine,ExecutorService executorService,PeerConfig config) {
 		logger = new CliLogger(this);
 		this.executorService= executorService;
+		executorService = Executors.newCachedThreadPool();
 		this.config = config;
 		this.engine = engine;
 		//this.engine.getBindings(ScriptContext.ENGINE_SCOPE).put("botsUserAgent["+this.config.getId()+"]", this);
@@ -74,13 +77,18 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		}
 
 		JSExec("initBot",new Object[] {this.config.getId(), this.config,this});
+		scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+		scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
+			public void run() {
+				JSCallback("tick",new Object[] {});
+			}
+		}, 20, 20, TimeUnit.SECONDS);
 	}
 
 	public void instantiatePeers() {
 		try {
 			String ipAddress = GlobalConfig.config.getInetAddress("bindAddr").toString().replaceAll("/", "");
 			System.out.println("instantiatePeers");
-			executorService = Executors.newCachedThreadPool();
 			String peersHome = Utils.DEFAULT_PEERS_HOME;
 			final AbstractSoundManager soundManager = new JavaxSoundManager(
 					false, //TODO config.isMediaDebug(),
@@ -317,7 +325,7 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 			}
 		});
 	}
-	
+
 	//CliLoggerOutput
 	public void javaNetworkLog(final String message) {
 		executorService.submit(new Runnable() {
