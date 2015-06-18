@@ -1,5 +1,6 @@
 package net.sourceforge.peers.botUserAgent;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -29,15 +31,21 @@ public class BotsManager  {
 	private NetworkCommands	oTCPCommandsReader;
 
 	public void run() throws IOException, ParseException {
+		File directory = new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
+		System.setProperty("user.dir", directory.toString());
+
 		ExecutorService	executorService = Executors.newCachedThreadPool();
 		ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+
 		loadedBehaviours = new HashMap<String, String> ();
 		botUserAgents = new HashMap<String, BotUserAgent> ();
+
+		engine.getBindings(ScriptContext.ENGINE_SCOPE).put("scriptingWorkingDirectory", directory.toString());
 		try{
 			Boolean customBindAddr = (!GlobalConfig.config.getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
 
-			engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/runtime.js"));
-			engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/run.js"));
+			engine.eval(new FileReader(directory.toString() + "/runtime.js"));
+			engine.eval(new FileReader(directory.toString() + "/run.js"));
 
 			List<PeerConfig> peersList = GlobalConfig.readPeersConf();
 
@@ -46,7 +54,7 @@ public class BotsManager  {
 				PeerConfig config = iterator.next();
 				if(!loadedBehaviours.containsKey(config.getBehaviour())){
 					loadedBehaviours.put(config.getBehaviour(),config.getBehaviour());
-					engine.eval(new FileReader(GlobalConfig.config.getString("scriptPath") + "/"+config.getBehaviour()+".js"));
+					engine.eval(new FileReader(directory.toString() + "/" + config.getBehaviour()+".js"));
 				}
 			}
 
