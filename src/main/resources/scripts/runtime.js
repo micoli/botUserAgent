@@ -1,5 +1,5 @@
-load(scriptingWorkingDirectory+'/libs/underscore-min.js');
-load(scriptingWorkingDirectory+'/libs/backbone-min.js');
+load('src/main/resources/scripts/underscore-min.js');
+load('src/main/resources/scripts/backbone-min.js');
 
 (function(context) {
 'use strict';
