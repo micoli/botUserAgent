@@ -6,17 +6,22 @@
 	"peers"	:[{
 		"id"		: "200",
 		"user"		: "r0iql1",
-		"password"	: "MJNP1Z"
+		"password"	: "MJNP1Z",
+		"behaviour"	: "simpleAnswerer"
 	},{
 		"id"		: "201",
 		"user"		: "9795vo",
 		"password"	: "7NG6QA",
-		"domain"	: "10.80.0.95",
-		"behaviour"	: "behaviour2"
+		"behaviour"	: "simpleAnswerer"
 	},{
 		"id"		: "202",
-		"user"		: "jp0hwv",
-		"password"	: "X3RO6F",
+		"user"		: "2td68m",
+		"password"	: "90V4DS",
+		"behaviour"	: "simpleAnswerer"
+	},{
+		"id"		: "203",
+		"user"		: "0qo5m5",
+		"password"	: "XPRCDM",
 		"behaviour"	: "simpleAnswerer"
 	}]
 }
