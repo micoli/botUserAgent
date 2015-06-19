@@ -25,6 +25,7 @@ public class GlobalConfig{
 	private static FlaggedOption optPeersConfigFile;
 	private static FlaggedOption optBindAddr;
 	private static FlaggedOption optScriptPath;
+	private static FlaggedOption optScriptOverloadPath;
 	private static FlaggedOption optLogDebug;
 	private static FlaggedOption optLogInfo;
 	private static FlaggedOption optLogError;
@@ -61,17 +62,17 @@ public class GlobalConfig{
 		while (iterator.hasNext()) {
 			PeerConfig config = new PeerConfig();
 			JSONObject jsonPeer = iterator.next();
-			setPeerKey(config,"id"			,jsonPeer,jsonConf);
-			setPeerKey(config,"user"		,jsonPeer,jsonConf);
-			setPeerKey(config,"password"	,jsonPeer,jsonConf);
-			setPeerKey(config,"domain"		,jsonPeer,jsonConf);
-			setPeerKey(config,"behaviour"	,jsonPeer,jsonConf);
+			setPeerConfigKey(config,"id"		,jsonPeer,jsonConf);
+			setPeerConfigKey(config,"user"		,jsonPeer,jsonConf);
+			setPeerConfigKey(config,"password"	,jsonPeer,jsonConf);
+			setPeerConfigKey(config,"domain"	,jsonPeer,jsonConf);
+			setPeerConfigKey(config,"behaviour"	,jsonPeer,jsonConf);
 			peers.add(config);
 		}
 		return peers;
 	}
 
-	private static void setPeerKey(PeerConfig config,String key,JSONObject jsonPeer,JSONObject jsonConf){
+	private static void setPeerConfigKey(PeerConfig config,String key,JSONObject jsonPeer,JSONObject jsonConf){
 		if(jsonPeer.containsKey(key)){
 			config.setKey(key,(String)jsonPeer.get(key));
 		}
@@ -108,6 +109,13 @@ public class GlobalConfig{
 			.setShortFlag('s')
 			.setLongFlag(JSAP.NO_LONGFLAG);
 		jsap.registerParameter(optScriptPath);
+
+		optScriptOverloadPath = new FlaggedOption("scriptOverloadPath")
+			.setStringParser(JSAP.STRING_PARSER)
+			.setDefault("src/main/resources/scripts/overload")
+			.setShortFlag('o')
+			.setLongFlag(JSAP.NO_LONGFLAG);
+		jsap.registerParameter(optScriptOverloadPath);
 
 		optLogDebug = new FlaggedOption("logDebug")
 			.setStringParser(JSAP.BOOLEAN_PARSER)
@@ -156,6 +164,10 @@ public class GlobalConfig{
 
 	public static FlaggedOption getOptScriptPath() {
 		return optScriptPath;
+	}
+
+	public static FlaggedOption getOptScriptOverloadPath() {
+		return optScriptOverloadPath;
 	}
 
 	public static FlaggedOption getOptLogDebug() {

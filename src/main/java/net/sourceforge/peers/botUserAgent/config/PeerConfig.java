@@ -10,7 +10,7 @@ import net.sourceforge.peers.sip.syntaxencoding.SipURI;
 public class PeerConfig implements Config {
 
 	private String 		id				= "-";
-	private String 		behaviour		= "behaviour";
+	private String 		behaviour		= "_default";
 	private InetAddress publicIpAddress	= null;
 	private InetAddress localIpAddress	= null;
 	private String		userPart		= "";

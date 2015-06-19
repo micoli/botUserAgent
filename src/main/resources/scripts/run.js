@@ -1,4 +1,4 @@
-print("JS >>>> START");
+load(workingDirectory+'/runtime.js');
 
 /*setTimeout(function(){
 	print("TIMEOUT 3000");
@@ -6,7 +6,7 @@ print("JS >>>> START");
 
 var initBot = function (id,config,userAgent){
 	print('initBot : ',id,config.behaviour);
-	this.bots['_'+config.getId()] = new this[config.behaviour]({
+	this.bots['_'+config.getId()] = new this.behaviours[config.behaviour]({
 		id		: config.getId(),
 		config	: config,
 		ua		: userAgent

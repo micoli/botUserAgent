@@ -1,4 +1,4 @@
-this.behaviour = Backbone.Model.extend({
+this.behaviours._default = Backbone.Model.extend({
 	defaults: {
 		id		: '',
 		config	: null,

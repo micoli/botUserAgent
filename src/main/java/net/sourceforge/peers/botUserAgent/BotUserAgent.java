@@ -234,6 +234,7 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		} catch (ScriptException e) {
+			System.out.println("JS Error : "+ method + ", args " + arguments+" "+e.getFileName()+"("+e.getLineNumber()+','+e.getColumnNumber() +")");
 			e.printStackTrace();
 		}
 	}

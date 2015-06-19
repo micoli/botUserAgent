@@ -43,7 +43,6 @@ public class BotsManager  {
 		try{
 			Boolean customBindAddr = (!GlobalConfig.config.getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
 
-			engine.eval(new FileReader(workingDirectory.toString() + "/runtime.js"));
 			engine.eval(new FileReader(workingDirectory.toString() + "/run.js"));
 
 			List<PeerConfig> peersList = GlobalConfig.readPeersConf();
@@ -53,7 +52,7 @@ public class BotsManager  {
 				PeerConfig config = iterator.next();
 				if(!loadedBehaviours.containsKey(config.getBehaviour())){
 					loadedBehaviours.put(config.getBehaviour(),config.getBehaviour());
-					engine.eval(new FileReader(workingDirectory.toString() + "/" + config.getBehaviour()+".js"));
+					engine.eval(new FileReader(workingDirectory.toString() + "/behaviours/" + config.getBehaviour()+".js"));
 				}
 			}
 

@@ -1,4 +1,4 @@
-this.behaviour2 = this.behaviour.extend({
+this.behaviours.behaviour2 = this.behaviours._default.extend({
 	registerSuccessful : function(sipResponse,config){
 		var that = this;
 		print(this.id+" :: registerSuccessful",config.getUserPart()+" behaviour2");
