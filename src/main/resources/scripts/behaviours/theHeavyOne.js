@@ -1,4 +1,4 @@
-this.behaviours.behaviour2 = this.behaviours._default.extend({
+this.behaviours.theHeavyOne = this.behaviours._default.extend({
 	registerSuccessful : function(sipResponse,config){
 		var that = this;
 		print(this.id+" :: registerSuccessful",config.getUserPart()+" behaviour2");
@@ -9,7 +9,7 @@ this.behaviours.behaviour2 = this.behaviours._default.extend({
 
 	remoteHangup : function(sipRequest){
 		var that = this;
-		//LE LOURD
+		//theHeavyOne
 		//sipRequest = JSON.parse(sipRequest);
 		print(this.id+" :: remoteHangup",sipRequest);
 		//var m = sipRequest.sipHeaders.From.match(/sip\:([0-9]*)/);
