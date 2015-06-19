@@ -7,21 +7,21 @@
 		"id"		: "200",
 		"user"		: "r0iql1",
 		"password"	: "MJNP1Z",
-		"behaviour"	: "simpleAnswerer"
+		"behaviour"	: "answerHangup"
 	},{
 		"id"		: "201",
 		"user"		: "9795vo",
 		"password"	: "7NG6QA",
-		"behaviour"	: "simpleAnswerer"
+		"behaviour"	: "answerHangup"
 	},{
 		"id"		: "202",
 		"user"		: "2td68m",
 		"password"	: "90V4DS",
-		"behaviour"	: "simpleAnswerer"
+		"behaviour"	: "answerHangup"
 	},{
 		"id"		: "203",
 		"user"		: "0qo5m5",
 		"password"	: "XPRCDM",
-		"behaviour"	: "simpleAnswerer"
+		"behaviour"	: "answerHangup"
 	}]
 }

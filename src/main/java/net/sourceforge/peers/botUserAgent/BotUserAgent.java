@@ -1,4 +1,7 @@
 package net.sourceforge.peers.botUserAgent;
+//hashmap by callid
+//encode/decode siprequest
+
 
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -39,35 +42,22 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 public class BotUserAgent implements SipListener,CliLoggerOutput {
-	private ScriptEngine				engine;
-	private ExecutorService				executorService;
-	private ScheduledExecutorService	scheduledExecutor;
-
-	private UserAgent					userAgent;
-	private SipRequest					sipRequest;
-	private Logger						logger;
-	private PeerConfig					config;
-	private SipHeaderFieldName[]		sipHeaderList;
+	private ScriptEngine					engine;
+	private ExecutorService					executorService;
+	private ScheduledExecutorService		scheduledExecutor;
+	private UserAgent						userAgent;
+	private SipRequest						aaaaa;
+	private Logger							logger;
+	private PeerConfig						config;
+	private HashMap<String, SipRequest>		sipRequests;
 
 	public BotUserAgent(ScriptEngine engine,ExecutorService executorService,PeerConfig config) {
-		logger = new CliLogger(this);
+		this.logger			= new CliLogger(this);
 		this.executorService= executorService;
-		executorService = Executors.newCachedThreadPool();
-		this.config = config;
-		this.engine = engine;
-		//this.engine.getBindings(ScriptContext.ENGINE_SCOPE).put("botsUserAgent["+this.config.getId()+"]", this);
-		sipHeaderList = new SipHeaderFieldName[] {
-			new SipHeaderFieldName(RFC3261.HDR_CALLID),
-			new SipHeaderFieldName(RFC3261.HDR_CONTACT),
-			new SipHeaderFieldName(RFC3261.HDR_CONTENT_ENCODING),
-			new SipHeaderFieldName(RFC3261.HDR_CONTENT_LENGTH),
-			new SipHeaderFieldName(RFC3261.HDR_CONTENT_TYPE),
-			new SipHeaderFieldName(RFC3261.HDR_FROM),
-			new SipHeaderFieldName(RFC3261.HDR_SUBJECT),
-			new SipHeaderFieldName(RFC3261.HDR_SUPPORTED),
-			new SipHeaderFieldName(RFC3261.HDR_TO),
-			new SipHeaderFieldName(RFC3261.HDR_VIA)
-		};
+		this.config			= config;
+		this.engine			= engine;
+		this.sipRequests	= new HashMap<String, SipRequest>();
+		
 		JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, null);
 		
 		try {
@@ -138,12 +128,27 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 			}
 		});
 	}
+	
+	private void storeSipRequest(final SipRequest sipRequest){
+		String callId = net.sourceforge.peers.botUserAgent.misc.Utils.getCallId(sipRequest);
+		if(!this.sipRequests.containsKey(callId)){
+			this.sipRequests.put(callId, sipRequest);
+		}
+	}
+
+	private SipRequest getSipRequest(String callId){
+		if(this.sipRequests.containsKey(callId)){
+			return this.sipRequests.get(callId);
+		}
+		return null;
+	}
+	
 	// commands methods
 	public void call(final String callee) {
 		executorService.submit(new Runnable() {
 			public void run() {
 				try {
-					sipRequest = userAgent.invite(callee, null);
+					storeSipRequest(userAgent.invite(callee, null));
 				} catch (SipUriSyntaxException e) {
 					e.printStackTrace();
 				}
@@ -163,23 +168,25 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 	}
 
 	public void acceptCallByCallId(final String callId) {
-		final SipRequest prmSiprequest = this.sipRequest;
-		executorService.submit(new Runnable() {
-			public void run() {
-				DialogManager dialogManager = userAgent.getDialogManager();
-				Dialog dialog = dialogManager.getDialog(callId);
-				userAgent.acceptCall(prmSiprequest, dialog);
-			}
-		});
+		final SipRequest oSIPRequest = this.getSipRequest(callId);
+		if(oSIPRequest != null){
+			executorService.submit(new Runnable() {
+				public void run() {
+					DialogManager dialogManager = userAgent.getDialogManager();
+					Dialog dialog = dialogManager.getDialog(callId);
+					userAgent.acceptCall(oSIPRequest, dialog);
+				}
+			});
+		}
 	}
 	
 	public void invite(final String uri) {
 		executorService.submit(new Runnable() {
-
 			public void run() {
 				String callId = Utils.generateCallID(userAgent.getConfig().getLocalInetAddress());
 				try {
 					SipRequest sipRequest = userAgent.invite(uri, callId);
+					storeSipRequest(sipRequest);
 					setInviteSipRequest(sipRequest);
 				} catch (SipUriSyntaxException e) {
 					logger.error(e.getMessage());
@@ -201,7 +208,7 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		});
 	}
 
-	public void terminate() {
+	public void terminate(SipRequest sipRequest) {
 		executorService.submit(new Runnable() {
 			public void run() {
 				userAgent.terminate(sipRequest);
@@ -209,6 +216,13 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		});
 	}
 
+	public void terminateByCallId(String callId) {
+		final SipRequest oSIPRequest = this.getSipRequest(callId);
+		if(oSIPRequest != null){
+			terminate(oSIPRequest);
+		}
+	}
+	
 	public void pickup(final SipRequest sipRequest) {
 		executorService.submit(new Runnable() {
 			public void run() {
@@ -220,23 +234,26 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		});
 	}
 
+	public void pickupByCallId(String callId) {
+		final SipRequest oSIPRequest = this.getSipRequest(callId);
+		if(oSIPRequest != null){
+			pickup(oSIPRequest);
+		}
+	}
+	
 	public void busy(final SipRequest sipRequest) {
 		executorService.submit(new Runnable() {
 			public void run() {
 				userAgent.rejectCall(sipRequest);
-
 			}
 		});
 	}
 
-	public void busyLastSipRequest() {
-		final SipRequest prmSiprequest = this.sipRequest;
-		executorService.submit(new Runnable() {
-			public void run() {
-				userAgent.rejectCall(prmSiprequest);
-				
-			}
-		});
+	public void busyByCallId(String callId) {
+		final SipRequest oSIPRequest = this.getSipRequest(callId);
+		if(oSIPRequest != null){
+			busy(oSIPRequest);
+		}
 	}
 	
 	public void dtmf(final char digit) {
@@ -281,14 +298,14 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 						SipRequest sipObject = (SipRequest) arguments[i];
 						obj.put("method"		, sipObject.getMethod());
 						obj.put("requestUri"	, sipObject.getRequestUri().toString());
-						obj.put("from"			, getFrom(sipObject));
+						obj.put("from"			, net.sourceforge.peers.botUserAgent.misc.Utils.getFrom(sipObject));
 						obj.put("sipVersion"	, sipObject.getSipVersion());
 						//obj.put("sipHeaders"	, sipObject.getSipHeaders());
 						obj.put("body"			, sipObject.getBody());
 						sipHeaders =  sipObject.getSipHeaders();
 					}
 					HashMap<String,String> headers = new HashMap<String,String>();
-					for(SipHeaderFieldName hdr :sipHeaderList){
+					for(SipHeaderFieldName hdr :net.sourceforge.peers.botUserAgent.misc.Utils.sipHeaderList){
 						if(sipHeaders.contains(hdr)){
 							headers.put(hdr.getName(), JSONValue.toJSONString(sipHeaders.get(hdr)));
 						}
@@ -319,12 +336,12 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 	}
 
 	public void incomingCall(SipRequest sipRequest, SipResponse provResponse) {
-		this.sipRequest = sipRequest;
+		storeSipRequest(sipRequest);
 		JSCallback("incomingCall",new Object[] { sipRequest,provResponse,Utils.getMessageCallId(sipRequest)});
 	}
 
 	public void remoteHangup(SipRequest sipRequest) {
-		JSCallback("remoteHangup",new Object[] { sipRequest});
+		JSCallback("remoteHangup",new Object[] { sipRequest,Utils.getMessageCallId(sipRequest)});
 	}
 
 	public void ringing(SipResponse sipResponse) {
@@ -363,13 +380,6 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 				JSCallback("setInviteSipRequest", new Object[] { sipRequest });
 			}
 		});
-	}
-
-	public String getFrom(SipRequest sipRequest) {
-		SipHeaders sipHeaders = sipRequest.getSipHeaders();
-		SipHeaderFieldName sipHeaderFieldName = new SipHeaderFieldName(RFC3261.HDR_FROM);
-		SipHeaderFieldValue from = sipHeaders.get(sipHeaderFieldName);
-		return from.getValue();
 	}
 
 	public boolean sendCommand(String command, String[] args) {

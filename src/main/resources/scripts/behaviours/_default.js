@@ -30,8 +30,8 @@ this.behaviours._default = Backbone.Model.extend({
 		print(this.id+" :: incomingCall",sipRequest);
 	},
 
-	remoteHangup : function(sipRequest){
-		print(this.id+" :: remoteHangup",sipRequest);
+	remoteHangup : function(sipRequest,callId){
+		print(this.id+" :: remoteHangup",callId);
 	},
 
 	ringing : function(sipResponse){

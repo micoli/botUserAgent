@@ -16,12 +16,12 @@ this.behaviours.simpleAnswerer = this.behaviours._default.extend({
 				that.get('ua').acceptCallByCallId(callId);
 				print(that.id+" :: terminate",delay,callId);
 				setTimeout(function(){
-					that.get('ua').terminate();
+					that.get('ua').hat.get('ua').terminateByCallId(callId);
 				},delay);
 			},delay);
 		}else{
 			print(this.id+" :: refuse=>busy",callId);
-			that.get('ua').busyLastSipRequest();
+			that.get('ua').busyByCallId(callId);
 		}
 	}
 });

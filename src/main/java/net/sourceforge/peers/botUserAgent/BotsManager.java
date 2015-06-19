@@ -24,36 +24,42 @@ import net.sourceforge.peers.botUserAgent.interfaces.NetworkCommands;
 import org.json.simple.parser.ParseException;
 
 public class BotsManager  {
-	private HashMap<String, String> loadedBehaviours;
+	private HashMap<String, String> loadedScripts;
 	private HashMap<String, BotUserAgent> botUserAgents;
 	private Iterator<PeerConfig> iterator;
 	private ConsoleCommands	consoleCommands;
 	private NetworkCommands	oTCPCommandsReader;
+	private ScriptEngine engine = null;
 
+	private void loadScript(String sFilename) throws FileNotFoundException, ScriptException{
+		if(!loadedScripts.containsKey(sFilename)){
+			loadedScripts.put(sFilename,sFilename);
+			System.out.println("Script :: "+sFilename);
+			engine.eval(new FileReader(sFilename));
+		}
+	}
 	public void run() throws IOException, ParseException {
 		File workingDirectory = new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
 
 		System.setProperty("user.dir", workingDirectory.toString());
 
 		ExecutorService	executorService = Executors.newCachedThreadPool();
-		ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-		loadedBehaviours = new HashMap<String, String> ();
+		engine = new ScriptEngineManager().getEngineByName("nashorn");
+		loadedScripts = new HashMap<String, String> ();
 		botUserAgents = new HashMap<String, BotUserAgent> ();
 		engine.getBindings(ScriptContext.ENGINE_SCOPE).put("workingDirectory", workingDirectory);
 		try{
 			Boolean customBindAddr = (!GlobalConfig.config.getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
 
-			engine.eval(new FileReader(workingDirectory.toString() + "/run.js"));
+			loadScript(workingDirectory.toString() + "/run.js");
+			loadScript(workingDirectory.toString() + "/behaviours/_default.js");
 
 			List<PeerConfig> peersList = GlobalConfig.readPeersConf();
 
 			iterator = peersList.iterator();
 			while (iterator.hasNext()) {
 				PeerConfig config = iterator.next();
-				if(!loadedBehaviours.containsKey(config.getBehaviour())){
-					loadedBehaviours.put(config.getBehaviour(),config.getBehaviour());
-					engine.eval(new FileReader(workingDirectory.toString() + "/behaviours/" + config.getBehaviour()+".js"));
-				}
+				loadScript(workingDirectory.toString() + "/behaviours/" + config.getBehaviour()+".js");
 			}
 
 			iterator = peersList.iterator();

@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
+import net.sourceforge.peers.botUserAgent.misc.Utils;
 
 import org.json.simple.parser.ParseException;
 
@@ -13,6 +14,8 @@ public class Main {
 
 	public static void main(String[] args) throws JSAPException, FileNotFoundException, IOException, ParseException {
 
+		Utils.init();
+		
 		if(!GlobalConfig.parseArgs(args)){
 			System.exit(1);
 		}
