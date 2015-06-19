@@ -69,7 +69,7 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 			new SipHeaderFieldName(RFC3261.HDR_VIA)
 		};
 		JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, null);
-
+		
 		try {
 			userAgent = new UserAgent(this, this.config, logger, javaxSoundManager);
 		} catch (SocketException e) {
@@ -162,6 +162,17 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		});
 	}
 
+	public void acceptCallByCallId(final String callId) {
+		final SipRequest prmSiprequest = this.sipRequest;
+		executorService.submit(new Runnable() {
+			public void run() {
+				DialogManager dialogManager = userAgent.getDialogManager();
+				Dialog dialog = dialogManager.getDialog(callId);
+				userAgent.acceptCall(prmSiprequest, dialog);
+			}
+		});
+	}
+	
 	public void invite(final String uri) {
 		executorService.submit(new Runnable() {
 
@@ -188,7 +199,6 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 				}
 			}
 		});
-
 	}
 
 	public void terminate() {
@@ -219,6 +229,16 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		});
 	}
 
+	public void busyLastSipRequest() {
+		final SipRequest prmSiprequest = this.sipRequest;
+		executorService.submit(new Runnable() {
+			public void run() {
+				userAgent.rejectCall(prmSiprequest);
+				
+			}
+		});
+	}
+	
 	public void dtmf(final char digit) {
 		executorService.submit(new Runnable() {
 			public void run() {
@@ -299,7 +319,8 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 	}
 
 	public void incomingCall(SipRequest sipRequest, SipResponse provResponse) {
-		JSCallback("incomingCall",new Object[] { sipRequest,provResponse});
+		this.sipRequest = sipRequest;
+		JSCallback("incomingCall",new Object[] { sipRequest,provResponse,Utils.getMessageCallId(sipRequest)});
 	}
 
 	public void remoteHangup(SipRequest sipRequest) {

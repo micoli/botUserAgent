@@ -22,7 +22,7 @@ this.behaviours._default = Backbone.Model.extend({
 		print(this.id+" :: registerSuccessful",config.getUserPart());
 	},
 
-	registerFailed : function(sipResponse,config){
+	registerFailed : function(sipResponse,config,callId){
 		print(this.id+" :: registerFailed",config.getUserPart());
 	},
 

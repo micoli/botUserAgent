@@ -93,15 +93,6 @@
 		phaser.forceTermination();
 	};
 
-	context.maybe = function (prct,max){
-		var rn = Math.random() * max;
-		return prct>rn;
-	}
-
-	context.getRandomInt = function (min,max){
-		return Math.floor(min + (Math.random() * (max - min)));
-	}
-
 	// print(this.http().get('http://www.google.com/?q=test').data);
 	context.http = function() {
 		function asResponse(con){
@@ -152,3 +143,12 @@
 		}
 	};
 })(this);
+
+maybe = function (prct,max){
+	var rn = Math.random() * max;
+	return prct>rn;
+}
+
+getRandomInt = function (min,max){
+	return Math.floor(min + (Math.random() * (max - min)));
+}
