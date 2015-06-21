@@ -6,7 +6,7 @@ import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldValue;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaders;
 import net.sourceforge.peers.sip.transport.SipRequest;
 
-public class Utils {
+public class MiscUtils {
 	public static SipHeaderFieldName[] sipHeaderList;
 	
 	public static void init(){
