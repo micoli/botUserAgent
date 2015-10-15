@@ -1,7 +1,7 @@
 this.behaviours.theHeavyOne = this.behaviours._default.extend({
 	registerSuccessful : function(sipResponse,config){
 		var that = this;
-		print(this.id+" :: registerSuccessful",config.getUserPart()+" behaviour2");
+		jsLog(that.id,"registerSuccessful",config.getUserPart()," |behaviour2");
 		setTimeout(function(){
 			//that.get('ua').call("sip:101@10.80.0.95");
 		},500);
@@ -11,7 +11,7 @@ this.behaviours.theHeavyOne = this.behaviours._default.extend({
 		var that = this;
 		//theHeavyOne
 		//sipRequest = JSON.parse(sipRequest);
-		print(this.id+" :: remoteHangup",sipRequest);
+		jsLog(that.id,"remoteHangup",sipRequest);
 		//var m = sipRequest.sipHeaders.From.match(/sip\:([0-9]*)/);
 		var m = sipRequest.match(/"from":"<sip:([0-9]*)\@(.*)"/);
 		// 201 call 101@10.80.0.95

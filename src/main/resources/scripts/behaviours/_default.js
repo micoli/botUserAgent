@@ -6,7 +6,7 @@ this.behaviours._default = Backbone.Model.extend({
 	},
 
 	initialize: function() {
-		print("init ",this.get('id'));
+		jsLog(this.get('id'), "init");
 		this.get('ua').register();
 	},
 
@@ -15,44 +15,44 @@ this.behaviours._default = Backbone.Model.extend({
 	},
 
 	registering : function(sipRequest,config){
-		print(this.id+" :: registering",config.getUserPart());
+		jsLog(this.id,"registering",config.getUserPart());
 	},
 
 	registerSuccessful : function(sipResponse,config){
-		print(this.id+" :: registerSuccessful",config.getUserPart());
+		jsLog(this.id,"registerSuccessful",config.getUserPart());
 	},
 
 	registerFailed : function(sipResponse,config,callId){
-		print(this.id+" :: registerFailed",config.getUserPart());
+		jsLog(this.id,"registerFailed",config.getUserPart());
 	},
 
 	incomingCall : function(sipRequest,provResponse){
-		print(this.id+" :: incomingCall",sipRequest);
+		jsLog(this.id,"incomingCall",sipRequest);
 	},
 
 	remoteHangup : function(sipRequest,callId){
-		print(this.id+" :: remoteHangup",callId);
+		jsLog(this.id,"remoteHangup",callId);
 	},
 
 	ringing : function(sipResponse){
-		print(this.id+" :: ringing",sipResponse);
+		jsLog(this.id,"ringing",sipResponse);
 	},
 
 	calleePickup : function(sipResponse){
-		print(this.id+" :: calleePickup",sipResponse);
+		jsLog(this.id,"calleePickup",sipResponse);
 	},
 	error : function(sipResponse){
-		print(this.id+" :: error",sipResponse);
+		jsLog(this.id,"error",sipResponse);
 	},
 
 	setInviteSipRequest : function(sipRequest){
-		print(this.id+" :: setInviteSipRequest",sipRequest);
+		jsLog(this.id,"setInviteSipRequest",sipRequest);
 	},
 
 	externalCommand : function(method, args){
-		print(this.id+" :: externalCommand ",method);
+		jsLog(this.id,"externalCommand ",method);
 		_.each(args,function(v,k){
-			print(">> args ["+k+"] "+v);
+			jsLog(this.id,">> args ["+k+"] "+v);
 		})
 		if(method=='call'){
 			// 201 call 101@10.80.0.95

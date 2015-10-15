@@ -17,8 +17,7 @@ import net.sourceforge.peers.botUserAgent.config.PeerConfig;
 import net.sourceforge.peers.botUserAgent.logger.CliLogger;
 import net.sourceforge.peers.botUserAgent.logger.CliLoggerOutput;
 import net.sourceforge.peers.botUserAgent.misc.MiscUtils;
-import net.sourceforge.peers.javaxsound.JavaxSoundManager;
-import net.sourceforge.peers.media.AbstractSoundManager;
+import net.sourceforge.peers.javaxsound.BotSoundManager;
 import net.sourceforge.peers.media.MediaManager;
 import net.sourceforge.peers.media.MediaMode;
 import net.sourceforge.peers.sip.Utils;
@@ -36,18 +35,18 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 public class BotUserAgent implements SipListener,CliLoggerOutput {
-	private BotsManager						botsManager;;
-	private ScheduledExecutorService		scheduledExecutor;
-	private UserAgent						userAgent;
-	private Logger							logger;
-	private PeerConfig						config;
+	private BotsManager					botsManager;
+	private ScheduledExecutorService	scheduledExecutor;
+	private UserAgent					userAgent;
+	private Logger						logger;
+	private PeerConfig					config;
 
 	public BotUserAgent(BotsManager botsManager,PeerConfig config) {
 		this.botsManager	= botsManager;
 		this.logger			= new CliLogger(this);
 		this.config			= config;
 
-		JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, null);
+		BotSoundManager javaxSoundManager = new BotSoundManager(logger);
 
 		try {
 			userAgent = new UserAgent(this, this.config, logger, javaxSoundManager);
@@ -70,9 +69,7 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		try {
 			String ipAddress = GlobalConfig.config.getInetAddress("bindAddr").toString().replaceAll("/", "");
 			String peersHome = Utils.DEFAULT_PEERS_HOME;
-			final AbstractSoundManager soundManager = new JavaxSoundManager(
-					false, //TODO config.isMediaDebug(),
-					logger, peersHome);
+			final BotSoundManager soundManager = new BotSoundManager(logger);
 			InetAddress inetAddress;
 			try {
 				inetAddress = InetAddress.getByName(ipAddress);

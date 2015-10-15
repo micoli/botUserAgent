@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,14 +29,14 @@ import net.sourceforge.peers.sip.transport.SipRequest;
 import org.json.simple.parser.ParseException;
 
 public class BotsManager  {
-	private HashMap<String, String> loadedScripts;
-	private HashMap<String, BotUserAgent> botUserAgents;
-	private Iterator<PeerConfig>		iterator;
-	private ConsoleCommands				consoleCommands;
-	private NetworkCommands				oTCPCommandsReader;
-	private HashMap<String, SipRequest>	sipRequests;
-	private ScriptEngine				engine;
-	private ExecutorService				executorService;
+	private HashMap<String, String>			loadedScripts;
+	private HashMap<String, BotUserAgent>	botUserAgents;
+	private Iterator<PeerConfig>			iterator;
+	private ConsoleCommands					consoleCommands;
+	private NetworkCommands					oTCPCommandsReader;
+	private HashMap<String, SipRequest>		sipRequests;
+	private ScriptEngine					engine;
+	private ExecutorService					executorService;
 
 	public ExecutorService getExecutorService() {
 		return executorService;
@@ -80,6 +82,19 @@ public class BotsManager  {
 	public void run() throws IOException, ParseException {
 		this.sipRequests = new HashMap<String, SipRequest>();
 		File workingDirectory = new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				Iterator<Entry<String, BotUserAgent>> it = botUserAgents.entrySet().iterator();
+				while (it.hasNext()) {
+					Map.Entry pair = (Map.Entry)it.next();
+					BotUserAgent botUserAgent = (BotUserAgent) pair.getValue();
+					botUserAgent.unregister();
+					System.out.println(pair.getKey() + " unregistered ");
+					it.remove();
+				}
+			}
+		});
 
 		System.setProperty("user.dir", workingDirectory.toString());
 
