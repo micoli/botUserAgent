@@ -4,7 +4,7 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sourceforge.peers</groupId>
-	<artifactId>botSipAgent</artifactId>
+	<artifactId>botUserAgent</artifactId>
 	<version>0.5.1-SNAPSHOT</version>
 	<name>sipagent</name>
 	<url>http://maven.apache.org</url>

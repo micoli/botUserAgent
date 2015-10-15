@@ -8,6 +8,10 @@ this.behaviours._default = Backbone.Model.extend({
 	initialize: function() {
 		jsLog(this.get('id'), "init");
 		this.get('ua').register();
+		this.postInit()
+	},
+
+	postInit: function() {
 	},
 
 	tick: function() {

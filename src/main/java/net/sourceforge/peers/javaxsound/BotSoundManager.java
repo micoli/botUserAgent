@@ -31,123 +31,131 @@ public class BotSoundManager extends AbstractSoundManager {
 	private Object speakerDataLineMutex;
 	private DataLine.Info microphoneInfo;
 	private DataLine.Info speakerInfo;
-	private FileOutputStream microphonephoneOutput;
+	private FileOutputStream microphoneOutput;
 	private FileOutputStream speakerInput;
 	private boolean mediaDebug;
+	private boolean withStream;
 
 	public BotSoundManager(Logger logger) {
-		this.logger = logger;
-		this.mediaDebug = true;
-		audioFormat = new AudioFormat(8000, 16, 1, true, false);
-		microphoneInfo = new DataLine.Info(TargetDataLine.class, audioFormat); // microphone
-		speakerInfo = new DataLine.Info(SourceDataLine.class, audioFormat); // speaker
+		this.logger		= logger;
+		this.mediaDebug = false;
+		this.withStream = false;
+		audioFormat		= new AudioFormat(8000, 16, 1, true, false);
+		microphoneInfo	= new DataLine.Info(TargetDataLine.class, audioFormat);
+		speakerInfo		= new DataLine.Info(SourceDataLine.class, audioFormat);
 		speakerDataLineMutex = new Object();
 	}
 
 	@Override
 	public void init() {
 		logger.debug("openAndStartLines");
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-		String date = simpleDateFormat.format(new Date());
-		StringBuffer buf = new StringBuffer();
-		buf.append(date).append("_");
-		buf.append(audioFormat.getEncoding()).append("_");
-		buf.append(audioFormat.getSampleRate()).append("_");
-		buf.append(audioFormat.getSampleSizeInBits()).append("_");
-		buf.append(audioFormat.getChannels()).append("_");
-		buf.append(audioFormat.isBigEndian() ? "be" : "le");
-		try {
-			microphonephoneOutput = new FileOutputStream(buf.toString() + "_microphonephone.output");
-			speakerInput = new FileOutputStream(buf.toString() + "_speaker.input");
-		} catch (FileNotFoundException e) {
-			logger.error("cannot create file", e);
-			return;
+		if(mediaDebug){
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+			String			date = simpleDateFormat.format(new Date());
+			StringBuffer	buf = new StringBuffer();
+			buf.append(date).append("_");
+			buf.append(audioFormat.getEncoding()).append("_");
+			buf.append(audioFormat.getSampleRate()).append("_");
+			buf.append(audioFormat.getSampleSizeInBits()).append("_");
+			buf.append(audioFormat.getChannels()).append("_");
+			buf.append(audioFormat.isBigEndian() ? "be" : "le");
+			try {
+				microphoneOutput	= new FileOutputStream(buf.toString() + "_microphone.output");
+				speakerInput		= new FileOutputStream(buf.toString() + "_speaker.input");
+			} catch (FileNotFoundException e) {
+				logger.error("cannot create file", e);
+				return;
+			}
 		}
-		final boolean finalmediaDebug = mediaDebug;
-		// AccessController.doPrivileged added for plugin compatibility
-		AccessController.doPrivileged(
-			new PrivilegedAction<Void>() {
-				@Override
-				public Void run() {
-					try {
-						if(finalmediaDebug){
-							microphoneDataLine = (TargetDataLine) AudioSystem.getLine(microphoneInfo);
-							microphoneDataLine.open(audioFormat);
-						}else{
-
-						}
-					} catch (LineUnavailableException e) {
-						logger.error("microphone line unavailable", e);
-						return null;
-					} catch (SecurityException e) {
-						logger.error("security exception", e);
-						return null;
-					} catch (Throwable t) {
-						logger.error("throwable --" + t.getStackTrace()[0].getLineNumber() +" "+t.getMessage());
-						return null;
-					}
-					microphoneDataLine.start();
-					synchronized (speakerDataLineMutex) {
+		if(this.withStream){
+			final boolean finalmediaDebug = mediaDebug;
+			// AccessController.doPrivileged added for plugin compatibility
+			AccessController.doPrivileged(
+				new PrivilegedAction<Void>() {
+					@Override
+					public Void run() {
 						try {
-							speakerDataLine = (SourceDataLine) AudioSystem.getLine(speakerInfo);
-							speakerDataLine.open(audioFormat);
+							if(finalmediaDebug){
+								microphoneDataLine = (TargetDataLine) AudioSystem.getLine(microphoneInfo);
+								microphoneDataLine.open(audioFormat);
+							}
 						} catch (LineUnavailableException e) {
-							logger.error("speaker line unavailable", e);
+							logger.error("microphone line unavailable", e);
+							return null;
+						} catch (SecurityException e) {
+							logger.error("security exception", e);
+							return null;
+						} catch (Throwable t) {
+							logger.error("throwable --" + t.getStackTrace()[0].getLineNumber() + t.getStackTrace()[0].getFileName() +" "+t.getMessage());
 							return null;
 						}
-						speakerDataLine.start();
+						microphoneDataLine.start();
+						synchronized (speakerDataLineMutex) {
+							try {
+								speakerDataLine = (SourceDataLine) AudioSystem.getLine(speakerInfo);
+								speakerDataLine.open(audioFormat);
+							} catch (LineUnavailableException e) {
+								logger.error("speaker line unavailable", e);
+								return null;
+							}
+							speakerDataLine.start();
+						}
+						return null;
 					}
-					return null;
-				}
-		});
-
+			});
+		}
 	}
 
 	@Override
 	public synchronized void close() {
 		logger.debug("closeLines");
-		if (microphonephoneOutput != null) {
-			try {
-				microphonephoneOutput.close();
-			} catch (IOException e) {
-				logger.error("cannot close file", e);
-			}
-			microphonephoneOutput = null;
-		}
-		if (speakerInput != null) {
-			try {
-				speakerInput.close();
-			} catch (IOException e) {
-				logger.error("cannot close file", e);
-			}
-			speakerInput = null;
-		}
-		// AccessController.doPrivileged added for plugin compatibility
-		AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
-			@Override
-			public Void run() {
-				if (microphoneDataLine != null) {
-					microphoneDataLine.close();
-					microphoneDataLine = null;
+		if(this.withStream){
+			if (microphoneOutput != null) {
+				try {
+					microphoneOutput.close();
+				} catch (IOException e) {
+					logger.error("cannot close file", e);
 				}
-				synchronized (speakerDataLineMutex) {
-					if (speakerDataLine != null) {
-						speakerDataLine.drain();
-						speakerDataLine.stop();
-						speakerDataLine.close();
-						speakerDataLine = null;
-					}
-				}
-				return null;
+				microphoneOutput = null;
 			}
-		});
+			if (speakerInput != null) {
+				try {
+					speakerInput.close();
+				} catch (IOException e) {
+					logger.error("cannot close file", e);
+				}
+				speakerInput = null;
+			}
+			// AccessController.doPrivileged added for plugin compatibility
+			AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+				@Override
+				public Void run() {
+					if (microphoneDataLine != null) {
+						microphoneDataLine.close();
+						microphoneDataLine = null;
+					}
+					synchronized (speakerDataLineMutex) {
+						if (speakerDataLine != null) {
+							speakerDataLine.drain();
+							speakerDataLine.stop();
+							speakerDataLine.close();
+							speakerDataLine = null;
+						}
+					}
+					return null;
+				}
+			});
+		}
 	}
 
 	@Override
 	public synchronized byte[] readData() {
-		if (microphoneDataLine == null) {
+		if(!this.withStream){
 			return null;
+		}
+		if (microphoneDataLine == null) {
 		}
 		int ready = microphoneDataLine.available();
 		while (ready == 0) {
@@ -165,7 +173,7 @@ public class BotSoundManager extends AbstractSoundManager {
 		microphoneDataLine.read(buffer, 0, buffer.length);
 		if (mediaDebug) {
 			try {
-				microphonephoneOutput.write(buffer, 0, buffer.length);
+				microphoneOutput.write(buffer, 0, buffer.length);
 			} catch (IOException e) {
 				logger.error("cannot write to file", e);
 				return null;
@@ -176,6 +184,9 @@ public class BotSoundManager extends AbstractSoundManager {
 
 	@Override
 	public int writeData(byte[] buffer, int offset, int length) {
+		if(!this.withStream){
+			return 0;
+		}
 		int numberOfBytesWritten;
 		synchronized (speakerDataLineMutex) {
 			if (speakerDataLine == null) {
@@ -193,5 +204,4 @@ public class BotSoundManager extends AbstractSoundManager {
 		}
 		return numberOfBytesWritten;
 	}
-
 }

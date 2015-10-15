@@ -1,6 +1,7 @@
 package net.sourceforge.peers.botUserAgent;
 //hashmap by callid
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -238,6 +239,39 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		});
 	}
 
+	public void setAnswerFile(String filename) {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				config.setMediaMode(MediaMode.file);
+				config.setMediaFile(filename);
+			}
+		});
+	}
+
+	public void setAnswerNone() {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				config.setMediaMode(MediaMode.none);
+			}
+		});
+	}
+
+	public void setAnswerEcho() {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				config.setMediaMode(MediaMode.echo);
+			}
+		});
+	}
+
+	public void setAnswerCaptureAndPlayback() {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				config.setMediaMode(MediaMode.captureAndPlayback);
+			}
+		});
+	}
+
 	private void JSExec(String method,Object[] arguments){
 		try {
 			botsManager.getInvocableEngine().invokeFunction(method, arguments);
@@ -364,5 +398,18 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 	public boolean sendCommand(String command, String[] args) {
 		JSCallback("externalCommand", new Object[] {command,args});
 		return true;
+	}
+
+	public void exec(String bin,int synch) {
+		try {
+			Process p = Runtime.getRuntime().exec(bin);
+			if(synch==1){
+				p.waitFor();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 }
