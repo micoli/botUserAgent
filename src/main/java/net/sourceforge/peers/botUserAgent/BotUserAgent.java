@@ -238,6 +238,39 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		});
 	}
 
+	public void setAnswerFile(String filename) {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				config.setMediaMode(MediaMode.file);
+				config.setMediaFile(filename);
+			}
+		});
+	}
+
+	public void setAnswerNone() {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				config.setMediaMode(MediaMode.none);
+			}
+		});
+	}
+
+	public void setAnswerEcho() {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				config.setMediaMode(MediaMode.echo);
+			}
+		});
+	}
+
+	public void setAnswerCaptureAndPlayback() {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				config.setMediaMode(MediaMode.captureAndPlayback);
+			}
+		});
+	}
+
 	private void JSExec(String method,Object[] arguments){
 		try {
 			botsManager.getInvocableEngine().invokeFunction(method, arguments);
