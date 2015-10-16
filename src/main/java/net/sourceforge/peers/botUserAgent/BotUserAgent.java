@@ -57,6 +57,7 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 
 		JSExec("initBot",new Object[] {this.config.getId(), this.config,this});
 
+
 		scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 		scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
 			public void run() {

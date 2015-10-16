@@ -37,6 +37,7 @@ public class BotsManager  {
 	private HashMap<String, SipRequest>		sipRequests;
 	private ScriptEngine					engine;
 	private ExecutorService					executorService;
+	private Object							botsMutex;
 
 	public ExecutorService getExecutorService() {
 		return executorService;
@@ -79,6 +80,7 @@ public class BotsManager  {
 			engine.eval(new FileReader(sFilename));
 		}
 	}
+
 	public void run() throws IOException, ParseException {
 		this.sipRequests = new HashMap<String, SipRequest>();
 		File workingDirectory = new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
@@ -138,7 +140,6 @@ public class BotsManager  {
 		} catch (ScriptException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public String runCommand(String command) {

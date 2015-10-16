@@ -5,7 +5,7 @@ load(workingDirectory+'/runtime.js');
 },3000);*/
 
 var initBot = function (id,config,userAgent){
-	print('initBot : ',id,config.behaviour);
+	jsLog(id,'initBot : ',config.behaviour);
 	this.bots['_'+config.getId()] = new this.behaviours[config.behaviour]({
 		id		: config.getId(),
 		config	: config,
