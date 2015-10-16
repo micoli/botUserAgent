@@ -400,16 +400,18 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		return true;
 	}
 
-	public void exec(String bin,int synch) {
-		try {
-			Process p = Runtime.getRuntime().exec(bin);
-			if(synch==1){
-				p.waitFor();
+	public void exec(String bin) {
+		botsManager.getExecutorService().submit(new Runnable() {
+			public void run() {
+				try {
+					Process p = Runtime.getRuntime().exec(bin);
+					p.waitFor();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		});
 	}
 }

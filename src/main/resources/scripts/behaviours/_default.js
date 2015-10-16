@@ -7,11 +7,11 @@ this.behaviours._default = Backbone.Model.extend({
 
 	initialize: function() {
 		jsLog(this.get('id'), "init");
+		this.preInit()
 		this.get('ua').register();
-		this.postInit()
 	},
 
-	postInit: function() {
+	preInit: function() {
 	},
 
 	tick: function() {
