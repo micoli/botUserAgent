@@ -45,6 +45,7 @@ this.behaviours._default = Backbone.Model.extend({
 	calleePickup : function(sipResponse){
 		jsLog(this.id,"calleePickup",sipResponse);
 	},
+
 	error : function(sipResponse){
 		jsLog(this.id,"error",sipResponse);
 	},
@@ -54,13 +55,11 @@ this.behaviours._default = Backbone.Model.extend({
 	},
 
 	externalCommand : function(method, args){
-		jsLog(this.id,"externalCommand ",method);
-		_.each(args,function(v,k){
-			jsLog(this.id,">> args ["+k+"] "+v);
-		})
+		var that = this;
+		jsLog(that.id,"externalCommand ",method);
 		if(method=='call'){
 			// 201 call 101@10.80.0.95
-			this.get('ua').call("sip:"+args[0]);
+			that.get('ua').call("sip:"+args[0]);
 		}
 	}
 });

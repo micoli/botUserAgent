@@ -19,16 +19,19 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
 import net.sourceforge.peers.botUserAgent.interfaces.ConsoleCommands;
 import net.sourceforge.peers.botUserAgent.interfaces.NetworkCommands;
+import net.sourceforge.peers.botUserAgent.logger.CliLogger;
+import net.sourceforge.peers.botUserAgent.logger.CliLoggerOutput;
 import net.sourceforge.peers.botUserAgent.misc.MiscUtils;
 import net.sourceforge.peers.sip.transport.SipRequest;
 
 import org.json.simple.parser.ParseException;
 
-public class BotsManager  {
+public class BotsManager implements CliLoggerOutput  {
 	private HashMap<String, String>			loadedScripts;
 	private HashMap<String, BotUserAgent>	botUserAgents;
 	private Iterator<PeerConfig>			iterator;
@@ -38,6 +41,8 @@ public class BotsManager  {
 	private ScriptEngine					engine;
 	private ExecutorService					executorService;
 	private Object							botsMutex;
+	private String							lastCommand;
+	private Logger							logger;
 
 	public ExecutorService getExecutorService() {
 		return executorService;
@@ -82,6 +87,8 @@ public class BotsManager  {
 	}
 
 	public void run() throws IOException, ParseException {
+		logger = new CliLogger(this);
+		this.lastCommand = "";
 		this.sipRequests = new HashMap<String, SipRequest>();
 		File workingDirectory = new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
 
@@ -126,7 +133,7 @@ public class BotsManager  {
 					config.setLocalInetAddress(GlobalConfig.config.getInetAddress("bindAddr"));
 				}
 				System.out.println(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
-				botUserAgents.put(config.getId(),new BotUserAgent(this,config));
+				botUserAgents.put(config.getId(),new BotUserAgent(this,config,logger));
 			}
 			consoleCommands = new ConsoleCommands(this);
 			consoleCommands.start();
@@ -143,14 +150,17 @@ public class BotsManager  {
 	}
 
 	public String runCommand(String command) {
+		if(command.equalsIgnoreCase("r") && !lastCommand.equalsIgnoreCase("")){
+			command = lastCommand;
+		}
 		String[] tokens = command.split(" ");
 		if(tokens.length<2){
 			return "Not enough arguments";
 		}
-
 		if(!botUserAgents.containsKey(tokens[0])){
 			return "Agent ["+tokens[0]+"] not found";
 		}
+		lastCommand = command;
 
 		try{
 			botUserAgents.get(tokens[0]).sendCommand(tokens[1],Arrays.copyOfRange(tokens,2,tokens.length));
@@ -160,4 +170,34 @@ public class BotsManager  {
 		}
 		return "OK";
 	}
+
+	//CliLoggerOutput
+	public void javaLog(final String message) {
+		this.getExecutorService().submit(new Runnable() {
+			public void run() {
+				JSExec("javaLog", new Object[]{message});
+			}
+		});
+	}
+
+	//CliLoggerOutput
+	public void javaNetworkLog(final String message) {
+		this.getExecutorService().submit(new Runnable() {
+			public void run() {
+				JSExec("javaNetworkLog", new Object[]{message});
+			}
+		});
+	}
+
+	public void JSExec(String method,Object[] arguments){
+		try {
+			this.getInvocableEngine().invokeFunction(method, arguments);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (ScriptException e) {
+			System.err.println("JS Error : "+ method + ", args " + arguments+" "+e.getFileName()+"("+e.getLineNumber()+','+e.getColumnNumber() +")");
+			e.printStackTrace();
+		}
+	}
+
 }

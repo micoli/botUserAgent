@@ -15,8 +15,6 @@ import javax.script.ScriptException;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
-import net.sourceforge.peers.botUserAgent.logger.CliLogger;
-import net.sourceforge.peers.botUserAgent.logger.CliLoggerOutput;
 import net.sourceforge.peers.botUserAgent.misc.MiscUtils;
 import net.sourceforge.peers.javaxsound.BotSoundManager;
 import net.sourceforge.peers.media.MediaManager;
@@ -35,16 +33,16 @@ import net.sourceforge.peers.sip.transport.SipResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-public class BotUserAgent implements SipListener,CliLoggerOutput {
+public class BotUserAgent implements SipListener {
 	private BotsManager					botsManager;
 	private ScheduledExecutorService	scheduledExecutor;
 	private UserAgent					userAgent;
 	private Logger						logger;
 	private PeerConfig					config;
 
-	public BotUserAgent(BotsManager botsManager,PeerConfig config) {
+	public BotUserAgent(BotsManager botsManager,PeerConfig config,Logger logger) {
 		this.botsManager	= botsManager;
-		this.logger			= new CliLogger(this);
+		this.logger			= logger;
 		this.config			= config;
 
 		BotSoundManager javaxSoundManager = new BotSoundManager(logger);
@@ -55,7 +53,7 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 			e.printStackTrace();
 		}
 
-		JSExec("initBot",new Object[] {this.config.getId(), this.config,this});
+		botsManager.JSExec("initBot",new Object[] {this.config.getId(), this.config,this});
 
 
 		scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -273,17 +271,6 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 		});
 	}
 
-	private void JSExec(String method,Object[] arguments){
-		try {
-			botsManager.getInvocableEngine().invokeFunction(method, arguments);
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (ScriptException e) {
-			System.err.println("JS Error : "+ method + ", args " + arguments+" "+e.getFileName()+"("+e.getLineNumber()+','+e.getColumnNumber() +")");
-			e.printStackTrace();
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	private void JSCallback(String method,Object[] arguments){
 		try {
@@ -368,24 +355,6 @@ public class BotUserAgent implements SipListener,CliLoggerOutput {
 
 	public void error(SipResponse sipResponse) {
 		JSCallback("error",new Object[] { sipResponse});
-	}
-
-	//CliLoggerOutput
-	public void javaLog(final String message) {
-		botsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				JSExec("javaLog", new Object[]{message});
-			}
-		});
-	}
-
-	//CliLoggerOutput
-	public void javaNetworkLog(final String message) {
-		botsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				JSExec("javaNetworkLog", new Object[]{message});
-			}
-		});
 	}
 
 	public void setInviteSipRequest(final SipRequest sipRequest) {
