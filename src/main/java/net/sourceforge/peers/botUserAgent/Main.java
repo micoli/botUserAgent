@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
-import net.sourceforge.peers.botUserAgent.misc.MiscUtils;
+import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 
 import org.json.simple.parser.ParseException;
 
@@ -14,7 +14,7 @@ import com.martiansoftware.jsap.JSAPException;
 public class Main {
 
 	public static void main(String[] args) throws JSAPException, FileNotFoundException, IOException, ParseException {
-		MiscUtils.init();
+		SipUtils.init();
 
 		if(!GlobalConfig.parseArgs(args)){
 			System.exit(1);

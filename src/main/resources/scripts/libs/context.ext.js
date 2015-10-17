@@ -1,10 +1,9 @@
 (function(context) {
 'use strict';
 
-	var Timer = Java.type('java.util.Timer');
-	var Phaser = Java.type('java.util.concurrent.Phaser');
+	var Timer	= Java.type('java.util.Timer');
+	var Phaser	= Java.type('java.util.concurrent.Phaser');
 	var TimeUnit = Java.type('java.util.concurrent.TimeUnit');
-	//var AsyncHttpClient = Java.type('com.ning.http.client.AsyncHttpClient');
 
 	var timer = new Timer('jsEventLoop', false);
 	var phaser = new Phaser();
@@ -93,55 +92,6 @@
 		phaser.forceTermination();
 	};
 
-	// print(this.http().get('http://www.google.com/?q=test').data);
-	context.http = function() {
-		function asResponse(con){
-			return {
-				data : read(con.inputStream),
-				statusCode : con.responseCode
-			};
-		}
-
-		function write(outputStream, data){
-			var wr = new java.io.DataOutputStream(outputStream);
-			wr.writeBytes(data);
-			wr.flush();
-			wr.close();
-		}
-
-		function read(inputStream){
-			var inReader = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream));
-			var inputLine;
-			var response = new java.lang.StringBuffer();
-
-			while ((inputLine = inReader.readLine()) != null) {
-				response.append(inputLine);
-			}
-			inReader.close();
-			return response.toString();
-		}
-		return {
-			get : function(theUrl){
-				var con = new java.net.URL(theUrl).openConnection();
-				con.requestMethod = "GET";
-
-				return asResponse(con);
-			},
-
-			post : function (theUrl, data, contentType){
-				var con = new java.net.URL(theUrl).openConnection();
-				contentType = contentType || "application/json";
-
-				con.requestMethod = "POST";
-				con.setRequestProperty("Content-Type", contentType);
-
-				con.doOutput=true;
-				write(con.outputStream, data);
-
-				return asResponse(con);
-			}
-		}
-	};
 })(this);
 
 maybe = function (prct,max){

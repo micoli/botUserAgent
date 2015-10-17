@@ -1,7 +1,8 @@
 load(workingDirectory+'/libs/underscore-min.js');
-load(workingDirectory+'/libs/backbone-min.js');
 load(workingDirectory+'/libs/context.ext.js');
-
+load(workingDirectory+'/libs/promises.js');
+load(workingDirectory+'/libs/extnd.js');
+JSONObject = Packages.org.json.simple.JSONObject;
 this.bots = {};
 this.behaviours = {};
 

@@ -1,25 +1,24 @@
-package net.sourceforge.peers.botUserAgent.interfaces;
+package org.micoli.commandRunner;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
-import net.sourceforge.peers.botUserAgent.BotsManager;
-import net.sourceforge.peers.botUserAgent.misc.ManagedThread;
+import org.micoli.threads.ManagedThread;
 
 class NetworkCommandsClient extends ManagedThread{
-	private Socket ClientSocket;
-	private BotsManager	botsManager;
-	private BufferedReader streamIn;
-	private DataOutputStream streamOut;
+	private Socket				ClientSocket;
+	private CommandRunner		commandRunner;
+	private BufferedReader		streamIn;
+	private DataOutputStream	streamOut;
 
-	NetworkCommandsClient(Socket clientSocket,BotsManager botsManager)  throws Exception{
-		this.botsManager = botsManager;
+	NetworkCommandsClient(Socket clientSocket,CommandRunner commandRunner)  throws Exception{
+		this.commandRunner = commandRunner;
 		this.ClientSocket = clientSocket;
 		this.streamIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		this.streamOut = new DataOutputStream(clientSocket.getOutputStream());
-		//DataInputStream streamIn = new DataInputStream(ClientSocket.getInputStream());
+		//DataInputStream  streamIn  = new DataInputStream (ClientSocket.getInputStream ());
 		//DataOutputStream streamOut = new DataOutputStream(ClientSocket.getOutputStream());
 		//System.out.println("Waiting for UserName And Password");
 		//LoginName=streamIn.readUTF();
@@ -38,7 +37,7 @@ class NetworkCommandsClient extends ManagedThread{
 				if (command==null || command.equals("quit")){
 					isRunning=false;
 				}else{
-					streamOut.writeUTF(botsManager.runCommand(command)+"\n>");
+					streamOut.writeUTF(commandRunner.runCommand(command)+"\n>");
 				}
 			}
 			ClientSocket.close();

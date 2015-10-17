@@ -1,4 +1,4 @@
-package net.sourceforge.peers.botUserAgent.misc;
+package net.sourceforge.peers.botUserAgent.sip;
 
 import net.sourceforge.peers.sip.RFC3261;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldName;
@@ -6,7 +6,7 @@ import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldValue;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaders;
 import net.sourceforge.peers.sip.transport.SipRequest;
 
-public class MiscUtils {
+public class SipUtils {
 	public static SipHeaderFieldName[] sipHeaderList;
 	
 	public static void init(){

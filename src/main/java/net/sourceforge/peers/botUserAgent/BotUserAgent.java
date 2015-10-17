@@ -15,7 +15,7 @@ import javax.script.ScriptException;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
-import net.sourceforge.peers.botUserAgent.misc.MiscUtils;
+import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 import net.sourceforge.peers.javaxsound.BotSoundManager;
 import net.sourceforge.peers.media.MediaManager;
 import net.sourceforge.peers.media.MediaMode;
@@ -295,7 +295,7 @@ public class BotUserAgent implements SipListener {
 						SipRequest sipObject = (SipRequest) arguments[i];
 						obj.put("method"		, sipObject.getMethod());
 						obj.put("requestUri"	, sipObject.getRequestUri().toString());
-						obj.put("from"			, MiscUtils.getFrom(sipObject));
+						obj.put("from"			, SipUtils.getFrom(sipObject));
 						obj.put("sipVersion"	, sipObject.getSipVersion());
 						if(sipObject.getBody()!=null){
 							obj.put("body"			, new String(sipObject.getBody()));
@@ -304,7 +304,7 @@ public class BotUserAgent implements SipListener {
 						sipHeaders =  sipObject.getSipHeaders();
 					}
 					HashMap<String,String> headers = new HashMap<String,String>();
-					for(SipHeaderFieldName hdr :MiscUtils.sipHeaderList){
+					for(SipHeaderFieldName hdr :SipUtils.sipHeaderList){
 						if(sipHeaders.contains(hdr)){
 							headers.put(hdr.getName(), JSONValue.toJSONString(sipHeaders.get(hdr)));
 						}

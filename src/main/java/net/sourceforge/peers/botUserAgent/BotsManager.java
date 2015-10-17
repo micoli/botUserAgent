@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.script.Bindings;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -22,21 +23,20 @@ import javax.script.ScriptException;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
-import net.sourceforge.peers.botUserAgent.interfaces.ConsoleCommands;
-import net.sourceforge.peers.botUserAgent.interfaces.NetworkCommands;
 import net.sourceforge.peers.botUserAgent.logger.CliLogger;
 import net.sourceforge.peers.botUserAgent.logger.CliLoggerOutput;
-import net.sourceforge.peers.botUserAgent.misc.MiscUtils;
+import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 import net.sourceforge.peers.sip.transport.SipRequest;
 
 import org.json.simple.parser.ParseException;
+import org.micoli.commandRunner.CommandRunner;
+import org.micoli.commandRunner.GenericCommands;
+import org.micoli.http.Client;
 
-public class BotsManager implements CliLoggerOutput  {
+public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private HashMap<String, String>			loadedScripts;
 	private HashMap<String, BotUserAgent>	botUserAgents;
 	private Iterator<PeerConfig>			iterator;
-	private ConsoleCommands					consoleCommands;
-	private NetworkCommands					oTCPCommandsReader;
 	private HashMap<String, SipRequest>		sipRequests;
 	private ScriptEngine					engine;
 	private ExecutorService					executorService;
@@ -57,7 +57,7 @@ public class BotsManager implements CliLoggerOutput  {
 	}
 
 	public void storeSipRequest(final SipRequest sipRequest){
-		String callId = MiscUtils.getCallId(sipRequest);
+		String callId = SipUtils.getCallId(sipRequest);
 		if(!sipRequests.containsKey(callId)){
 			sipRequests.put(callId, sipRequest);
 		}
@@ -86,32 +86,40 @@ public class BotsManager implements CliLoggerOutput  {
 		}
 	}
 
-	public void run() throws IOException, ParseException {
-		logger = new CliLogger(this);
-		this.lastCommand = "";
-		this.sipRequests = new HashMap<String, SipRequest>();
-		File workingDirectory = new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
-
-		Runtime.getRuntime().addShutdownHook(new Thread() {
+	private Thread getCleanUp(){
+		return (new Thread() {
 			public void run() {
 				Iterator<Entry<String, BotUserAgent>> it = botUserAgents.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry pair = (Map.Entry)it.next();
 					BotUserAgent botUserAgent = (BotUserAgent) pair.getValue();
 					botUserAgent.unregister();
-					System.out.println(pair.getKey() + " unregistered ");
+					logger.info(pair.getKey() + " unregistered ");
 					it.remove();
 				}
 			}
 		});
+	}
 
-		System.setProperty("user.dir", workingDirectory.toString());
+	public void run() throws IOException, ParseException {
+		File workingDirectory;
+		Bindings engineScope;
+		logger = new CliLogger(this);
+		this.lastCommand	= "";
+		this.sipRequests	= new HashMap<String, SipRequest>();
+		workingDirectory	= new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
+		loadedScripts		= new HashMap<String, String> ();
+		botUserAgents		= new HashMap<String, BotUserAgent> ();
+		engine				= new ScriptEngineManager().getEngineByName("nashorn");
+		engineScope			= engine.getBindings(ScriptContext.ENGINE_SCOPE);
+		executorService		= Executors.newCachedThreadPool();
 
-		executorService = Executors.newCachedThreadPool();
-		engine = new ScriptEngineManager().getEngineByName("nashorn");
-		loadedScripts = new HashMap<String, String> ();
-		botUserAgents = new HashMap<String, BotUserAgent> ();
-		engine.getBindings(ScriptContext.ENGINE_SCOPE).put("workingDirectory", workingDirectory);
+		System.setProperty("user.dir"		, workingDirectory.toString());
+		engineScope.put("window"			, engineScope);
+		engineScope.put("workingDirectory"	, workingDirectory);
+		engineScope.put("http"				, new Client(this.logger));
+
+		Runtime.getRuntime().addShutdownHook(this.getCleanUp());
 		try{
 			Boolean customBindAddr = (!GlobalConfig.config.getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
 
@@ -132,13 +140,11 @@ public class BotsManager implements CliLoggerOutput  {
 				if(customBindAddr){
 					config.setLocalInetAddress(GlobalConfig.config.getInetAddress("bindAddr"));
 				}
-				System.out.println(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
+				logger.info(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
 				botUserAgents.put(config.getId(),new BotUserAgent(this,config,logger));
 			}
-			consoleCommands = new ConsoleCommands(this);
-			consoleCommands.start();
-			oTCPCommandsReader = new NetworkCommands(this);
-			oTCPCommandsReader.start();
+
+			GenericCommands.startInterfaces(this);
 
 		} catch (NullPointerException e) {
 			e.printStackTrace();
@@ -160,12 +166,12 @@ public class BotsManager implements CliLoggerOutput  {
 		if(!botUserAgents.containsKey(tokens[0])){
 			return "Agent ["+tokens[0]+"] not found";
 		}
+
 		lastCommand = command;
 
 		try{
 			botUserAgents.get(tokens[0]).sendCommand(tokens[1],Arrays.copyOfRange(tokens,2,tokens.length));
 		}catch(Exception e){
-			//e.printStackTrace();
 			return "Error : " + e.getMessage();
 		}
 		return "OK";

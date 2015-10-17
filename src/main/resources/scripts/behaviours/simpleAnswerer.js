@@ -1,4 +1,4 @@
-this.behaviours.simpleAnswerer = this.behaviours._default.extend({
+this.behaviours.simpleAnswerer = this.behaviours._default.extnd({
 	registerSuccessful : function(sipResponse,config){
 		var that = this;
 		jsLog(that.id,"registerSuccessful",config.getUserPart()+" |simpleAnswerer");
@@ -13,16 +13,16 @@ this.behaviours.simpleAnswerer = this.behaviours._default.extend({
 			jsLog(that.id,"answer in "+delay,callId);
 			setTimeout(function(){
 				delay = getRandomInt(2500,5000);
-				that.get('ua').acceptCallByCallId(callId);
+				that.ua.acceptCallByCallId(callId);
 				jsLog(that.id,"terminate in "+delay,callId);
 				setTimeout(function(){
-					that.get('ua').hat.get('ua').terminateByCallId(callId);
+					that.ua.terminateByCallId(callId);
 					jsLog(that.id,"hang up",callId);
 				},delay);
 			},delay);
 		}else{
 			jsLog(this.id,"refuse=>busy",callId);
-			that.get('ua').busyByCallId(callId);
+			that.ua.busyByCallId(callId);
 		}
 	}
 });

@@ -1,9 +1,9 @@
-this.behaviours.theHeavyOne = this.behaviours._default.extend({
+this.behaviours.theHeavyOne = this.behaviours._default.extnd({
 	registerSuccessful : function(sipResponse,config){
 		var that = this;
 		jsLog(that.id,"registerSuccessful",config.getUserPart()," |behaviour2");
 		setTimeout(function(){
-			//that.get('ua').call("sip:101@10.80.0.95");
+			//that.ua.call("sip:101@10.80.0.95");
 		},500);
 	},
 
@@ -17,7 +17,7 @@ this.behaviours.theHeavyOne = this.behaviours._default.extend({
 		// 201 call 101@10.80.0.95
 		if(m){
 			setTimeout(function(){
-				that.get('ua').call("sip:"+m[1]+"@10.80.0.95");
+				that.ua.call("sip:"+m[1]+"@10.80.0.95");
 			},500);
 		}
 	}

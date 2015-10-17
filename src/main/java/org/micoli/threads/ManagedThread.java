@@ -1,4 +1,4 @@
-package net.sourceforge.peers.botUserAgent.misc;
+package org.micoli.threads;
 
 public class ManagedThread extends Thread {
 	protected boolean isRunning;

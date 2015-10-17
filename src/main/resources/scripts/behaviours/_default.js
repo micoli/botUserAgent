@@ -1,14 +1,18 @@
-this.behaviours._default = Backbone.Model.extend({
-	defaults: {
-		id		: '',
-		config	: null,
-		ua		: null
-	},
+this.behaviours._default = window.Class.extnd({
+	id		: '',
+	config	: null,
+	ua		: null,
 
-	initialize: function() {
-		jsLog(this.get('id'), "init");
-		this.preInit()
-		this.get('ua').register();
+	init: function(id,config,ua) {
+		print (id,config,ua);
+		var that = this;
+
+		that.id		= id;
+		that.ua		= ua;
+		that.config	= config;
+		jsLog(that.id, "init");
+		that.preInit()
+		that.ua.register();
 	},
 
 	preInit: function() {
@@ -59,7 +63,7 @@ this.behaviours._default = Backbone.Model.extend({
 		jsLog(that.id,"externalCommand ",method);
 		if(method=='call'){
 			// 201 call 101@10.80.0.95
-			that.get('ua').call("sip:"+args[0]);
+			that.ua.call("sip:"+args[0]);
 		}
 	}
 });
