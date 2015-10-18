@@ -32,7 +32,7 @@ public class GlobalConfig{
 	private static FlaggedOption optLogInfo;
 	private static FlaggedOption optLogError;
 	private static FlaggedOption optLogTraceNetwork;
-	
+
 	@SuppressWarnings("rawtypes")
 	public static void showUsage(){
 		System.err.println();
@@ -53,7 +53,7 @@ public class GlobalConfig{
 		ArrayList<PeerConfig> peers= new ArrayList<PeerConfig>();
 		JSONParser parser = new JSONParser();
 		String peersConfFilename = GlobalConfig.config.getString("peersConfigFile");
-		System.out.println("conf "+peersConfFilename);
+		System.out.println("Peers conf :: "+peersConfFilename);
 		Object obj = parser.parse(new FileReader(peersConfFilename));
 
 		JSONObject jsonConf = (JSONObject) obj;

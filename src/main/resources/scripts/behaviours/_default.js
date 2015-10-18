@@ -4,13 +4,11 @@ this.behaviours._default = window.Class.extnd({
 	ua		: null,
 
 	init: function(id,config,ua) {
-		print (id,config,ua);
 		var that = this;
-
 		that.id		= id;
 		that.ua		= ua;
 		that.config	= config;
-		jsLog(that.id, "init");
+		botLog(that.id, "init");
 		that.preInit()
 		that.ua.register();
 	},
@@ -23,44 +21,44 @@ this.behaviours._default = window.Class.extnd({
 	},
 
 	registering : function(sipRequest,config){
-		jsLog(this.id,"registering",config.getUserPart());
+		botLog(this.id,"registering",config.getUserPart());
 	},
 
 	registerSuccessful : function(sipResponse,config){
-		jsLog(this.id,"registerSuccessful",config.getUserPart());
+		botLog(this.id,"registerSuccessful",config.getUserPart());
 	},
 
 	registerFailed : function(sipResponse,config,callId){
-		jsLog(this.id,"registerFailed",config.getUserPart());
+		botLog(this.id,"registerFailed",config.getUserPart());
 	},
 
 	incomingCall : function(sipRequest,provResponse){
-		jsLog(this.id,"incomingCall",sipRequest);
+		botLog(this.id,"incomingCall",sipRequest);
 	},
 
 	remoteHangup : function(sipRequest,callId){
-		jsLog(this.id,"remoteHangup",callId);
+		botLog(this.id,"remoteHangup",callId);
 	},
 
 	ringing : function(sipResponse){
-		jsLog(this.id,"ringing",sipResponse);
+		botLog(this.id,"ringing",sipResponse);
 	},
 
 	calleePickup : function(sipResponse){
-		jsLog(this.id,"calleePickup",sipResponse);
+		botLog(this.id,"calleePickup",sipResponse);
 	},
 
 	error : function(sipResponse){
-		jsLog(this.id,"error",sipResponse);
+		botLog(this.id,"error",sipResponse);
 	},
 
 	setInviteSipRequest : function(sipRequest){
-		jsLog(this.id,"setInviteSipRequest",sipRequest);
+		botLog(this.id,"setInviteSipRequest",sipRequest);
 	},
 
 	externalCommand : function(method, args){
 		var that = this;
-		jsLog(that.id,"externalCommand ",method);
+		botLog(that.id,"externalCommand ",method);
 		if(method=='call'){
 			// 201 call 101@10.80.0.95
 			that.ua.call("sip:"+args[0]);

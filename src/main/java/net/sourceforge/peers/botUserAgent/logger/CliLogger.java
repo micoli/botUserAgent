@@ -45,19 +45,19 @@ public class CliLogger implements Logger {
 
 	public synchronized void debug(String message) {
 		if(!GlobalConfig.config.getBoolean("logDebug")) return;
-		System.out.println(genericLog(message.toString(), "DEBUG"));
+		//System.out.println(genericLog(message.toString(), "DEBUG"));
 		out.javaLog(genericLog(message.toString(), "DEBUG"));
 	}
 
 	public synchronized void info(String message) {
 		if(!GlobalConfig.config.getBoolean("logInfo")) return;
-		System.out.println(genericLog(message.toString(), "INFO"));
+		//System.out.println(genericLog(message.toString(), "INFO"));
 		out.javaLog(genericLog(message.toString(), "INFO"));
 	}
 
 	public synchronized void error(String message) {
 		if(!GlobalConfig.config.getBoolean("logError")) return;
-		System.err.println(genericLog(message.toString(), "ERROR"));
+		//System.err.println(genericLog(message.toString(), "ERROR"));
 		out.javaLog(genericLog(message.toString(), "ERROR"));
 	}
 
@@ -84,7 +84,7 @@ public class CliLogger implements Logger {
 		buf.append("]\n\n");
 		buf.append(message);
 		buf.append("\n");
-		System.out.println(buf.toString());
+		//System.out.println(buf.toString());
 		out.javaNetworkLog(buf.toString());
 	}
 
@@ -97,7 +97,7 @@ public class CliLogger implements Logger {
 		buf.append(Thread.currentThread().getName());
 		buf.append("] ");
 		buf.append(message);
-		buf.append("\n");
+		//buf.append("\n");
 		return buf.toString();
 	}
 }

@@ -43,6 +43,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private Object							botsMutex;
 	private String							lastCommand;
 	private Logger							logger;
+	private Boolean							customBindAddr;
 
 	public ExecutorService getExecutorService() {
 		return executorService;
@@ -81,8 +82,10 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private void loadScript(String sFilename) throws FileNotFoundException, ScriptException{
 		if(!loadedScripts.containsKey(sFilename)){
 			loadedScripts.put(sFilename,sFilename);
-			System.out.println("Script :: "+sFilename);
-			engine.eval(new FileReader(sFilename));
+			System.out.println("load script :: "+sFilename);
+			engine.eval("load('"+sFilename+"');");
+			//nodeServer.run(sFilename);
+			//engine.eval(new FileReader(sFilename));
 		}
 	}
 
@@ -113,6 +116,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		engine				= new ScriptEngineManager().getEngineByName("nashorn");
 		engineScope			= engine.getBindings(ScriptContext.ENGINE_SCOPE);
 		executorService		= Executors.newCachedThreadPool();
+		customBindAddr		= (!GlobalConfig.config.getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
 
 		System.setProperty("user.dir"		, workingDirectory.toString());
 		engineScope.put("window"			, engineScope);
@@ -120,13 +124,10 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		engineScope.put("http"				, new Client(this.logger));
 
 		Runtime.getRuntime().addShutdownHook(this.getCleanUp());
+		List<PeerConfig> peersList = GlobalConfig.readPeersConf();
 		try{
-			Boolean customBindAddr = (!GlobalConfig.config.getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
-
 			loadScript(workingDirectory.toString() + "/run.js");
 			loadScript(workingDirectory.toString() + "/behaviours/_default.js");
-
-			List<PeerConfig> peersList = GlobalConfig.readPeersConf();
 
 			iterator = peersList.iterator();
 			while (iterator.hasNext()) {
