@@ -94,13 +94,11 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private Thread getCleanUp(){
 		return (new Thread() {
 			public void run() {
-				Iterator<Entry<String, BotUserAgent>> it = botUserAgents.entrySet().iterator();
-				while (it.hasNext()) {
-					Map.Entry pair = (Map.Entry)it.next();
-					BotUserAgent botUserAgent = (BotUserAgent) pair.getValue();
+				for (Map.Entry<String, BotUserAgent> entry : botUserAgents.entrySet()) {
+					String sId = entry.getKey();
+					BotUserAgent botUserAgent = entry.getValue();
 					botUserAgent.unregister();
-					logger.info(pair.getKey() + " unregistered ");
-					it.remove();
+					logger.info(sId + " unregistered ");
 				}
 			}
 		});
@@ -214,16 +212,16 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	public String getStatus(String key) {
 		if(key.equalsIgnoreCase("list")){
 			JSONArray list = new JSONArray();
-			Iterator<Entry<String, BotUserAgent>> it = botUserAgents.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry pair = (Map.Entry)it.next();
-				BotUserAgent botUserAgent = (BotUserAgent) pair.getValue();
-				list.add(new JSONObject(){
-					String id = pair.getKey().toString();
-				});
-				logger.info(pair.getKey() + " listed ");
-				it.remove();
+			for (Map.Entry<String, BotUserAgent> entry : botUserAgents.entrySet()) {
+				String id = entry.getKey();
+				BotUserAgent botUserAgent = entry.getValue();
+				JSONObject o = new JSONObject();
+				o.put("id", id);
+				//o.put("id", botUserAgent.);
+				list.add(o);
+				System.out.println(id + " listed ");
 			}
+
 			return list.toJSONString();
 		}
 		return null;

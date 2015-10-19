@@ -43,7 +43,8 @@ public class HttpCommandsServer extends NanoHTTPD {
 		return new NanoHTTPD.Response(html);
 	}
 
-	public void setCommandRunner(CommandRunner commandRunner) {
-		this.commandRunner = commandRunner;
+
+	public void setCommandRunner(CommandRunner commandRunner2) {
+		this.commandRunner = commandRunner2;
 	}
 }
