@@ -8,8 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.peers.botUserAgent.Main;
-import net.sourceforge.peers.sip.RFC3261;
-import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldName;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

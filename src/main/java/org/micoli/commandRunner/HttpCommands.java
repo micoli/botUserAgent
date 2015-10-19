@@ -5,14 +5,13 @@ import java.io.IOException;
 
 public class HttpCommands extends GenericCommands {
 
-	public HttpCommands(CommandRunner commandRunner) {
-		super(commandRunner);
+	public HttpCommands(Executor executor) {
+		super(executor);
 	}
 
 	public void run() {
 		try {
-			HttpCommandsServer httpCommandsServer = new HttpCommandsServer();
-			httpCommandsServer.setCommandRunner(commandRunner);
+			HttpCommandsServer httpCommandsServer = new HttpCommandsServer(executor);
 			httpCommandsServer.start();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 import org.micoli.threads.ManagedThread;
 
 public class ConsoleCommands extends GenericCommands {
-	public ConsoleCommands(CommandRunner commandRunner) {
-		super(commandRunner);
+	public ConsoleCommands(Executor executor) {
+		super(executor);
 	}
 
 	public void run() {
@@ -23,8 +23,7 @@ public class ConsoleCommands extends GenericCommands {
 				e.printStackTrace();
 				break;
 			}
-			command = command.trim();
-			System.out.println(commandRunner.runCommand(command));
+			System.out.println(executor.executeCommand(command.trim()));
 		}
 	}
 }

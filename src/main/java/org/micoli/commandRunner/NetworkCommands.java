@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.micoli.threads.ManagedThread;
-
 
 public class NetworkCommands extends GenericCommands {
-	public NetworkCommands(CommandRunner commandRunner) {
-		super(commandRunner);
+	public NetworkCommands(Executor executor) {
+		super(executor);
 	}
 
 	@Override
@@ -20,7 +18,7 @@ public class NetworkCommands extends GenericCommands {
 			Soc = new ServerSocket(5217);
 			while(isRunning()){
 				Socket CSoc=Soc.accept();
-				new NetworkCommandsClient(CSoc,this.commandRunner);
+				new NetworkCommandsClient(CSoc,this.executor);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

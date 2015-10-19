@@ -6,7 +6,7 @@ load(workingDirectory+'/libs/promises.js');
 load(workingDirectory+'/libs/extnd.js');
 
 JSONObject = Packages.org.json.simple.JSONObject;
-
+CommandArgs = org.micoli.commandRunner.CommandArgs;
 this.bots = {};
 
 this.behaviours = {};

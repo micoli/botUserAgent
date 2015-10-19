@@ -9,7 +9,10 @@ this.behaviours._default = window.Class.extnd({
 		that.ua		= ua;
 		that.config	= config;
 		botLog(that.id, "init");
-		that.preInit()
+		console.log(that.ua.ping(new CommandArgs(new JSONObject({
+			"val1":1
+		}))));
+		that.preInit();
 		that.ua.register();
 	},
 

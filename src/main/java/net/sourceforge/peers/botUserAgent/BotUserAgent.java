@@ -1,5 +1,4 @@
 package net.sourceforge.peers.botUserAgent;
-//hashmap by callid
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,18 +31,24 @@ import net.sourceforge.peers.sip.transport.SipResponse;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.micoli.commandRunner.CommandArgs;
+import org.micoli.commandRunner.CommandRoute;
+import org.micoli.commandRunner.CommandRunner;
+import org.micoli.commandRunner.Executor;
 
-public class BotUserAgent implements SipListener {
+public class BotUserAgent implements SipListener,CommandRunner {
 	private BotsManager					botsManager;
 	private ScheduledExecutorService	scheduledExecutor;
 	private UserAgent					userAgent;
 	private Logger						logger;
 	private PeerConfig					config;
+	private Executor					executor;
 
 	public BotUserAgent(BotsManager botsManager,PeerConfig config,Logger logger) {
 		this.botsManager	= botsManager;
 		this.logger			= logger;
 		this.config			= config;
+		this.executor		= new Executor(this);
 
 		BotSoundManager javaxSoundManager = new BotSoundManager(logger);
 
@@ -65,10 +70,19 @@ public class BotUserAgent implements SipListener {
 
 	}
 
+	@CommandRoute(value="ping", args={"to"})
+	public String ping(CommandArgs commandArgs) {
+		System.out.println( commandArgs.getDefault("val1", "_VAL1")+" "+commandArgs.getDefault("val2", "_VAL2"));
+		return "eeee";
+
+	}
+	public String execute(String route, CommandArgs commandArgs) {
+		return this.executor.execute(route, commandArgs);
+	}
+
 	public void instantiatePeers() {
 		try {
 			String ipAddress = GlobalConfig.config.getInetAddress("bindAddr").toString().replaceAll("/", "");
-			String peersHome = Utils.DEFAULT_PEERS_HOME;
 			final BotSoundManager soundManager = new BotSoundManager(logger);
 			InetAddress inetAddress;
 			try {
@@ -116,8 +130,9 @@ public class BotUserAgent implements SipListener {
 		});
 	}
 
-	// commands methods
-	public void call(final String callee) {
+	@CommandRoute(value="call", args={"to"})
+	public void call(final CommandArgs commandArgs) {
+		String callee = ((!commandArgs.get("to").startsWith("sip:"))?"sip:":"")+commandArgs.get("to");
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				try {
@@ -365,10 +380,10 @@ public class BotUserAgent implements SipListener {
 		});
 	}
 
-	public boolean sendCommand(String command, String[] args) {
-		JSCallback("externalCommand", new Object[] {command,args});
+	/*public boolean sendCommand(String command, CommandArgs commandArgs) {
+		JSCallback("externalCommand", new Object[] {command,commandArgs});
 		return true;
-	}
+	}*/
 
 	public void exec(String bin) {
 		botsManager.getExecutorService().submit(new Runnable() {

@@ -8,10 +8,10 @@ import org.micoli.threads.ManagedThread;
 import org.reflections.Reflections;
 
 public class GenericCommands extends ManagedThread{
-	protected CommandRunner	commandRunner;
+	protected Executor executor;
 
-	public GenericCommands(CommandRunner commandRunner) {
-		this.commandRunner = commandRunner;
+	public GenericCommands(Executor executor) {
+		this.executor=executor;
 	}
 
 	public static void startInterfaces(CommandRunner commandRunner) {
@@ -19,14 +19,16 @@ public class GenericCommands extends ManagedThread{
 	}
 
 	public static void startInterfaces(CommandRunner commandRunner,String mask) {
+		Executor executor = new Executor(commandRunner);
+
 		mask = mask.toLowerCase();
 		Reflections reflections = new Reflections("org.micoli.commandRunner");
 		Set<Class<? extends GenericCommands>> classes = reflections.getSubTypesOf(GenericCommands.class);
 		for(Class<?> clas:classes){
 			if(mask.equalsIgnoreCase("*") || classes.getClass().getName().toLowerCase().contains(mask)){
 				try {
-					Constructor<?> constructor	= clas.getConstructor(CommandRunner.class);
-					GenericCommands instance	= (GenericCommands) constructor.newInstance(commandRunner);
+					Constructor<?> constructor	= clas.getConstructor(Executor.class);
+					GenericCommands instance	= (GenericCommands) constructor.newInstance(executor);
 					instance.start();
 				} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 					e.printStackTrace();

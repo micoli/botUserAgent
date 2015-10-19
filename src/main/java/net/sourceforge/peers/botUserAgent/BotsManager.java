@@ -2,14 +2,11 @@ package net.sourceforge.peers.botUserAgent;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,10 +28,13 @@ import net.sourceforge.peers.sip.transport.SipRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.micoli.commandRunner.CommandArgs;
+import org.micoli.commandRunner.CommandRoute;
 import org.micoli.commandRunner.CommandRunner;
 import org.micoli.commandRunner.GenericCommands;
 import org.micoli.http.Client;
-
+//http://127.0.0.1:8081/cmd/list
+//http://127.0.0.1:8081/cmd/bot?action=call&from=6000&to=6001@192.168.1.26
 public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private HashMap<String, String>			loadedScripts;
 	private HashMap<String, BotUserAgent>	botUserAgents;
@@ -43,7 +43,6 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private ScriptEngine					engine;
 	private ExecutorService					executorService;
 	private Object							botsMutex;
-	private String							lastCommand;
 	private Logger							logger;
 	private Boolean							customBindAddr;
 
@@ -108,7 +107,6 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		File workingDirectory;
 		Bindings engineScope;
 		logger = new CliLogger(this);
-		this.lastCommand	= "";
 		this.sipRequests	= new HashMap<String, SipRequest>();
 		workingDirectory	= new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
 		loadedScripts		= new HashMap<String, String> ();
@@ -156,6 +154,20 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		}
 	}
 
+	@CommandRoute(value="bot",args={"from","action"})
+	public String runBotCommand(CommandArgs commandArgs) {
+		String botId = commandArgs.getDefault("from", "0");
+		if(!botUserAgents.containsKey(botId)){
+			return "Agent ["+botId+"] not found";
+		}
+		try{
+			return botUserAgents.get(botId).execute(commandArgs.get("action"),commandArgs);
+		}catch(Exception e){
+			return "Error : " + e.getMessage();
+		}
+	}
+
+	/*
 	public String runCommand(String command) {
 		if(command.equalsIgnoreCase("r") && !lastCommand.equalsIgnoreCase("")){
 			command = lastCommand;
@@ -176,7 +188,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 			return "Error : " + e.getMessage();
 		}
 		return "OK";
-	}
+	}*/
 
 	//CliLoggerOutput
 	public void javaLog(final String message) {
@@ -208,23 +220,17 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	}
 
 	@SuppressWarnings({ "unchecked", "unused", "rawtypes", "serial" })
-	@Override
-	public String getStatus(String key) {
-		if(key.equalsIgnoreCase("list")){
-			JSONArray list = new JSONArray();
-			for (Map.Entry<String, BotUserAgent> entry : botUserAgents.entrySet()) {
-				String id = entry.getKey();
-				BotUserAgent botUserAgent = entry.getValue();
-				JSONObject o = new JSONObject();
-				o.put("id", id);
-				//o.put("id", botUserAgent.);
-				list.add(o);
-				System.out.println(id + " listed ");
-			}
-
-			return list.toJSONString();
+	@CommandRoute(value="list")
+	public String list(CommandArgs args) {
+		JSONArray list = new JSONArray();
+		for (Map.Entry<String, BotUserAgent> entry : botUserAgents.entrySet()) {
+			String id = entry.getKey();
+			//BotUserAgent botUserAgent = entry.getValue();
+			JSONObject o = new JSONObject();
+			o.put("id", id);
+			list.add(o);
 		}
-		return null;
-	}
 
+		return list.toJSONString();
+	}
 }

@@ -9,12 +9,12 @@ import org.micoli.threads.ManagedThread;
 
 class NetworkCommandsClient extends ManagedThread{
 	private Socket				ClientSocket;
-	private CommandRunner		commandRunner;
+	private Executor			executor;
 	private BufferedReader		streamIn;
 	private DataOutputStream	streamOut;
 
-	NetworkCommandsClient(Socket clientSocket,CommandRunner commandRunner)  throws Exception{
-		this.commandRunner = commandRunner;
+	NetworkCommandsClient(Socket clientSocket,Executor executor)  throws Exception{
+		this.executor = executor;;
 		this.ClientSocket = clientSocket;
 		this.streamIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		this.streamOut = new DataOutputStream(clientSocket.getOutputStream());
@@ -37,7 +37,7 @@ class NetworkCommandsClient extends ManagedThread{
 				if (command==null || command.equals("quit")){
 					isRunning=false;
 				}else{
-					streamOut.writeUTF(commandRunner.runCommand(command)+"\n>");
+					streamOut.writeUTF(executor.executeCommand(command)+"\n>");
 				}
 			}
 			ClientSocket.close();
