@@ -28,6 +28,8 @@ import net.sourceforge.peers.botUserAgent.logger.CliLoggerOutput;
 import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 import net.sourceforge.peers.sip.transport.SipRequest;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.micoli.commandRunner.CommandRunner;
 import org.micoli.commandRunner.GenericCommands;
@@ -205,6 +207,26 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 			System.err.println("JS Error : "+ method + ", args " + arguments+" "+e.getFileName()+"("+e.getLineNumber()+','+e.getColumnNumber() +")");
 			e.printStackTrace();
 		}
+	}
+
+	@SuppressWarnings({ "unchecked", "unused", "rawtypes", "serial" })
+	@Override
+	public String getStatus(String key) {
+		if(key.equalsIgnoreCase("list")){
+			JSONArray list = new JSONArray();
+			Iterator<Entry<String, BotUserAgent>> it = botUserAgents.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry)it.next();
+				BotUserAgent botUserAgent = (BotUserAgent) pair.getValue();
+				list.add(new JSONObject(){
+					String id = pair.getKey().toString();
+				});
+				logger.info(pair.getKey() + " listed ");
+				it.remove();
+			}
+			return list.toJSONString();
+		}
+		return null;
 	}
 
 }
