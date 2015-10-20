@@ -1,8 +1,13 @@
 package org.micoli.commandRunner;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
+import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import fi.iki.elonen.NanoHTTPD;
 
 
@@ -16,12 +21,14 @@ public class HttpCommandsServer extends NanoHTTPD {
 		this.executor=executor;
 	}
 
-	@Override
-	public Response serve(IHTTPSession session) {
+	private String readFile(String path, Charset encoding)	 throws IOException{
+		byte[] encoded = Files.readAllBytes(Paths.get(path));
+		return new String(encoded, encoding);
+	}
 
+	public Response serve(IHTTPSession session) {
 		Method method = session.getMethod();
 		String uri = session.getUri();
-		Map<String, String> parms = session.getParms();
 		System.out.println(method + " '" + uri + "' ");
 		String html = "";
 
@@ -30,19 +37,19 @@ public class HttpCommandsServer extends NanoHTTPD {
 			if(executor.hasCommand(subMethod)){
 				html = executor.execute(subMethod, new CommandArgs(session.getParms()));
 			}else{
-				System.out.println("No such command : "+subMethod);
+				html = "No such command : "+subMethod;
 			}
 		}else{
-			html += "<html><body><h1>Hello server</h1>\n";
-			if (parms.get("username") == null){
-				html +="<form action='?' method='get'>\n" +
-						"  <p>Your name: <input type='text' name='username'></p>\n" +
-						"</form>\n";
-			}else{
-				html += "<p>Hello, " + parms.get("username") + "!</p>";
+			if(uri.equals("/")){
+				uri="/index.html";
 			}
-
-			html += "</body></html>\n";
+			String filename = "../www"+uri;
+			File f = new File(filename);
+			try {
+				html = readFile(f.getAbsoluteFile().getCanonicalPath(), Charset.defaultCharset());
+			} catch (IOException e) {
+				html = "404 "+uri+" "+e.getMessage();
+			}
 		}
 		return new NanoHTTPD.Response(html);
 	}
