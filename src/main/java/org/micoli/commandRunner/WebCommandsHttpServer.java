@@ -5,19 +5,18 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
 
-import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import fi.iki.elonen.NanoHTTPD;
 
 
 
-public class HttpCommandsServer extends NanoHTTPD {
+public class WebCommandsHttpServer extends NanoHTTPD {
 	private String cmdPrefix="/cmd/";
 	private Executor executor;
-
-	public HttpCommandsServer(Executor executor) throws IOException {
+	//private WebSocketResponseHandler responseHandler;
+	public WebCommandsHttpServer(Executor executor) throws IOException {
 		super(8081);
+	//	responseHandler = new WebSocketResponseHandler(webSocketFactory);
 		this.executor=executor;
 	}
 
@@ -29,7 +28,7 @@ public class HttpCommandsServer extends NanoHTTPD {
 	public Response serve(IHTTPSession session) {
 		Method method = session.getMethod();
 		String uri = session.getUri();
-		System.out.println(method + " '" + uri + "' ");
+		//System.out.println(method + " '" + uri + "' ");
 		String html = "";
 
 		if(uri.startsWith(cmdPrefix)){

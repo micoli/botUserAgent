@@ -66,6 +66,11 @@
 			<artifactId>nanohttpd</artifactId>
 			<version>2.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.nanohttpd</groupId>
+			<artifactId>nanohttpd-websocket</artifactId>
+			<version>2.1.0</version>
+		</dependency>
 
 <!-- 		<dependency> -->
 <!-- 			<groupId>io.nodyn</groupId> -->

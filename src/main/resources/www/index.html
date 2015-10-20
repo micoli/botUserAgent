@@ -1,10 +1,31 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>botUserAgent</title>
-</head>
-<body>
+	<head>
+		<meta http-equiv="Content-Language" content="fr" />
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+		<title>botUserAgent</title>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
+		<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/styles/github.min.css">
+		<script src="http://code.angularjs.org/1.2.13/angular.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.8/angular-ui-router.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
+		<script src="//code.jquery.com/jquery-2.1.4.js"></script>
+		<script src="script.js"></script>
+	</head>
 
-</body>
+	<body ng-app="botUserAgentApp">
+		<nav class="navbar navbar-default"  role="navigation">
+			<div class="navbar-header">
+				<a class="navbar-brand" ui-sref="#">botUserAgent</a>
+			</div>
+			<ul class="nav navbar-nav navbar-right">
+				<li><a ui-sref="home"><i class="fa fa-home"></i>Home</a></li>
+				<li><a ui-sref="about"><i class="fa fa-shield"></i>About</a></li>
+			</ul>
+		</nav>
+		<div class="container">
+			<div ui-view></div>
+		</div>
+	</body>
 </html>

@@ -1,0 +1,32 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<form class="form-inline">
+			<div class="form-group">
+				<label for="callfrom">From</label>
+				<input class="form-control" id="callfrom" placeholder="from" ng-model="call.from">
+			</div>
+			<div class="form-group">
+				<label for="callto">To</label>
+				<input class="form-control" id="callto" placeholder="xxx@serverIp" ng-model="call.to">
+			</div>
+			<button type="submit" class="btn btn-default pull-right" ng-click="call(call)">Call</button>
+		</form>
+	</div>
+	<div class="panel-body">
+		<i>{{ callUrl }}</i>
+		<code>{{ callResult }}</code>
+	</div>
+</div>
+
+<div class="panel panel-default">
+	<div class="panel-heading">Bots <button type="submit" class="btn btn-default pull-right" ng-click="refresh()">refresh</button></div>
+	<table class="table">
+		<tr ng-repeat="bot in bots track by $index">
+			<td>{{ bot.id }}</td>
+			<td>{{ bot.status }}</td>
+		</tr>
+	</table>
+</div>
+
+
+
