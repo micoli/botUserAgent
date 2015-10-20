@@ -29,7 +29,7 @@ public class HttpCommandsServer extends NanoHTTPD {
 	public Response serve(IHTTPSession session) {
 		Method method = session.getMethod();
 		String uri = session.getUri();
-		System.out.println(method + " '" + uri + "' ");
+		//System.out.println(method + " '" + uri + "' ");
 		String html = "";
 
 		if(uri.startsWith(cmdPrefix)){

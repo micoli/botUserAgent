@@ -33,8 +33,6 @@ import org.micoli.commandRunner.CommandRoute;
 import org.micoli.commandRunner.CommandRunner;
 import org.micoli.commandRunner.GenericCommands;
 import org.micoli.http.Client;
-//http://127.0.0.1:8081/cmd/list
-//http://127.0.0.1:8081/cmd/bot?action=call&from=6000&to=6001@192.168.1.26
 public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private HashMap<String, String>			loadedScripts;
 	private HashMap<String, BotUserAgent>	botUserAgents;
@@ -225,9 +223,10 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		JSONArray list = new JSONArray();
 		for (Map.Entry<String, BotUserAgent> entry : botUserAgents.entrySet()) {
 			String id = entry.getKey();
-			//BotUserAgent botUserAgent = entry.getValue();
+			BotUserAgent botUserAgent = entry.getValue();
 			JSONObject o = new JSONObject();
 			o.put("id", id);
+			o.put("status", botUserAgent.getStatus());
 			list.add(o);
 		}
 

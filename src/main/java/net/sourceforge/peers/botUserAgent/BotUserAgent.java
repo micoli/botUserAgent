@@ -43,6 +43,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	private Logger						logger;
 	private PeerConfig					config;
 	private Executor					executor;
+	private String 						status;
 
 	public BotUserAgent(BotsManager botsManager,PeerConfig config,Logger logger) {
 		this.botsManager	= botsManager;
@@ -60,7 +61,6 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 		botsManager.JSExec("initBot",new Object[] {this.config.getId(), this.config,this});
 
-
 		scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 		scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
 			public void run() {
@@ -68,6 +68,14 @@ public class BotUserAgent implements SipListener,CommandRunner {
 			}
 		}, 20, 20, TimeUnit.SECONDS);
 
+	}
+
+	public String getStatus(){
+		return status;
+	}
+
+	private void setStatus(String status) {
+		this.status = status;
 	}
 
 	@CommandRoute(value="ping", args={"to"})
@@ -133,6 +141,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	@CommandRoute(value="call", args={"to"})
 	public void call(final CommandArgs commandArgs) {
 		String callee = ((!commandArgs.get("to").startsWith("sip:"))?"sip:":"")+commandArgs.get("to");
+		this.setStatus("call "+callee);
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				try {
@@ -145,9 +154,10 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void acceptCall(final SipRequest sipRequest) {
+		String callId = Utils.getMessageCallId(sipRequest);
+		this.setStatus("acceptCall "+callId);
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
-				String callId = Utils.getMessageCallId(sipRequest);
 				DialogManager dialogManager = userAgent.getDialogManager();
 				Dialog dialog = dialogManager.getDialog(callId);
 				userAgent.acceptCall(sipRequest, dialog);
@@ -157,6 +167,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	public void acceptCallByCallId(final String callId) {
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
+		this.setStatus("acceptCallByCallId "+callId);
 		if(oSIPRequest != null){
 			botsManager.getExecutorService().submit(new Runnable() {
 				public void run() {
@@ -169,6 +180,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void invite(final String uri) {
+		this.setStatus("invite "+uri);
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				String callId = Utils.generateCallID(userAgent.getConfig().getLocalInetAddress());
@@ -185,6 +197,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void unregister() {
+		this.setStatus("unregister");
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				try {
@@ -197,6 +210,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void terminate(SipRequest sipRequest) {
+		this.setStatus("terminate "+sipRequest.getRequestUri());
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				userAgent.terminate(sipRequest);
@@ -205,6 +219,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void terminateByCallId(String callId) {
+		this.setStatus("terminateByCallId "+callId);
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		if(oSIPRequest != null){
 			terminate(oSIPRequest);
@@ -212,9 +227,10 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void pickup(final SipRequest sipRequest) {
+		String callId = Utils.getMessageCallId(sipRequest);
+		this.setStatus("pickup "+callId);
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
-				String callId = Utils.getMessageCallId(sipRequest);
 				DialogManager dialogManager = userAgent.getDialogManager();
 				Dialog dialog = dialogManager.getDialog(callId);
 				userAgent.acceptCall(sipRequest, dialog);
@@ -223,6 +239,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void pickupByCallId(String callId) {
+		this.setStatus("pickupByCallId "+callId);
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		if(oSIPRequest != null){
 			pickup(oSIPRequest);
@@ -230,6 +247,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void busy(final SipRequest sipRequest) {
+		this.setStatus("busy "+sipRequest.getRequestUri());
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				userAgent.rejectCall(sipRequest);
@@ -238,6 +256,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void busyByCallId(String callId) {
+		this.setStatus("busyByCallId "+callId);
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		if(oSIPRequest != null){
 			busy(oSIPRequest);
@@ -338,37 +357,45 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	// SipListener methods
 	public void registering(SipRequest sipRequest) {
+		this.setStatus("registering");
 		JSCallback("registering",new Object[] { sipRequest,config});
 		this.botsManager.removeSipRequest(Utils.getMessageCallId(sipRequest));
 	}
 
 	public void registerSuccessful(SipResponse sipResponse) {
+		this.setStatus("registerSuccessful");
 		JSCallback("registerSuccessful",new Object[] { sipResponse,config});
 	}
 
 	public void registerFailed(SipResponse sipResponse) {
+		this.setStatus("registerFailed");
 		JSCallback("registerFailed",new Object[] { sipResponse,config});
 	}
 
 	public void incomingCall(SipRequest sipRequest, SipResponse provResponse) {
+		this.setStatus("incomingCall");
 		botsManager.storeSipRequest(sipRequest);
 		JSCallback("incomingCall",new Object[] { sipRequest,provResponse,Utils.getMessageCallId(sipRequest)});
 	}
 
 	public void remoteHangup(SipRequest sipRequest) {
+		this.setStatus("remoteHangup");
 		JSCallback("remoteHangup",new Object[] { sipRequest,Utils.getMessageCallId(sipRequest)});
 		this.botsManager.removeSipRequest(Utils.getMessageCallId(sipRequest));
 	}
 
 	public void ringing(SipResponse sipResponse) {
+		this.setStatus("ringing");
 		JSCallback("ringing",new Object[] {  sipResponse});
 	}
 
 	public void calleePickup(SipResponse sipResponse) {
+		this.setStatus("calleePickup");
 		JSCallback("calleePickup",new Object[] { sipResponse});
 	}
 
 	public void error(SipResponse sipResponse) {
+		this.setStatus("error");
 		JSCallback("error",new Object[] { sipResponse});
 	}
 
