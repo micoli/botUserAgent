@@ -1,5 +1,5 @@
 angular
-.module('botUserAgentApp', ['ui.router']);
+.module('botUserAgentApp', ['ui.router','ngWebSocket']);
 
 angular
 .module('botUserAgentApp')
@@ -21,8 +21,36 @@ angular
 
 angular
 .module('botUserAgentApp')
-.controller('botsController', ['$scope','$http',function($scope,$http) {
+.factory('WSStream', ['$websocket',function($websocket) {
+	// Open a WebSocket connection
+	var dataStream = $websocket('ws://127.0.0.1:8081/');
+
+	var collection = [];
+
+	dataStream.onMessage(function(message) {
+		console.log(message.data);
+		//collection.push(JSON.parse(message.data));
+	});
+
+	var methods = {
+		collection: collection,
+		get: function() {
+			dataStream.send('/'/*JSON.stringify({
+				action: 'get'
+			})*/);
+		}
+	};
+
+	return methods;
+}]);
+
+angular
+.module('botUserAgentApp')
+.controller('botsController', ['$scope','$http','WSStream',function($scope,$http,WSStream) {
 	$scope.bots = [];
+	$scope.WSStream=WSStream;
+
+	//WSStream.get();
 
 	$scope.refresh = function(){
 		$http

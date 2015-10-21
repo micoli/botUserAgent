@@ -11,7 +11,7 @@ public class WebCommands extends GenericCommands {
 
 	public void run() {
 		try {
-			WebCommandsHttpServer webCommandsHttpServer = new WebCommandsHttpServer(executor);
+			WebCommandsHttpServer webCommandsHttpServer = new WebCommandsHttpServer(executor,8081);
 			webCommandsHttpServer.start();
 		} catch (IOException e) {
 			e.printStackTrace();

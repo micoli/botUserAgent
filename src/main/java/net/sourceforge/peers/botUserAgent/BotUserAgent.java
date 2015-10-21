@@ -43,7 +43,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	private Logger						logger;
 	private PeerConfig					config;
 	private Executor					executor;
-	private String 						status;
+	private String 						lastStatus;
 
 	public BotUserAgent(BotsManager botsManager,PeerConfig config,Logger logger) {
 		this.botsManager	= botsManager;
@@ -70,20 +70,23 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	}
 
-	public String getStatus(){
-		return status;
+	public Dialog getActiveCall(){
+		for (Dialog dialog : this.userAgent.getDialogManager().getDialogCollection()) {
+			if (dialog.getRemoteUri() != null && !dialog.getState().equals(dialog.TERMINATED)) {
+				return dialog;
+			}
+		}
+		return null;
 	}
 
-	private void setStatus(String status) {
-		this.status = status;
+	public String getLastStatus(){
+		return lastStatus;
 	}
 
-	@CommandRoute(value="ping", args={"to"})
-	public String ping(CommandArgs commandArgs) {
-		System.out.println( commandArgs.getDefault("val1", "_VAL1")+" "+commandArgs.getDefault("val2", "_VAL2"));
-		return "eeee";
-
+	private void setLastStatus(String lastStatus) {
+		this.lastStatus = lastStatus;
 	}
+
 	public String execute(String route, CommandArgs commandArgs) {
 		return this.executor.execute(route, commandArgs);
 	}
@@ -141,7 +144,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	@CommandRoute(value="call", args={"to"})
 	public void call(final CommandArgs commandArgs) {
 		String callee = ((!commandArgs.get("to").startsWith("sip:"))?"sip:":"")+commandArgs.get("to");
-		this.setStatus("call "+callee);
+		this.setLastStatus("call "+callee);
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				try {
@@ -155,7 +158,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	public void acceptCall(final SipRequest sipRequest) {
 		String callId = Utils.getMessageCallId(sipRequest);
-		this.setStatus("acceptCall "+callId);
+		this.setLastStatus("acceptCall "+callId);
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				DialogManager dialogManager = userAgent.getDialogManager();
@@ -167,7 +170,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	public void acceptCallByCallId(final String callId) {
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
-		this.setStatus("acceptCallByCallId "+callId);
+		this.setLastStatus("acceptCallByCallId "+callId);
 		if(oSIPRequest != null){
 			botsManager.getExecutorService().submit(new Runnable() {
 				public void run() {
@@ -180,7 +183,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void invite(final String uri) {
-		this.setStatus("invite "+uri);
+		this.setLastStatus("invite "+uri);
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				String callId = Utils.generateCallID(userAgent.getConfig().getLocalInetAddress());
@@ -197,7 +200,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void unregister() {
-		this.setStatus("unregister");
+		this.setLastStatus("unregister");
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				try {
@@ -210,7 +213,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void terminate(SipRequest sipRequest) {
-		this.setStatus("terminate "+sipRequest.getRequestUri());
+		this.setLastStatus("terminate "+sipRequest.getRequestUri());
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				userAgent.terminate(sipRequest);
@@ -219,7 +222,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void terminateByCallId(String callId) {
-		this.setStatus("terminateByCallId "+callId);
+		this.setLastStatus("terminateByCallId "+callId);
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		if(oSIPRequest != null){
 			terminate(oSIPRequest);
@@ -228,7 +231,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	public void pickup(final SipRequest sipRequest) {
 		String callId = Utils.getMessageCallId(sipRequest);
-		this.setStatus("pickup "+callId);
+		this.setLastStatus("pickup "+callId);
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				DialogManager dialogManager = userAgent.getDialogManager();
@@ -239,7 +242,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void pickupByCallId(String callId) {
-		this.setStatus("pickupByCallId "+callId);
+		this.setLastStatus("pickupByCallId "+callId);
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		if(oSIPRequest != null){
 			pickup(oSIPRequest);
@@ -247,7 +250,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void busy(final SipRequest sipRequest) {
-		this.setStatus("busy "+sipRequest.getRequestUri());
+		this.setLastStatus("busy "+sipRequest.getRequestUri());
 		botsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				userAgent.rejectCall(sipRequest);
@@ -256,7 +259,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void busyByCallId(String callId) {
-		this.setStatus("busyByCallId "+callId);
+		this.setLastStatus("busyByCallId "+callId);
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		if(oSIPRequest != null){
 			busy(oSIPRequest);
@@ -357,45 +360,45 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	// SipListener methods
 	public void registering(SipRequest sipRequest) {
-		this.setStatus("registering");
+		this.setLastStatus("registering");
 		JSCallback("registering",new Object[] { sipRequest,config});
 		this.botsManager.removeSipRequest(Utils.getMessageCallId(sipRequest));
 	}
 
 	public void registerSuccessful(SipResponse sipResponse) {
-		this.setStatus("registerSuccessful");
+		this.setLastStatus("registerSuccessful");
 		JSCallback("registerSuccessful",new Object[] { sipResponse,config});
 	}
 
 	public void registerFailed(SipResponse sipResponse) {
-		this.setStatus("registerFailed");
+		this.setLastStatus("registerFailed");
 		JSCallback("registerFailed",new Object[] { sipResponse,config});
 	}
 
 	public void incomingCall(SipRequest sipRequest, SipResponse provResponse) {
-		this.setStatus("incomingCall");
+		this.setLastStatus("incomingCall");
 		botsManager.storeSipRequest(sipRequest);
 		JSCallback("incomingCall",new Object[] { sipRequest,provResponse,Utils.getMessageCallId(sipRequest)});
 	}
 
 	public void remoteHangup(SipRequest sipRequest) {
-		this.setStatus("remoteHangup");
+		this.setLastStatus("remoteHangup");
 		JSCallback("remoteHangup",new Object[] { sipRequest,Utils.getMessageCallId(sipRequest)});
 		this.botsManager.removeSipRequest(Utils.getMessageCallId(sipRequest));
 	}
 
 	public void ringing(SipResponse sipResponse) {
-		this.setStatus("ringing");
+		this.setLastStatus("ringing");
 		JSCallback("ringing",new Object[] {  sipResponse});
 	}
 
 	public void calleePickup(SipResponse sipResponse) {
-		this.setStatus("calleePickup");
+		this.setLastStatus("calleePickup");
 		JSCallback("calleePickup",new Object[] { sipResponse});
 	}
 
 	public void error(SipResponse sipResponse) {
-		this.setStatus("error");
+		this.setLastStatus("error");
 		JSCallback("error",new Object[] { sipResponse});
 	}
 
@@ -406,11 +409,6 @@ public class BotUserAgent implements SipListener,CommandRunner {
 			}
 		});
 	}
-
-	/*public boolean sendCommand(String command, CommandArgs commandArgs) {
-		JSCallback("externalCommand", new Object[] {command,commandArgs});
-		return true;
-	}*/
 
 	public void exec(String bin) {
 		botsManager.getExecutorService().submit(new Runnable() {
@@ -426,4 +424,14 @@ public class BotUserAgent implements SipListener,CommandRunner {
 			}
 		});
 	}
+
+	@CommandRoute(value="ping", args={"to"})
+	public String ping(CommandArgs commandArgs) {
+		return "pong: "+commandArgs.getDefault("to", "-");
+	}
+
+	/*public boolean sendCommand(String command, CommandArgs commandArgs) {
+		JSCallback("externalCommand", new Object[] {command,commandArgs});
+		return true;
+	}*/
 }

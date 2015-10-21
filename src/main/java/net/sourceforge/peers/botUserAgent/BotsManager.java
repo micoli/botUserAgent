@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +24,7 @@ import net.sourceforge.peers.botUserAgent.config.PeerConfig;
 import net.sourceforge.peers.botUserAgent.logger.CliLogger;
 import net.sourceforge.peers.botUserAgent.logger.CliLoggerOutput;
 import net.sourceforge.peers.botUserAgent.sip.SipUtils;
+import net.sourceforge.peers.sip.transactionuser.Dialog;
 import net.sourceforge.peers.sip.transport.SipRequest;
 
 import org.json.simple.JSONArray;
@@ -224,12 +226,22 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		for (Map.Entry<String, BotUserAgent> entry : botUserAgents.entrySet()) {
 			String id = entry.getKey();
 			BotUserAgent botUserAgent = entry.getValue();
-			JSONObject o = new JSONObject();
-			o.put("id", id);
-			o.put("status", botUserAgent.getStatus());
-			list.add(o);
+			JSONObject bot = new JSONObject();
+			bot.put("id", id);
+			bot.put("status", botUserAgent.getLastStatus());
+			Dialog activeCall = botUserAgent.getActiveCall();
+			if(activeCall==null){
+				bot.put("activeCall",null);
+			}else{
+				Map activeCallMap = new LinkedHashMap();
+				activeCallMap.put("callid", activeCall.getCallId());
+				activeCallMap.put("remoteUri", activeCall.getRemoteUri());
+				activeCallMap.put("localUri", activeCall.getLocalUri());
+				activeCallMap.put("state", activeCall.getState().getClass().getSimpleName());
+				bot.put("activeCall",activeCallMap);
+			}
+			list.add(bot);
 		}
-
 		return list.toJSONString();
 	}
 }

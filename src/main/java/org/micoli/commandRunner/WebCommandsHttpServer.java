@@ -5,18 +5,23 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.NanoWebSocketServer;
+import fi.iki.elonen.WebSocket;
+import fi.iki.elonen.NanoHTTPD.IHTTPSession;
+import fi.iki.elonen.NanoHTTPD.Response;
 
 
 
-public class WebCommandsHttpServer extends NanoHTTPD {
+public class WebCommandsHttpServer extends NanoWebSocketServer {
 	private String cmdPrefix="/cmd/";
 	private Executor executor;
-	//private WebSocketResponseHandler responseHandler;
-	public WebCommandsHttpServer(Executor executor) throws IOException {
-		super(8081);
-	//	responseHandler = new WebSocketResponseHandler(webSocketFactory);
+	private boolean	debug = true;
+
+	public WebCommandsHttpServer(Executor executor, int port) throws IOException {
+		super("0.0.0.0",port);
 		this.executor=executor;
 	}
 
@@ -25,10 +30,14 @@ public class WebCommandsHttpServer extends NanoHTTPD {
 		return new String(encoded, encoding);
 	}
 
-	public Response serve(IHTTPSession session) {
-		Method method = session.getMethod();
+	public Response serve(final IHTTPSession session) {
+		if (isWebsocketRequested(session)) {
+			return super.serve(session);
+		}
+
+		//Map<String, String> headers = session.getHeaders();
+		//Method method = session.getMethod();
 		String uri = session.getUri();
-		//System.out.println(method + " '" + uri + "' ");
 		String html = "";
 
 		if(uri.startsWith(cmdPrefix)){
@@ -51,5 +60,10 @@ public class WebCommandsHttpServer extends NanoHTTPD {
 			}
 		}
 		return new NanoHTTPD.Response(html);
+	}
+
+	@Override
+	protected WebSocket openWebSocket(IHTTPSession handshake) {
+		return new WebCommandsWSSocket(handshake);
 	}
 }
