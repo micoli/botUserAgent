@@ -27,7 +27,17 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 	incomingCall : function(sipRequest,provResponse,callId){
 		var that = this;
 		var lng1 = getRandomInt(2000,4000);
-		that.ua.setAnswerFile(that.audioFile)
+		that.ua.setAnswerFile(that.audioFile);
+		var activeCall = that.ua.getActiveCall();
+		console.log(JSON.stringify(activeCall));
+		console.log(typeof activeCall);
+		console.log(activeCall==null);
+		if(activeCall){
+			botLog(that.id,"incomingCall "+callId+" will refused (busy) ",JSON.parse(sipRequest));
+			that.ua.busyByCallId(callId);
+			return;
+		}
+
 		botLog(that.id,"incomingCall "+callId+" will answer in "+lng1,JSON.parse(sipRequest));
 		setTimeout(function(){
 			var lng = getRandomInt(4000,10000);
