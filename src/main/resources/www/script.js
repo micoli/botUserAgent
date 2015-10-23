@@ -50,7 +50,7 @@ angular
 	$scope.bots = [];
 	$scope.WSStream=WSStream;
 
-	WSStream.get();
+//	WSStream.get();
 
 	$scope.refresh = function(){
 		$http
