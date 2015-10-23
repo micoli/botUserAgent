@@ -1,8 +1,10 @@
 package net.sourceforge.peers.botUserAgent;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -41,12 +43,12 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private Iterator<PeerConfig>			iterator;
 	private HashMap<String, SipRequest>		sipRequests;
 	private ScriptEngine					engine;
-	private ExecutorService					executorService;
+	private static ExecutorService			executorService;
 	private Object							botsMutex;
 	private Logger							logger;
 	private Boolean							customBindAddr;
 
-	public ExecutorService getExecutorService() {
+	public static ExecutorService getExecutorService() {
 		return executorService;
 	}
 
@@ -243,5 +245,13 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 			list.add(bot);
 		}
 		return list.toJSONString();
+	}
+
+	private static BufferedReader getOutput(Process p) {
+		return new BufferedReader(new InputStreamReader(p.getInputStream()));
+	}
+
+	private static BufferedReader getError(Process p) {
+		return new BufferedReader(new InputStreamReader(p.getErrorStream()));
 	}
 }

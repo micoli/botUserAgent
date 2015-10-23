@@ -1,6 +1,5 @@
 package net.sourceforge.peers.botUserAgent;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -69,10 +68,15 @@ public class BotUserAgent implements SipListener,CommandRunner {
 		}, 20, 20, TimeUnit.SECONDS);
 
 	}
+	@CommandRoute(value="getActiveCall")
+	public String getActiveCall(CommandArgs commandArgs) {
+		Dialog dialog = this.getActiveCall();
+		return (dialog==null)?"":dialog.getRemoteUri()+" "+dialog.getCallId()+" "+dialog.getState().toString();
+	}
 
 	public Dialog getActiveCall(){
 		for (Dialog dialog : this.userAgent.getDialogManager().getDialogCollection()) {
-			if (dialog.getRemoteUri() != null && !dialog.getState().equals(dialog.TERMINATED)) {
+			if (dialog.getRemoteUri() != null && !dialog.getState().equals(dialog.TERMINATED) && !dialog.getState().equals(dialog.EARLY)) {
 				return dialog;
 			}
 		}
@@ -106,7 +110,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 			this.config.setLocalInetAddress(inetAddress);
 			this.config.setMediaMode(MediaMode.captureAndPlayback);
 
-			botsManager.getExecutorService().submit(new Runnable() {
+			BotsManager.getExecutorService().submit(new Runnable() {
 				public void run() {
 					try {
 						userAgent = new UserAgent(BotUserAgent.this, config,logger, soundManager);
@@ -122,7 +126,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void register() {
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				try {
 					userAgent.register();
@@ -134,7 +138,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void close() {
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				userAgent.close();
 			}
@@ -145,7 +149,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	public void call(final CommandArgs commandArgs) {
 		String callee = ((!commandArgs.get("to").startsWith("sip:"))?"sip:":"")+commandArgs.get("to");
 		this.setLastStatus("call "+callee);
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				try {
 					botsManager.storeSipRequest(userAgent.invite(callee, null));
@@ -159,7 +163,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	public void acceptCall(final SipRequest sipRequest) {
 		String callId = Utils.getMessageCallId(sipRequest);
 		this.setLastStatus("acceptCall "+callId);
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				DialogManager dialogManager = userAgent.getDialogManager();
 				Dialog dialog = dialogManager.getDialog(callId);
@@ -172,7 +176,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		this.setLastStatus("acceptCallByCallId "+callId);
 		if(oSIPRequest != null){
-			botsManager.getExecutorService().submit(new Runnable() {
+			BotsManager.getExecutorService().submit(new Runnable() {
 				public void run() {
 					DialogManager dialogManager = userAgent.getDialogManager();
 					Dialog dialog = dialogManager.getDialog(callId);
@@ -184,7 +188,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	public void invite(final String uri) {
 		this.setLastStatus("invite "+uri);
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				String callId = Utils.generateCallID(userAgent.getConfig().getLocalInetAddress());
 				try {
@@ -201,7 +205,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	public void unregister() {
 		this.setLastStatus("unregister");
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				try {
 					userAgent.unregister();
@@ -214,7 +218,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	public void terminate(SipRequest sipRequest) {
 		this.setLastStatus("terminate "+sipRequest.getRequestUri());
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				userAgent.terminate(sipRequest);
 			}
@@ -232,7 +236,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	public void pickup(final SipRequest sipRequest) {
 		String callId = Utils.getMessageCallId(sipRequest);
 		this.setLastStatus("pickup "+callId);
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				DialogManager dialogManager = userAgent.getDialogManager();
 				Dialog dialog = dialogManager.getDialog(callId);
@@ -251,7 +255,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 
 	public void busy(final SipRequest sipRequest) {
 		this.setLastStatus("busy "+sipRequest.getRequestUri());
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				userAgent.rejectCall(sipRequest);
 			}
@@ -267,7 +271,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void dtmf(final char digit) {
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				MediaManager mediaManager = userAgent.getMediaManager();
 				mediaManager.sendDtmf(digit);
@@ -276,7 +280,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void setAnswerFile(String filename) {
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				config.setMediaMode(MediaMode.file);
 				config.setMediaFile(filename);
@@ -285,7 +289,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void setAnswerNone() {
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				config.setMediaMode(MediaMode.none);
 			}
@@ -293,7 +297,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void setAnswerEcho() {
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				config.setMediaMode(MediaMode.echo);
 			}
@@ -301,7 +305,7 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void setAnswerCaptureAndPlayback() {
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				config.setMediaMode(MediaMode.captureAndPlayback);
 			}
@@ -376,6 +380,8 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void incomingCall(SipRequest sipRequest, SipResponse provResponse) {
+		//Dialog dialog = this.getActiveCall();
+		//return (dialog==null)?"":dialog.getRemoteUri()+" "+dialog.getCallId()+" "+dialog.getState().toString();
 		this.setLastStatus("incomingCall");
 		botsManager.storeSipRequest(sipRequest);
 		JSCallback("incomingCall",new Object[] { sipRequest,provResponse,Utils.getMessageCallId(sipRequest)});
@@ -403,24 +409,9 @@ public class BotUserAgent implements SipListener,CommandRunner {
 	}
 
 	public void setInviteSipRequest(final SipRequest sipRequest) {
-		botsManager.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				JSCallback("setInviteSipRequest", new Object[] { sipRequest });
-			}
-		});
-	}
-
-	public void exec(String bin) {
-		botsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				try {
-					Process p = Runtime.getRuntime().exec(bin);
-					p.waitFor();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 			}
 		});
 	}
