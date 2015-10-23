@@ -23,12 +23,12 @@ angular
 .module('botUserAgentApp')
 .factory('WSStream', ['$websocket',function($websocket) {
 	// Open a WebSocket connection
-	var dataStream = $websocket('ws://127.0.0.1:8081/');
+	var dataStream = $websocket(document.location.origin.replace("https:\/\/","wss://").replace("http:\/\/","ws://"));
 
 	var collection = [];
 
 	dataStream.onMessage(function(message) {
-		console.log(message.data);
+		console.log("onMessage",message.data);
 		//collection.push(JSON.parse(message.data));
 	});
 
@@ -50,7 +50,7 @@ angular
 	$scope.bots = [];
 	$scope.WSStream=WSStream;
 
-	//WSStream.get();
+	WSStream.get();
 
 	$scope.refresh = function(){
 		$http

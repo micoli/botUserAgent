@@ -16,11 +16,8 @@ var initBot	= function (id,config){};
 var botCb	= function (id,method,args){};
 
 var botLog	= function(){
-	console.log (
-		"{{color_magenta}}"+arguments[0]+"{{reset}}",
-		"{{color_cyan}}["+arguments[1]+"]{{reset}}",
-		(arguments.length==2?'':arguments[2])
-	);
+	var args = Array.prototype.slice.call(arguments);
+	console.log.apply(null,["{{color_magenta}}"+args[0]+"{{reset}}","{{color_cyan}}["+args[1]+"]{{reset}}"].concat(args.length==2?null:args.slice(2)));
 };
 
 var javaLog	= function(log){

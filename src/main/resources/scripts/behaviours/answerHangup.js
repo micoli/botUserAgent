@@ -2,7 +2,6 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 	preInit: function() {
 		var that = this;
 		var aNbr=['zero','un','deux','trois','quatres','cinq','six','sept','huit','neuf'];
-		botLog(that.id, "preInit");
 		that.audioFile="/tmp/" + that.id + ".raw";
 		if(!(new java.io.File(that.audioFile)).exists()){
 			var txt = "poste "+that.id+".";
@@ -10,9 +9,10 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 				txt = txt.replace(new RegExp(i, 'g')," "+aNbr[i]);
 			}
 			txt = txt.replace(/ /g,'%20');
-			var bin = "nohup "+workingDirectory+"/behaviours/tts.sh "+that.audioFile+"  \"" +txt+ "\" ";
+			var bin = workingDirectory+"/behaviours/tts.sh "+that.audioFile+"  \"" +txt+ "\" ";
+			botLog(that.id, "preInit",bin);
 			try{
-				that.ua.exec(bin);
+				Packages.org.micoli.processes.syncExec.exec(bin);
 			}catch(e){
 				print (e);
 			}
@@ -27,27 +27,32 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 	incomingCall : function(sipRequest,provResponse,callId){
 		var that = this;
 		var lng1 = getRandomInt(2000,4000);
-		that.ua.setAnswerFile(that.audioFile);
+		var coloredCallid = "{{color_yellow}}"+callId+"{{reset}}";
+		//that.ua.setAnswerFile(that.audioFile);
 		var activeCall = that.ua.getActiveCall();
-		console.log(JSON.stringify(activeCall));
-		console.log(typeof activeCall);
-		console.log(activeCall==null);
 		if(activeCall){
-			botLog(that.id,"incomingCall "+callId+" will refused (busy) ",JSON.parse(sipRequest));
-			that.ua.busyByCallId(callId);
-			return;
-		}
-
-		botLog(that.id,"incomingCall "+callId+" will answer in "+lng1,JSON.parse(sipRequest));
-		setTimeout(function(){
-			var lng = getRandomInt(4000,10000);
-			botLog(that.id,"acceptCallByCallId " + callId + ", will hang in " + lng);
-			that.ua.acceptCallByCallId(callId);
+			var lng = getRandomInt(500,2000);
+			botLog(that.id,"incomingCall",coloredCallid,"will refused (busy) in "+lng);
 			setTimeout(function(){
-				botLog(that.id,"terminateByCallId");
-				that.ua.terminateByCallId(callId);
-			},lng);
-		},lng1);
+				that.ua.busyByCallId(callId);
+			});
+		}else{
+			botLog(that.id,"incomingCall",coloredCallid,"will answer in "+lng1);//,JSON.parse(sipRequest));
+			setTimeout(function(){
+				var activeCall = that.ua.getActiveCall();
+				if(activeCall){
+					botLog(that.id,"acceptCallByCallId",coloredCallid, "cancelled, already in conversation");
+				}else{
+					var lng = getRandomInt(4000,10000);
+					botLog(that.id,"acceptCallByCallId ",coloredCallid , "will hang in " + lng);
+					that.ua.acceptCallByCallId(callId);
+					setTimeout(function(){
+						botLog(that.id,"terminateByCallId",coloredCallid);
+						that.ua.terminateByCallId(callId);
+					},lng);
+				}
+			},lng1);
+		}
 	},
 
 	promiseIncomingCall : function(sipRequest,provResponse,callId){
