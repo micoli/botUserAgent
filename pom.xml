@@ -71,12 +71,40 @@
 			<artifactId>nanohttpd-websocket</artifactId>
 			<version>2.1.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>de.dfki.mary</groupId>
-			<artifactId>marytts</artifactId>
+			<artifactId>marytts-runtime</artifactId>
+			<version>5.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>de.dfki.mary</groupId>
+			<artifactId>voice-cmu-slt-hsmm</artifactId>
+			<version>5.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>de.dfki.mary</groupId>
+			<artifactId>marytts-lang-en</artifactId>
 			<version>5.2-SNAPSHOT</version>
 		</dependency>
 
+		<!--
+		<dependency>
+			<groupId>de.dfki.mary</groupId>
+			<artifactId>marytts-lang-fr</artifactId>
+			<version>5.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>de.dfki.mary</groupId>
+			<artifactId>marytts-lang-de</artifactId>
+			<version>5.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>de.dfki.mary</groupId>
+			<artifactId>marytts-lang-it</artifactId>
+			<version>5.2-SNAPSHOT</version>
+		</dependency>
+		-->
 <!-- 		<dependency> -->
 <!-- 			<groupId>io.nodyn</groupId> -->
 <!-- 			<artifactId>nodyn</artifactId> -->
@@ -139,10 +167,10 @@
 					<fork>true</fork>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.3</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -158,6 +186,24 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathLayoutType>custom</classpathLayoutType>
+							<customClasspathLayout>dependency/${artifact.artifactId}-${artifact.version}${dashClassifier?}.${artifact.extension}</customClasspathLayout>
+							<mainClass>net.sourceforge.peers.botUserAgent.Main</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<!--
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2.1</version>
@@ -181,6 +227,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
 		</plugins>
 	</build>
 </project>

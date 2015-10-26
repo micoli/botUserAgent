@@ -1,428 +1,320 @@
 package net.sourceforge.peers.botUserAgent;
 
-import java.net.InetAddress;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-import javax.script.ScriptException;
-
+import net.sourceforge.peers.Config;
 import net.sourceforge.peers.Logger;
-import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
-import net.sourceforge.peers.botUserAgent.config.PeerConfig;
-import net.sourceforge.peers.botUserAgent.sip.SipUtils;
-import net.sourceforge.peers.javaxsound.BotSoundManager;
+import net.sourceforge.peers.media.AbstractSoundManager;
+import net.sourceforge.peers.media.CaptureRtpSender;
+import net.sourceforge.peers.media.FileReader;
 import net.sourceforge.peers.media.MediaManager;
-import net.sourceforge.peers.media.MediaMode;
-import net.sourceforge.peers.sip.Utils;
+import net.sourceforge.peers.rtp.RtpSession;
+import net.sourceforge.peers.sdp.MediaDestination;
+import net.sourceforge.peers.sdp.NoCodecException;
+import net.sourceforge.peers.sdp.SDPManager;
+import net.sourceforge.peers.sdp.SessionDescription;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
 import net.sourceforge.peers.sip.core.useragent.UserAgent;
-import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldName;
-import net.sourceforge.peers.sip.syntaxencoding.SipHeaders;
-import net.sourceforge.peers.sip.syntaxencoding.SipUriSyntaxException;
-import net.sourceforge.peers.sip.transactionuser.Dialog;
-import net.sourceforge.peers.sip.transactionuser.DialogManager;
 import net.sourceforge.peers.sip.transport.SipRequest;
-import net.sourceforge.peers.sip.transport.SipResponse;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.micoli.commandRunner.CommandArgs;
-import org.micoli.commandRunner.CommandRoute;
-import org.micoli.commandRunner.CommandRunner;
-import org.micoli.commandRunner.Executor;
+public class BotUserAgent extends UserAgent {
+	public BotUserAgent(SipListener sipListener, Config config, Logger logger,AbstractSoundManager soundManager) throws SocketException {
+		super(sipListener, config, logger, soundManager);
+	}
 
-public class BotUserAgent implements SipListener,CommandRunner {
-	private BotsManager					botsManager;
-	private ScheduledExecutorService	scheduledExecutor;
-	private UserAgent					userAgent;
-	private Logger						logger;
-	private PeerConfig					config;
-	private Executor					executor;
-	private String 						lastStatus;
-
-	public BotUserAgent(BotsManager botsManager,PeerConfig config,Logger logger) {
-		this.botsManager	= botsManager;
-		this.logger			= logger;
-		this.config			= config;
-		this.executor		= new Executor(this);
-
-		BotSoundManager javaxSoundManager = new BotSoundManager(logger);
-
+	protected Object getFieldFromClass(Object context, Class cls,String fieldName){
 		try {
-			userAgent = new UserAgent(this, this.config, logger, javaxSoundManager);
-		} catch (SocketException e) {
+			Field field = cls.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			return field.get(context);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			e.printStackTrace();
-		}
-
-		botsManager.JSExec("initBot",new Object[] {this.config.getId(), this.config,this});
-
-		scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-		scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
-			public void run() {
-				JSCallback("tick",new Object[] {});
-			}
-		}, 20, 20, TimeUnit.SECONDS);
-
-	}
-	@CommandRoute(value="getActiveCall")
-	public String getActiveCall(CommandArgs commandArgs) {
-		Dialog dialog = this.getActiveCall();
-		return (dialog==null)?"":dialog.getRemoteUri()+" "+dialog.getCallId()+" "+dialog.getState().toString();
-	}
-
-	public Dialog getActiveCall(){
-		for (Dialog dialog : this.userAgent.getDialogManager().getDialogCollection()) {
-			if (dialog.getRemoteUri() != null && !dialog.getState().equals(dialog.TERMINATED) && !dialog.getState().equals(dialog.EARLY)) {
-				return dialog;
-			}
 		}
 		return null;
 	}
 
-	public String getLastStatus(){
-		return lastStatus;
-	}
-
-	private void setLastStatus(String lastStatus) {
-		this.lastStatus = lastStatus;
-	}
-
-	public String execute(String route, CommandArgs commandArgs) {
-		return this.executor.execute(route, commandArgs);
-	}
-
-	public void instantiatePeers() {
+	/*
+	BotUserAgent.acceptcall
+		uas.acceptCall
+		initialRequestManager.getInviteHandler().acceptCall(sipRequest,dialog)
+		 ***************
+			received2xx
+				InvoiteHandler.successResponseReceived
+					MediaManager.successResponseReceived
+						captureAndPlayback
+							MediaManager.startRtpSessionOnSuccessResponse
+						Filereader
+							MediaManager.startRtpSessionOnSuccessResponse
+						Echo
+	 */
+	public void sendAudioFile(SipRequest oSIPRequest,String filename) throws IllegalArgumentException, IllegalAccessException {
+		Logger		logger		= (Logger) getFieldFromClass(this,UserAgent.class,"logger");
+		SDPManager	sdpManager	= (SDPManager) getFieldFromClass(this,UserAgent.class,"sdpManager");
+		RtpSession	rtpSession	= (RtpSession) getFieldFromClass(getMediaManager(),MediaManager.class,"rtpSession");
 		try {
-			String ipAddress = GlobalConfig.config.getInetAddress("bindAddr").toString().replaceAll("/", "");
-			final BotSoundManager soundManager = new BotSoundManager(logger);
-			InetAddress inetAddress;
+			SessionDescription	sessionDescription	= sdpManager.parse(oSIPRequest.getBody());
+			MediaDestination mediaDestination = sdpManager.getMediaDestination(sessionDescription);
+			FileReader fileReader = new FileReader(filename, logger);
+
+			System.out.println("logger "			+logger);
+			System.out.println("sdpManager "		+sdpManager);
+			System.out.println("mediaDestination "	+mediaDestination);
+			System.out.println("fileReader "		+fileReader);
+			System.out.println("rtpSession "		+rtpSession);
+
 			try {
-				inetAddress = InetAddress.getByName(ipAddress);
-			} catch (UnknownHostException e1) {
-				System.err.println(e1 + " " + e1.getMessage());
-				logger.error("Unknown ipAddress " + ipAddress, e1);
-				return;
+				CaptureRtpSender captureRtpSender = new CaptureRtpSender(rtpSession,fileReader, false, mediaDestination.getCodec(), logger,"");
+				captureRtpSender.start();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			this.config.setLocalInetAddress(inetAddress);
-			this.config.setMediaMode(MediaMode.captureAndPlayback);
-
-			BotsManager.getExecutorService().submit(new Runnable() {
-				public void run() {
-					try {
-						userAgent = new UserAgent(BotUserAgent.this, config,logger, soundManager);
-					} catch (SocketException e) {
-						logger.error(e.getMessage());
-					}
-				}
-			});
-		} catch (SecurityException e) {
-			logger.error(e.getMessage());
-			e.printStackTrace();
+		} catch (NoCodecException e1) {
+			e1.printStackTrace();
 		}
 	}
-
-	public void register() {
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				try {
-					userAgent.register();
-				} catch (SipUriSyntaxException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	public void close() {
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				userAgent.close();
-			}
-		});
-	}
-
-	@CommandRoute(value="call", args={"to"})
-	public void call(final CommandArgs commandArgs) {
-		String callee = ((!commandArgs.get("to").startsWith("sip:"))?"sip:":"")+commandArgs.get("to");
-		this.setLastStatus("call "+callee);
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				try {
-					botsManager.storeSipRequest(userAgent.invite(callee, null));
-				} catch (SipUriSyntaxException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	public void acceptCall(final SipRequest sipRequest) {
-		String callId = Utils.getMessageCallId(sipRequest);
-		this.setLastStatus("acceptCall "+callId);
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				DialogManager dialogManager = userAgent.getDialogManager();
-				Dialog dialog = dialogManager.getDialog(callId);
-				userAgent.acceptCall(sipRequest, dialog);
-			}
-		});
-	}
-
-	public void acceptCallByCallId(final String callId) {
-		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
-		this.setLastStatus("acceptCallByCallId "+callId);
-		if(oSIPRequest != null){
-			BotsManager.getExecutorService().submit(new Runnable() {
-				public void run() {
-					DialogManager dialogManager = userAgent.getDialogManager();
-					Dialog dialog = dialogManager.getDialog(callId);
-					userAgent.acceptCall(oSIPRequest, dialog);
-				}
-			});
-		}
-	}
-
-	public void invite(final String uri) {
-		this.setLastStatus("invite "+uri);
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				String callId = Utils.generateCallID(userAgent.getConfig().getLocalInetAddress());
-				try {
-					SipRequest sipRequest = userAgent.invite(uri, callId);
-					botsManager.storeSipRequest(sipRequest);
-					setInviteSipRequest(sipRequest);
-				} catch (SipUriSyntaxException e) {
-					logger.error(e.getMessage());
-				}
-			}
-		});
-
-	}
-
-	public void unregister() {
-		this.setLastStatus("unregister");
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				try {
-					userAgent.unregister();
-				} catch (SipUriSyntaxException e) {
-					logger.error(e.getMessage());
-				}
-			}
-		});
-	}
-
-	public void terminate(SipRequest sipRequest) {
-		this.setLastStatus("terminate "+sipRequest.getRequestUri());
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				userAgent.terminate(sipRequest);
-			}
-		});
-	}
-
-	public void terminateByCallId(String callId) {
-		this.setLastStatus("terminateByCallId "+callId);
-		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
-		if(oSIPRequest != null){
-			terminate(oSIPRequest);
-		}
-	}
-
-	public void pickup(final SipRequest sipRequest) {
-		String callId = Utils.getMessageCallId(sipRequest);
-		this.setLastStatus("pickup "+callId);
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				DialogManager dialogManager = userAgent.getDialogManager();
-				Dialog dialog = dialogManager.getDialog(callId);
-				userAgent.acceptCall(sipRequest, dialog);
-			}
-		});
-	}
-
-	public void pickupByCallId(String callId) {
-		this.setLastStatus("pickupByCallId "+callId);
-		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
-		if(oSIPRequest != null){
-			pickup(oSIPRequest);
-		}
-	}
-
-	public void busy(final SipRequest sipRequest) {
-		this.setLastStatus("busy "+sipRequest.getRequestUri());
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				userAgent.rejectCall(sipRequest);
-			}
-		});
-	}
-
-	public void busyByCallId(String callId) {
-		this.setLastStatus("busyByCallId "+callId);
-		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
-		if(oSIPRequest != null){
-			busy(oSIPRequest);
-		}
-	}
-
-	public void dtmf(final char digit) {
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				MediaManager mediaManager = userAgent.getMediaManager();
-				mediaManager.sendDtmf(digit);
-			}
-		});
-	}
-
-	public void setAnswerFile(String filename) {
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				config.setMediaMode(MediaMode.file);
-				config.setMediaFile(filename);
-			}
-		});
-	}
-
-	public void setAnswerNone() {
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				config.setMediaMode(MediaMode.none);
-			}
-		});
-	}
-
-	public void setAnswerEcho() {
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				config.setMediaMode(MediaMode.echo);
-			}
-		});
-	}
-
-	public void setAnswerCaptureAndPlayback() {
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				config.setMediaMode(MediaMode.captureAndPlayback);
-			}
-		});
-	}
-
-	@SuppressWarnings("unchecked")
-	private void JSCallback(String method,Object[] arguments){
-		try {
-			for(int i = 0; i < arguments.length; i++) {
-				if(	arguments[i].getClass().getName().endsWith(".SipResponse") ||
-					arguments[i].getClass().getName().endsWith(".SipRequest")
-				){
-					JSONObject obj=new JSONObject();
-					SipHeaders sipHeaders = null;
-					if(arguments[i].getClass().getName().endsWith(".SipResponse")){
-						SipResponse sipObject = (SipResponse) arguments[i];
-						obj.put("statusCode"	, sipObject.getStatusCode());
-						obj.put("reasonPhrase"	, sipObject.getReasonPhrase());
-						obj.put("sipVersion"	, sipObject.getSipVersion());
-						//obj.put("sipHeaders"	, sipObject.getSipHeaders());
-						if(sipObject.getBody()!=null){
-							obj.put("body"			, new String(sipObject.getBody()));
-						}
-						sipHeaders =  sipObject.getSipHeaders();
-					}
-					if(arguments[i].getClass().getName().endsWith(".SipRequest")){
-						SipRequest sipObject = (SipRequest) arguments[i];
-						obj.put("method"		, sipObject.getMethod());
-						obj.put("requestUri"	, sipObject.getRequestUri().toString());
-						obj.put("from"			, SipUtils.getFrom(sipObject));
-						obj.put("sipVersion"	, sipObject.getSipVersion());
-						if(sipObject.getBody()!=null){
-							obj.put("body"			, new String(sipObject.getBody()));
-						}
-						//obj.put("sipHeaders"	, sipObject.getSipHeaders());
-						sipHeaders =  sipObject.getSipHeaders();
-					}
-					HashMap<String,String> headers = new HashMap<String,String>();
-					for(SipHeaderFieldName hdr :SipUtils.sipHeaderList){
-						if(sipHeaders.contains(hdr)){
-							headers.put(hdr.getName(), JSONValue.toJSONString(sipHeaders.get(hdr)));
-						}
-					}
-					obj.put("sipHeaders"	, headers);
-					arguments[i]=obj.toJSONString();
-				}
-			}
-			botsManager.getInvocableEngine().invokeFunction("botCb",config.getId(),method, arguments);
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
-	}
-
-	// SipListener methods
-	public void registering(SipRequest sipRequest) {
-		this.setLastStatus("registering");
-		JSCallback("registering",new Object[] { sipRequest,config});
-		this.botsManager.removeSipRequest(Utils.getMessageCallId(sipRequest));
-	}
-
-	public void registerSuccessful(SipResponse sipResponse) {
-		this.setLastStatus("registerSuccessful");
-		JSCallback("registerSuccessful",new Object[] { sipResponse,config});
-	}
-
-	public void registerFailed(SipResponse sipResponse) {
-		this.setLastStatus("registerFailed");
-		JSCallback("registerFailed",new Object[] { sipResponse,config});
-	}
-
-	public void incomingCall(SipRequest sipRequest, SipResponse provResponse) {
-		//Dialog dialog = this.getActiveCall();
-		//return (dialog==null)?"":dialog.getRemoteUri()+" "+dialog.getCallId()+" "+dialog.getState().toString();
-		this.setLastStatus("incomingCall");
-		botsManager.storeSipRequest(sipRequest);
-		JSCallback("incomingCall",new Object[] { sipRequest,provResponse,Utils.getMessageCallId(sipRequest)});
-	}
-
-	public void remoteHangup(SipRequest sipRequest) {
-		this.setLastStatus("remoteHangup");
-		JSCallback("remoteHangup",new Object[] { sipRequest,Utils.getMessageCallId(sipRequest)});
-		this.botsManager.removeSipRequest(Utils.getMessageCallId(sipRequest));
-	}
-
-	public void ringing(SipResponse sipResponse) {
-		this.setLastStatus("ringing");
-		JSCallback("ringing",new Object[] {  sipResponse});
-	}
-
-	public void calleePickup(SipResponse sipResponse) {
-		this.setLastStatus("calleePickup");
-		JSCallback("calleePickup",new Object[] { sipResponse});
-	}
-
-	public void error(SipResponse sipResponse) {
-		this.setLastStatus("error");
-		JSCallback("error",new Object[] { sipResponse});
-	}
-
-	public void setInviteSipRequest(final SipRequest sipRequest) {
-		BotsManager.getExecutorService().submit(new Runnable() {
-			public void run() {
-				JSCallback("setInviteSipRequest", new Object[] { sipRequest });
-			}
-		});
-	}
-
-	@CommandRoute(value="ping", args={"to"})
-	public String ping(CommandArgs commandArgs) {
-		return "pong: "+commandArgs.getDefault("to", "-");
-	}
-
-	/*public boolean sendCommand(String command, CommandArgs commandArgs) {
-		JSCallback("externalCommand", new Object[] {command,commandArgs});
-		return true;
-	}*/
 }
+
+/*	public void sendAudioPacket1(SipRequest oSIPRequest, String callId) {
+		MediaDestination mediaDestination;
+		String remoteAddress="";
+		int remotePort=0;
+		Codec codec = new Codec();
+		InetAddress localAddress;
+
+		DatagramSocket datagramSocket = AccessController.doPrivileged(
+			new PrivilegedAction<DatagramSocket>() {
+				@Override
+				public DatagramSocket run() {
+					DatagramSocket datagramSocket = null;
+					int rtpPort = getConfig().getRtpPort();
+					try {
+						if (rtpPort == 0) {
+							int localPort = -1;
+							while (localPort % 2 != 0) {
+								datagramSocket = new DatagramSocket();
+								localPort = datagramSocket.getLocalPort();
+								if (localPort % 2 != 0) {
+									datagramSocket.close();
+								}
+							}
+						} else {
+							datagramSocket = new DatagramSocket(rtpPort);
+						}
+					} catch (SocketException e) {
+						System.out.println("cannot create datagram socket ");
+						e.printStackTrace();
+					}
+
+					return datagramSocket;
+				}
+			}
+		);
+		System.out.println("new rtp DatagramSocket " + datagramSocket.hashCode());
+		try {
+			datagramSocket.setSoTimeout(30000);
+		} catch (SocketException e) {
+			System.out.println("cannot set timeout on datagram socket ");
+			e.printStackTrace();
+		}
+		getMediaManager().setDatagramSocket(datagramSocket);
+
+		Logger logger;
+		logger = getLogger();
+
+		SDPManager _sdpManager = getSDPManager();
+		//RtpSession rtpSession  = ((BotMediaManager) getMediaManager()).getRtpSession();
+		//RtpSession rtpSession  = getMediaManagerRtpSession(getMediaManager());
+		//System.out.println("diff "+(((BotMediaManager) getMediaManager()).getRtpSession())+" "+rtpSession);
+		RtpSession _rtpSession = null;
+
+		SessionDescription sessionDescription =_sdpManager.parse(oSIPRequest.getBody());
+		try {
+			mediaDestination = _sdpManager.getMediaDestination(sessionDescription);
+			remoteAddress = mediaDestination.getDestination();
+			remotePort = mediaDestination.getPort();
+			codec = mediaDestination.getCodec();
+			localAddress = getConfig().getLocalInetAddress();
+
+			_rtpSession = new RtpSession(localAddress,datagramSocket,false, logger, "");
+		} catch (SecurityException | NoCodecException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("--- "+ _rtpSession +" "+_rtpSession.toString());
+
+		//Echo echo;
+		//InetAddress remoteAddress= getRtpSessionRemoteAddress(rtpSession);
+		//int remotePort= getRtpSessionRemotePort(rtpSession);
+		//System.out.println("---"+remoteAddress.getHostAddress() );
+		//echo = new Echo(getMediaManager().getDatagramSocket(), remoteAddress.getHostAddress(), remotePort,logger);
+
+		//IncomingRtpReader incomingRtpReader;
+		//incomingRtpReader = new IncomingRtpReader(rtpSession,null, getCaptureRtpSenderCodec(),logger);
+		//incomingRtpReader.start();
+
+		//setEcho(echo);
+		//Thread echoThread = new Thread(echo, Echo.class.getSimpleName());
+		//echoThread.start();
+
+		FileReader fileReader = new FileReader("/tmp/toto1234.wav.raw", logger);
+		CaptureRtpSender captureRtpSender;
+
+		try {
+			captureRtpSender = new CaptureRtpSender(_rtpSession,fileReader, false, codec, logger,"");
+			captureRtpSender.start();
+		} catch (IOException e) {
+			System.out.println("a input/output error");
+			e.printStackTrace();
+			return;
+		}
+
+	}
+ */
+/*Field captureRtpSenderField =UserAgent.class.getDeclaredField("captureRtpSender");
+captureRtpSenderField.setAccessible(true);
+RtpSender captureRtpSender = (RtpSender) captureRtpSenderField.get(this);
+
+rtpSender.pushPackets(rtpPackets);
+
+try {
+	captureRtpSender = new CaptureRtpSender(rtpSession,soundSource, userAgent.isMediaDebug(), codec, logger,userAgent.getPeersHome());
+} catch (IOException e) {
+	logger.error("input/output error", e);
+	return;
+}
+
+try {
+	captureRtpSender.start();
+} catch (IOException e) {
+	logger.error("input/output error", e);
+}
+*/
+
+/*
+MediaDestination _mediaDestination;
+SessionDescription sessionDescription =_sdpManager.parse(sipResponse.getBody());
+try {
+	_mediaDestination = _sdpManager.getMediaDestination(sessionDescription);
+} catch (NoCodecException e) {
+	e.printStackTrace();
+}
+String remoteAddress = _mediaDestination.getDestination();
+int remotePort = _mediaDestination.getPort();
+Codec codec = _mediaDestination.getCodec();
+String localAddress = getConfig().getLocalInetAddress().getHostAddress();
+ */
+/*
+protected Field getCaptureRtpSenderField() throws NoSuchFieldException, SecurityException{
+	Field captureRtpSenderField =UserAgent.class.getDeclaredField("captureRtpSender");
+	captureRtpSenderField.setAccessible(true);
+	return captureRtpSenderField;
+}
+
+private RtpSender getCaptureRtpSender(){
+	try {
+		return  (RtpSender) getCaptureRtpSenderField().get(this);
+	} catch (IllegalArgumentException | IllegalAccessException| NoSuchFieldException | SecurityException e) {
+		e.printStackTrace();
+	}
+	return null;
+}
+
+protected Codec getCaptureRtpSenderCodec(){
+	try {
+		Field codecField;
+		codecField = RtpSender.class.getDeclaredField("codec");
+		codecField.setAccessible(true);
+		return (Codec) codecField.get(getCaptureRtpSender());
+	} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+		e.printStackTrace();
+	}
+	return null;
+}
+
+protected DatagramSocket getMediaManagerDatagramSocket(){
+	try {
+		Field datagramSocketField;
+		datagramSocketField = MediaManager.class.getDeclaredField("datagramSocket");
+		datagramSocketField.setAccessible(true);
+		return (DatagramSocket) datagramSocketField.get(getMediaManager());
+	} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+		e.printStackTrace();
+	}
+	return null;
+}
+
+protected Field getChallengeManagerField() throws NoSuchFieldException, SecurityException{
+	Field challengeManagerField =UserAgent.class.getDeclaredField("challengeManager");
+	challengeManagerField.setAccessible(true);
+	return challengeManagerField;
+}
+
+private ChallengeManager getChallengeManager(){
+	try {
+		return (ChallengeManager) getChallengeManagerField().get(this);
+	} catch (IllegalArgumentException | IllegalAccessException| NoSuchFieldException | SecurityException e) {
+		e.printStackTrace();
+	}
+	return null;
+}
+protected Field getMediaManagerField() throws NoSuchFieldException, SecurityException{
+	Field mediaManagerField =UserAgent.class.getDeclaredField("mediaManager");
+	mediaManagerField.setAccessible(true);
+	return mediaManagerField;
+}
+protected Field getLoggerField() throws NoSuchFieldException, SecurityException{
+	Field loggerField =UserAgent.class.getDeclaredField("logger");
+	loggerField.setAccessible(true);
+	return loggerField;
+}
+*/
+/*protected InetAddress getRtpSessionRemoteAddress(RtpSession rtpSession){
+try {
+	Field remoteAddressField =RtpSession.class.getDeclaredField("remoteAddress");
+	remoteAddressField.setAccessible(true);
+	return (InetAddress) remoteAddressField.get(rtpSession);
+} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+	e.printStackTrace();
+}
+return null;
+}
+
+protected int getRtpSessionRemotePort(RtpSession rtpSession){
+try {
+	Field remotePortField =RtpSession.class.getDeclaredField("remotePort");
+	remotePortField.setAccessible(true);
+	return (int) remotePortField.get(rtpSession);
+} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+	e.printStackTrace();
+}
+return 0;
+}*/
+/*private SDPManager getSDPManager(){
+try {
+	return (SDPManager) getFieldFromClass(UserAgent.class,"sdpManager").get(this);
+} catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
+	e.printStackTrace();
+}
+return null;
+}*/
+
+/*private RtpSession getMediaManagerRtpSession(MediaManager mediaManager){
+try {
+	return (RtpSession) getFieldFromClass(MediaManager.class,"rtpSession").get(mediaManager);
+} catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
+	e.printStackTrace();
+}
+return null;
+}*/
+
+/*protected Logger getLogger(){
+try {
+	return (Logger) getFieldFromClass(UserAgent.class,"logger").get(this);
+} catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
+	e.printStackTrace();
+}
+return null;
+}*/
+

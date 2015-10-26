@@ -39,7 +39,7 @@ import org.micoli.commandRunner.GenericCommands;
 import org.micoli.http.Client;
 public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private HashMap<String, String>			loadedScripts;
-	private HashMap<String, BotUserAgent>	botUserAgents;
+	private HashMap<String, BotAgent>	botAgents;
 	private Iterator<PeerConfig>			iterator;
 	private HashMap<String, SipRequest>		sipRequests;
 	private ScriptEngine					engine;
@@ -95,10 +95,10 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private Thread getCleanUp(){
 		return (new Thread() {
 			public void run() {
-				for (Map.Entry<String, BotUserAgent> entry : botUserAgents.entrySet()) {
+				for (Map.Entry<String, BotAgent> entry : botAgents.entrySet()) {
 					String sId = entry.getKey();
-					BotUserAgent botUserAgent = entry.getValue();
-					botUserAgent.unregister();
+					BotAgent botAgent = entry.getValue();
+					botAgent.unregister();
 					logger.info(sId + " unregistered ");
 				}
 			}
@@ -112,7 +112,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		this.sipRequests	= new HashMap<String, SipRequest>();
 		workingDirectory	= new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
 		loadedScripts		= new HashMap<String, String> ();
-		botUserAgents		= new HashMap<String, BotUserAgent> ();
+		botAgents		= new HashMap<String, BotAgent> ();
 		engine				= new ScriptEngineManager().getEngineByName("nashorn");
 		engineScope			= engine.getBindings(ScriptContext.ENGINE_SCOPE);
 		executorService		= Executors.newCachedThreadPool();
@@ -142,7 +142,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 					config.setLocalInetAddress(GlobalConfig.config.getInetAddress("bindAddr"));
 				}
 				logger.info(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
-				botUserAgents.put(config.getId(),new BotUserAgent(this,config,logger));
+				botAgents.put(config.getId(),new BotAgent(this,config,logger));
 			}
 
 			GenericCommands.startInterfaces(this);
@@ -159,11 +159,11 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	@CommandRoute(value="bot",args={"from","action"})
 	public String runBotCommand(CommandArgs commandArgs) {
 		String botId = commandArgs.getDefault("from", "0");
-		if(!botUserAgents.containsKey(botId)){
+		if(!botAgents.containsKey(botId)){
 			return "Agent ["+botId+"] not found";
 		}
 		try{
-			return botUserAgents.get(botId).execute(commandArgs.get("action"),commandArgs);
+			return botAgents.get(botId).execute(commandArgs.get("action"),commandArgs);
 		}catch(Exception e){
 			return "Error : " + e.getMessage();
 		}
@@ -178,14 +178,14 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		if(tokens.length<2){
 			return "Not enough arguments";
 		}
-		if(!botUserAgents.containsKey(tokens[0])){
+		if(!botAgents.containsKey(tokens[0])){
 			return "Agent ["+tokens[0]+"] not found";
 		}
 
 		lastCommand = command;
 
 		try{
-			botUserAgents.get(tokens[0]).sendCommand(tokens[1],Arrays.copyOfRange(tokens,2,tokens.length));
+			botAgents.get(tokens[0]).sendCommand(tokens[1],Arrays.copyOfRange(tokens,2,tokens.length));
 		}catch(Exception e){
 			return "Error : " + e.getMessage();
 		}
@@ -225,13 +225,13 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	@CommandRoute(value="list")
 	public String list(CommandArgs args) {
 		JSONArray list = new JSONArray();
-		for (Map.Entry<String, BotUserAgent> entry : botUserAgents.entrySet()) {
+		for (Map.Entry<String, BotAgent> entry : botAgents.entrySet()) {
 			String id = entry.getKey();
-			BotUserAgent botUserAgent = entry.getValue();
+			BotAgent botAgent = entry.getValue();
 			JSONObject bot = new JSONObject();
 			bot.put("id", id);
-			bot.put("status", botUserAgent.getLastStatus());
-			Dialog activeCall = botUserAgent.getActiveCall();
+			bot.put("status", botAgent.getLastStatus());
+			Dialog activeCall = botAgent.getActiveCall();
 			if(activeCall==null){
 				bot.put("activeCall",null);
 			}else{
@@ -254,4 +254,13 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private static BufferedReader getError(Process p) {
 		return new BufferedReader(new InputStreamReader(p.getErrorStream()));
 	}
+
+	/*private static void test() {
+		MaryTTS mary = new MaryTTS();
+		try {
+			mary.saveAudio("bonjour, ceci est un test 123 quatre cinq six", "/tmp/toto1234.wav");
+		} catch (SynthesisException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}*/
 }
