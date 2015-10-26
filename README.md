@@ -2,23 +2,23 @@
 
 ##Installation
 * Peers lib (SIP/RTP layer)
-	** git clone https://github.com/ymartineau/peers.git
-	** cd peers
-	** mvn install; cd ..
+  * git clone https://github.com/ymartineau/peers.git
+  * cd peers
+  * mvn install; cd ..
 
 * NanoHttpd
-	** git clone https://github.com/NanoHttpd/nanohttpd.git
-	** cd nanohttpd
-	** mvn install;cd..
+  * git clone https://github.com/NanoHttpd/nanohttpd.git
+  * cd nanohttpd
+  * mvn install;cd..
 
 * Mary TTS
-	** git clone https://github.com/marytts/marytts.git
-	** cd marytts
-	** mvn install;cd..
+  * git clone https://github.com/marytts/marytts.git
+  * cd marytts
+  * mvn install;cd..
 
 * botUserAgent
-	** git clone https://github.com/micoli/botUserAgent.git
-	** mvn package
+  * git clone https://github.com/micoli/botUserAgent.git
+  * mvn package
 
 
 
