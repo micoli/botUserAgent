@@ -37,7 +37,7 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 				that.ua.busyByCallId(callId);
 			});
 		}else{
-			botLog(that.id,"incomingCall",coloredCallid,"will answer in "+lng1);//,JSON.parse(sipRequest));
+			botLog(that.id,"incomingCall",coloredCallid,"will answer in "+lng1,sipRequest);//,JSON.parse(sipRequest));
 			setTimeout(function(){
 				var activeCall = that.ua.getActiveCall();
 				if(activeCall){
