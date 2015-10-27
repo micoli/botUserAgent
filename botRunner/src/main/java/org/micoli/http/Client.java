@@ -3,11 +3,9 @@ package org.micoli.http;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import org.json.simple.JSONObject;
-
 import net.sourceforge.peers.Logger;
-import net.sourceforge.peers.sip.syntaxencoding.SipHeaders;
-import net.sourceforge.peers.sip.transport.SipResponse;
+
+import org.json.simple.JSONObject;
 
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;

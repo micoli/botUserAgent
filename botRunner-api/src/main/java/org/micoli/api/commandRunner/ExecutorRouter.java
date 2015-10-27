@@ -4,12 +4,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-public class Executor {
+public class ExecutorRouter {
 	protected String lastCommand = "bot action=call from=6000 to=6001";
 	protected HashMap<String, Method>	routes;
 	protected CommandRunner commandRunner = null;
 
-	public Executor(CommandRunner commandRunner){
+	public ExecutorRouter(CommandRunner commandRunner){
 		this.commandRunner= commandRunner;
 		try {
 			parseCommandRunner(commandRunner.getClass());

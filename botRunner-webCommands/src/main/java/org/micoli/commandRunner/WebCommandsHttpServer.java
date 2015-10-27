@@ -1,4 +1,4 @@
-package org.micoli.botRunner.api.commandRunner;
+package org.micoli.commandRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.micoli.api.commandRunner.CommandArgs;
-import org.micoli.api.commandRunner.Executor;
+import org.micoli.api.commandRunner.ExecutorRouter;
 
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoWebSocketServer;
@@ -16,12 +16,12 @@ import fi.iki.elonen.WebSocket;
 
 public class WebCommandsHttpServer extends NanoWebSocketServer {
 	private String cmdPrefix="/cmd/";
-	private Executor executor;
+	private ExecutorRouter executorRouter;
 	private boolean	debug = true;
 
-	public WebCommandsHttpServer(Executor executor, int port) throws IOException {
+	public WebCommandsHttpServer(ExecutorRouter executorRouter, int port) throws IOException {
 		super("0.0.0.0",port);
-		this.executor=executor;
+		this.executorRouter=executorRouter;
 	}
 
 	private String readFile(String path, Charset encoding)	 throws IOException{
@@ -41,8 +41,8 @@ public class WebCommandsHttpServer extends NanoWebSocketServer {
 
 		if(uri.startsWith(cmdPrefix)){
 			String subMethod = uri.replace(cmdPrefix, "");
-			if(executor.hasCommand(subMethod)){
-				html = executor.execute(subMethod, new CommandArgs(session.getParms()));
+			if(executorRouter.hasCommand(subMethod)){
+				html = executorRouter.execute(subMethod, new CommandArgs(session.getParms()));
 			}else{
 				html = "No such command : "+subMethod;
 			}

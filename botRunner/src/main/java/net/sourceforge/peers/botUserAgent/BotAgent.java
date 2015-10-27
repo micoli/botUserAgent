@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.script.ScriptException;
 
-import marytts.exceptions.SynthesisException;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
@@ -33,8 +32,7 @@ import org.json.simple.JSONValue;
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
-import org.micoli.api.commandRunner.Executor;
-import org.micoli.tts.MaryTTS;
+import org.micoli.api.commandRunner.ExecutorRouter;
 
 public class BotAgent implements SipListener,CommandRunner {
 	private BotsManager					botsManager;
@@ -42,7 +40,7 @@ public class BotAgent implements SipListener,CommandRunner {
 	private BotUserAgent				userAgent;
 	private Logger						logger;
 	private PeerConfig					config;
-	private Executor					executor;
+	private ExecutorRouter					executorRouter;
 	private String 						lastStatus;
 	private String						lastCallId;
 
@@ -50,7 +48,7 @@ public class BotAgent implements SipListener,CommandRunner {
 		this.botsManager	= botsManager;
 		this.logger			= logger;
 		this.config			= config;
-		this.executor		= new Executor(this);
+		this.executorRouter		= new ExecutorRouter(this);
 
 		BotSoundManager javaxSoundManager = new BotSoundManager(logger);
 		setAnswerFile("/tmp/null.raw");
@@ -94,7 +92,7 @@ public class BotAgent implements SipListener,CommandRunner {
 	}
 
 	public String execute(String route, CommandArgs commandArgs) {
-		return this.executor.execute(route, commandArgs);
+		return this.executorRouter.execute(route, commandArgs);
 	}
 
 	public void instantiatePeers() {
@@ -179,7 +177,7 @@ public class BotAgent implements SipListener,CommandRunner {
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		lastCallId = callId;
 		this.setLastStatus("acceptCallByCallId "+callId);
-		sayWord("bonjour dix neuf huit sept ",lastCallId);
+		//sayWord("bonjour dix neuf huit sept ",lastCallId);
 		if(oSIPRequest != null){
 			BotsManager.getExecutorService().submit(new Runnable() {
 				public void run() {
@@ -433,33 +431,6 @@ public class BotAgent implements SipListener,CommandRunner {
 	@CommandRoute(value="ping", args={"to"})
 	public String ping(CommandArgs commandArgs) {
 		return "pong: "+commandArgs.getDefault("to", "-");
-	}
-
-	public void sayWord(String words){
-		sayWord(words,lastCallId);
-	}
-
-	public void sayWord(String words,String callId){
-		MaryTTS mary = new MaryTTS();
-		try {
-			new java.util.Timer().schedule(
-				new java.util.TimerTask() {
-					@Override
-					public void run() {
-						try {
-							String tmpFileName="/tmp/"+callId+".wav";
-							mary.saveAudio("bonjour, ceci est un test 123 quatre cinq six", tmpFileName);
-							userAgent.sendAudioFile(botsManager.getSipRequest(callId),tmpFileName);
-						} catch (IllegalArgumentException | IllegalAccessException | SynthesisException | InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				},
-				1000
-			);
-		} catch (SecurityException| IllegalArgumentException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/*public boolean sendCommand(String command, CommandArgs commandArgs) {

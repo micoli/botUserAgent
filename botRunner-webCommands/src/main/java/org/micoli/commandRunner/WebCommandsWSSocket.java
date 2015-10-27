@@ -1,4 +1,4 @@
-package org.micoli.botRunner.api.commandRunner;
+package org.micoli.commandRunner;
 
 import java.io.IOException;
 

@@ -5,17 +5,17 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
-import org.micoli.api.commandRunner.Executor;
+import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.threads.ManagedThread;
 
 class NetworkCommandsClient extends ManagedThread{
 	private Socket				ClientSocket;
-	private Executor			executor;
+	private ExecutorRouter			executorRouter;
 	private BufferedReader		streamIn;
 	private DataOutputStream	streamOut;
 
-	NetworkCommandsClient(Socket clientSocket,Executor executor)  throws Exception{
-		this.executor = executor;;
+	NetworkCommandsClient(Socket clientSocket,ExecutorRouter executorRouter)  throws Exception{
+		this.executorRouter = executorRouter;;
 		this.ClientSocket = clientSocket;
 		this.streamIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		this.streamOut = new DataOutputStream(clientSocket.getOutputStream());
@@ -38,7 +38,7 @@ class NetworkCommandsClient extends ManagedThread{
 				if (command==null || command.equals("quit")){
 					isRunning=false;
 				}else{
-					streamOut.writeUTF(executor.executeCommand(command)+"\n>");
+					streamOut.writeUTF(executorRouter.executeCommand(command)+"\n>");
 				}
 			}
 			ClientSocket.close();

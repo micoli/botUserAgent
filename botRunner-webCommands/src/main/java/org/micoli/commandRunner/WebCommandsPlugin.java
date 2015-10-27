@@ -1,9 +1,8 @@
-package org.micoli.botRunner.api.commandRunner;
+package org.micoli.commandRunner;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
-import org.micoli.api.commandRunner.Executor;
+import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.api.commandRunner.GenericCommands;
 
 import ro.fortsoft.pf4j.Extension;
@@ -22,7 +21,7 @@ public class WebCommandsPlugin extends Plugin {
 		System.out.println("WebCommandsPlugin.start()");
 		// for testing the development mode
 		if (RuntimeMode.DEVELOPMENT.equals(wrapper.getRuntimeMode())) {
-			System.out.println(StringUtils.upperCase("WelcomePlugin"));
+			System.out.println("WelcomePlugin");
 		}
 	}
 
@@ -34,12 +33,7 @@ public class WebCommandsPlugin extends Plugin {
 	@Extension
 	public static class WebCommands implements GenericCommands {
 		@Override
-		public String start() {
-			return null;
-		}
-
-		@Override
-		public void launch(final Executor executor){
+		public void launch(final ExecutorRouter executor){
 			System.out.println("WebCommands");
 			Thread thread=new Thread(){
 				@Override
@@ -54,6 +48,5 @@ public class WebCommandsPlugin extends Plugin {
 			};
 			thread.start();
 		}
-
 	}
 }
