@@ -16,10 +16,14 @@
   * cd marytts
   * mvn install;cd..
 
+* Pf4J (plugin framework for java)
+  * git clone https://github.com/decebals/pf4j.git
+  * cd pf4j
+  * mvn install;cd..
+
 * botUserAgent
   * git clone https://github.com/micoli/botUserAgent.git
   * mvn package
-
 
 
 ##Execution
