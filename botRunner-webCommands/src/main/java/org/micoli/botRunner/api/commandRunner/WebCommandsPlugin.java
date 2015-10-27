@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 import org.micoli.api.commandRunner.Executor;
 import org.micoli.api.commandRunner.GenericCommands;
-import org.micoli.threads.ManagedThread;
 
 import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.Plugin;
@@ -33,14 +32,16 @@ public class WebCommandsPlugin extends Plugin {
 	}
 
 	@Extension
-	public class WebCommands extends GenericCommands {
-
-		public WebCommands(Executor executor) {
-			super(executor);
+	public static class WebCommands implements GenericCommands {
+		@Override
+		public String start() {
+			return null;
 		}
 
-		public void launch() {
-			ManagedThread thread=new ManagedThread(){
+		@Override
+		public void launch(final Executor executor){
+			System.out.println("WebCommands");
+			Thread thread=new Thread(){
 				@Override
 				public void run() {
 					try {
@@ -53,5 +54,6 @@ public class WebCommandsPlugin extends Plugin {
 			};
 			thread.start();
 		}
+
 	}
 }

@@ -8,12 +8,12 @@ import org.micoli.api.commandRunner.Executor;
 import org.micoli.api.commandRunner.GenericCommands;
 import org.micoli.threads.ManagedThread;
 
-public class ConsoleCommands extends GenericCommands {
-	public ConsoleCommands(Executor executor) {
-		super(executor);
+public class ConsoleCommands implements GenericCommands {
+	@Override
+	public String start() {
+		return null;
 	}
-
-	public void launch() {
+	public void launch(Executor executor) {
 		InputStreamReader inputStreamReader = new InputStreamReader(System.in);
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		ManagedThread thread=new ManagedThread(){

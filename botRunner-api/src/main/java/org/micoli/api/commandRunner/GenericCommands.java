@@ -1,26 +1,12 @@
 package org.micoli.api.commandRunner;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Set;
-
-import org.reflections.Reflections;
 import ro.fortsoft.pf4j.ExtensionPoint;
 
-public class GenericCommands implements ExtensionPoint{
-	protected Executor executor;
+public interface GenericCommands extends ExtensionPoint{
+	public String start();
+	public void launch(Executor executor);
 
-	public GenericCommands(Executor executor) {
-		this.executor=executor;
-	}
-
-	public String start(){
-		return "start >>>>>>>>>>>>>>>>>>>>>";
-	}
-
-	protected void launch(){}
-
-	public static void startInterfaces(CommandRunner commandRunner) {
+	/*public static void startInterfaces(CommandRunner commandRunner) {
 		startInterfaces(commandRunner,"*");
 	}
 
@@ -43,5 +29,5 @@ public class GenericCommands implements ExtensionPoint{
 				}
 			}
 		}
-	}
+	}*/
 }

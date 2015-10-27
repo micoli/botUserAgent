@@ -94,6 +94,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private Thread getCleanUp(){
 		return (new Thread() {
 			public void run() {
+				PluginsManager.stop();
 				for (Map.Entry<String, BotAgent> entry : botAgents.entrySet()) {
 					String sId = entry.getKey();
 					BotAgent botAgent = entry.getValue();
@@ -144,7 +145,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 				botAgents.put(config.getId(),new BotAgent(this,config,logger));
 			}
 
-			GenericCommands.startInterfaces(this);
+			PluginsManager.startGenericCommands(this);
 
 		} catch (NullPointerException e) {
 			e.printStackTrace();

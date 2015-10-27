@@ -11,11 +11,14 @@ import org.micoli.api.commandRunner.GenericCommands;
 import org.micoli.threads.ManagedThread;
 
 
-public class NetworkCommands extends GenericCommands {
-	public NetworkCommands(Executor executor) {
-		super(executor);
+public class NetworkCommands implements GenericCommands {
+	@Override
+	public String start() {
+		return null;
 	}
-	public void launch() {
+
+	@Override
+	public void launch(Executor executor) {
 		InputStreamReader inputStreamReader = new InputStreamReader(System.in);
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		ManagedThread thread=new ManagedThread(){
