@@ -128,9 +128,9 @@
 	<modules>
 		<module>botRunner-api</module>
 		<module>botRunner-webCommands</module>
-		<module>botRunner-consoleCommands</module>
 		<module>botRunner-networkCommands</module>
-		<module>botRunner-SoundTTS</module>
+		<module>botRunner-consoleCommands</module>
+<!-- 		<module>botRunner-SoundTTS</module> -->
 		<module>botRunner</module>
 	</modules>
 </project>

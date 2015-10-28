@@ -1,16 +1,19 @@
-package net.sourceforge.peers.botUserAgent;
+package org.micoli.api;
 
 import java.util.List;
 
 import org.micoli.api.commandRunner.CommandRunner;
 import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.api.commandRunner.GenericCommands;
+import org.micoli.botUserAgent.BotExtension;
 
 import ro.fortsoft.pf4j.DefaultPluginManager;
+import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.PluginManager;
 
 public class PluginsManager {
-	static List<GenericCommands> genericCommands;
+	static List<GenericCommands> genericCommands = null;;
+	static List<Extension> botExtensions = null;;
 	static PluginManager pluginManager;
 
 	public static void init(){
@@ -46,6 +49,27 @@ public class PluginsManager {
 				System.out.println("Start interface "+command.getClass().getName());
 				command.launch(executorRouter);
 			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static List<Extension> getExtensionsbyClass(@SuppressWarnings("rawtypes") Class extensionPointClass){
+		if(botExtensions == null){
+			botExtensions = pluginManager.getExtensions(extensionPointClass);
+			String pluginList="";
+			for (Extension botExtension : botExtensions) {
+				pluginList=pluginList+(pluginList.equals("")?"":",")+ botExtension.getClass().getSimpleName();
+			}
+			System.out.println(String.format("Found %d extensions for extension point '%s': %s", botExtensions.size(), extensionPointClass.getSimpleName(),pluginList));
+		}
+		return botExtensions;
+	}
+
+	public static void bindExtensionByClass(@SuppressWarnings("rawtypes") Class extensionPointClass ,CommandRunner commandRunner){
+		botExtensions = getExtensionsbyClass(extensionPointClass);
+
+		for (Extension botExtension : botExtensions) {
+			((BotExtension) botExtension).bind(commandRunner);
 		}
 	}
 }

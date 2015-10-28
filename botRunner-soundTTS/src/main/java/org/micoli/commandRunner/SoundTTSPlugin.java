@@ -11,12 +11,19 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
+//import org.micoli.botUserAgent.BotExtension;
+
+
+
+import org.micoli.api.commandRunner.CommandRoute;
+import org.micoli.botUserAgent.BotExtension;
+
 import marytts.LocalMaryInterface;
 import marytts.MaryInterface;
 import marytts.exceptions.MaryConfigurationException;
 import marytts.exceptions.SynthesisException;
 
-import org.micoli.botUserAgent.sound.Audio;
+//import org.micoli.botUserAgent.BotExtension;
 
 import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.Plugin;
@@ -44,34 +51,33 @@ public class SoundTTSPlugin extends Plugin {
 	}
 
 	@Extension
-	public static class SoundTTS implements Audio{
+	public static class SoundTTS implements BotExtension{
 
 		@Override
-		public void launch() {
+		public void bind(Object object) {
+			System.out.println("bind sounf for : "+object.toString());
 		}
 
 		public void sayWord(String words){
 			sayWord(words,"lastCallId");
 		}
 
+		@CommandRoute(value="sayWords", args={"words","callId"})
 		public void sayWord(final String words,final String callId){
 			try {
-				new java.util.Timer().schedule(
-					new java.util.TimerTask() {
-						@Override
-						public void run() {
-							try {
-								String tmpFileName="/tmp/"+callId+".wav";
-								saveAudio(words, tmpFileName);
-								//UserAgent userAgent,
-								//userAgent.sendAudioFile(botsManager.getSipRequest(callId),tmpFileName);
-							} catch (SynthesisException | InterruptedException e) {
-								e.printStackTrace();
-							}
+				new java.util.Timer().schedule(new java.util.TimerTask() {
+					@Override
+					public void run() {
+						try {
+							String tmpFileName="/tmp/"+callId+".wav";
+							saveAudio(words, tmpFileName);
+							//UserAgent userAgent,
+							//userAgent.sendAudioFile(botsManager.getSipRequest(callId),tmpFileName);
+						} catch (SynthesisException | InterruptedException e) {
+							e.printStackTrace();
 						}
-					},
-					1000
-				);
+					}
+				},300);
 			} catch (SecurityException| IllegalArgumentException e) {
 				e.printStackTrace();
 			}
@@ -117,7 +123,7 @@ public class SoundTTSPlugin extends Plugin {
 			}
 		}
 
-		private void dumpToFile(AudioInputStream audioInputStream,String outFileName){
+		public void dumpToFile(AudioInputStream audioInputStream,String outFileName){
 			AudioFileFormat.Type type= AudioFileFormat.Type.WAVE;
 			File file=new File(outFileName);
 			if (!file.exists()) {
@@ -140,7 +146,7 @@ public class SoundTTSPlugin extends Plugin {
 				audioInputStream.close();
 			}
 			catch (Exception e) {
-				System.out.println("Unable to close the Audio stream.");
+				System.out.println("Unable to close the BotExtension stream.");
 			}
 		}
 	}

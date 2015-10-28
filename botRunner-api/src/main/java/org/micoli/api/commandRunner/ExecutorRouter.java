@@ -3,16 +3,29 @@ package org.micoli.api.commandRunner;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
+
+import org.micoli.api.PluginsManager;
+import org.micoli.botUserAgent.BotExtension;
+
+import ro.fortsoft.pf4j.Extension;
 
 public class ExecutorRouter {
 	protected String lastCommand = "bot action=call from=6000 to=6001";
-	protected HashMap<String, Method>	routes;
+	protected HashMap<String, Method> routes;
 	protected CommandRunner commandRunner = null;
 
 	public ExecutorRouter(CommandRunner commandRunner){
 		this.commandRunner= commandRunner;
 		try {
-			parseCommandRunner(commandRunner.getClass());
+			attachRoutes(commandRunner.getClass());
+
+			List<Extension> botExtensions = PluginsManager.getExtensionsbyClass(BotExtension.class);
+			for (Extension botExtension : botExtensions) {
+				attachRoutes(botExtension.getClass());
+			}
+
+			//PluginsManager.bindExtension(BotExtension.class,commandRunner);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -51,7 +64,7 @@ public class ExecutorRouter {
 		}
 	}
 
-	public void parseCommandRunner(Class<?> clazz) throws Exception {
+	public void attachRoutes(Class<?> clazz) throws Exception {
 		this.routes = new HashMap<String, Method>();
 		for (Method method : clazz.getMethods()){
 			if (method.isAnnotationPresent(CommandRoute.class)) {

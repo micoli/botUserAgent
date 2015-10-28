@@ -32,6 +32,7 @@ import net.sourceforge.peers.sip.transport.SipRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.micoli.api.PluginsManager;
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
