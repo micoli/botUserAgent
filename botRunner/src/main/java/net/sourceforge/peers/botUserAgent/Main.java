@@ -7,9 +7,9 @@ import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 
 import org.json.simple.parser.ParseException;
+import org.micoli.api.PluginsManager;
 
 import com.martiansoftware.jsap.JSAPException;
-
 
 public class Main {
 

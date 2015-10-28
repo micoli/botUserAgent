@@ -40,7 +40,7 @@ public class BotAgent implements SipListener,CommandRunner {
 	private BotUserAgent				userAgent;
 	private Logger						logger;
 	private PeerConfig					config;
-	private ExecutorRouter					executorRouter;
+	private ExecutorRouter				executorRouter;
 	private String 						lastStatus;
 	private String						lastCallId;
 
@@ -48,7 +48,7 @@ public class BotAgent implements SipListener,CommandRunner {
 		this.botsManager	= botsManager;
 		this.logger			= logger;
 		this.config			= config;
-		this.executorRouter		= new ExecutorRouter(this);
+		this.executorRouter	= new ExecutorRouter(this);
 
 		BotSoundManager javaxSoundManager = new BotSoundManager(logger);
 		setAnswerFile("/tmp/null.raw");

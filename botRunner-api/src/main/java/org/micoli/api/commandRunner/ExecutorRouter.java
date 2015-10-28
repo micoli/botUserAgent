@@ -4,6 +4,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import org.micoli.api.PluginsManager;
+import org.micoli.botUserAgent.BotExtension;
+
 public class ExecutorRouter {
 	protected String lastCommand = "bot action=call from=6000 to=6001";
 	protected HashMap<String, Method>	routes;
@@ -13,6 +16,7 @@ public class ExecutorRouter {
 		this.commandRunner= commandRunner;
 		try {
 			parseCommandRunner(commandRunner.getClass());
+			PluginsManager.bindExtension(BotExtension.class,commandRunner);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
