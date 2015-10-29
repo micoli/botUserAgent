@@ -35,6 +35,7 @@ import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
 import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.botUserAgent.AudioPlugin;
+import org.micoli.botUserAgent.BotsManagerApi;
 
 public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 	private BotsManager					botsManager;
@@ -68,8 +69,8 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 				JSCallback("tick",new Object[] {});
 			}
 		}, 20, 20, TimeUnit.SECONDS);
-
 	}
+
 	@CommandRoute(value="getActiveCall")
 	public String getActiveCall(CommandArgs commandArgs) {
 		Dialog dialog = this.getActiveCall();
@@ -435,20 +436,20 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 	}
 
 	@Override
-	public void streamAudioFile(SipRequest sipRequest, String filename) {
+	public void playAudioFile(String callId, String filename) {
 		try {
-			userAgent.sendAudioFile(sipRequest, filename);
+			userAgent.sendAudioFile(this.botsManager.getSipRequest(callId), filename);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void streamAudioSource(SipRequest sipRequest, SoundSource source) {
+	public void playAudioSource(String callId, SoundSource source) {
 	}
 
-	/*public boolean sendCommand(String command, CommandArgs commandArgs) {
-		JSCallback("externalCommand", new Object[] {command,commandArgs});
-		return true;
-	}*/
+	@Override
+	public BotsManagerApi getBotsManager() {
+		return botsManager;
+	}
 }

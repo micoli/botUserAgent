@@ -2,7 +2,7 @@
 
 ##Installation
 * Peers lib (SIP/RTP layer)
-  * git clone https://github.com/ymartineau/peers.git
+  * git clone https://github.com/micoli/peers.git
   * cd peers
   * mvn install; cd ..
 
@@ -12,7 +12,7 @@
   * mvn install;cd..
 
 * Mary TTS
-  * git clone https://github.com/marytts/marytts.git
+  * git clone https://github.com/micoli/marytts.git
   * cd marytts
   * mvn install;cd..
 

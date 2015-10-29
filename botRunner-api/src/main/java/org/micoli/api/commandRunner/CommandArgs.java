@@ -10,9 +10,22 @@ import org.json.simple.JSONObject;
 
 public class CommandArgs {
 	protected Map<String, String> args;
+	protected Object context;
 
 	public CommandArgs(){
 		args = new HashMap<String, String>();
+	}
+
+	public void setContext(Object context){
+		this.context = context;
+	}
+
+	public Object getContext(){
+		return this.context;
+	}
+
+	public <T> T getContext(Class<T> clz){
+		return clz.cast(this.context);
 	}
 
 	public CommandArgs(JSONObject json){

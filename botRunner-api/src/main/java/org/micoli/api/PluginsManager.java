@@ -8,7 +8,6 @@ import org.micoli.api.commandRunner.GenericCommands;
 import org.micoli.botUserAgent.BotExtension;
 
 import ro.fortsoft.pf4j.DefaultPluginManager;
-import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.PluginManager;
 
 public class PluginsManager {
@@ -69,7 +68,7 @@ public class PluginsManager {
 		botExtensions = getExtensionsbyClass(extensionPointClass);
 
 		for (BotExtension botExtension : botExtensions) {
-			((BotExtension) botExtension).bind(commandRunner);
+			//((BotExtension) botExtension).bind(commandRunner);
 		}
 	}
 }

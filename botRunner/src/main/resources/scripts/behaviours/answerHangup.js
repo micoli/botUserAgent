@@ -46,6 +46,7 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 					var lng = getRandomInt(4000,10000);
 					botLog(that.id,"acceptCallByCallId ",coloredCallid , "will hang in " + lng);
 					that.ua.acceptCallByCallId(callId);
+					///////that.ua.execute("sayWord",new CommandArgs({"callId":callId,"words":"bonjour monsieur"}));
 					setTimeout(function(){
 						botLog(that.id,"terminateByCallId",coloredCallid);
 						that.ua.terminateByCallId(callId);
@@ -55,7 +56,7 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 		}
 	},
 
-	promiseIncomingCall : function(sipRequest,provResponse,callId){
+	/*promiseIncomingCall : function(sipRequest,provResponse,callId){
 		var that = this;
 
 		(new Promise(function (success){
@@ -78,5 +79,5 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 		}).error(function(){
 			botLog(that.id,"error ",callId);
 		});
-	}
+	}*/
 });

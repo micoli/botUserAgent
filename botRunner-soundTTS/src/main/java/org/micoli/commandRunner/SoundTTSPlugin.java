@@ -17,16 +17,16 @@ import marytts.MaryInterface;
 import marytts.config.MaryConfig;
 import marytts.exceptions.MaryConfigurationException;
 import marytts.exceptions.SynthesisException;
+import net.sourceforge.peers.sip.transport.SipRequest;
 
+import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.botUserAgent.AudioPlugin;
 import org.micoli.botUserAgent.BotExtension;
 
+import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.Plugin;
 import ro.fortsoft.pf4j.PluginWrapper;
-//import org.micoli.botUserAgent.BotExtension;
-import ro.fortsoft.pf4j.Extension;
-//import org.micoli.botUserAgent.BotExtension;
 
 public class SoundTTSPlugin extends Plugin {
 	private static MaryInterface marytts;
@@ -60,36 +60,29 @@ public class SoundTTSPlugin extends Plugin {
 	@Extension
 	public static class SoundTTS implements BotExtension{
 
-		@Override
-		public void bind(Object object) {
-			System.out.println("bind sounf for : "+object.toString());
-		}
-
-		public void sayWord(String words){
-			sayWord(words,"lastCallId");
-		}
-
 		@CommandRoute(value="print", args={"text"})
-		public void print(String text){
-			System.out.println("PRINT::"+text);
+		public String print(CommandArgs args){
+			String result = "PRINT: "+args.get("text")+", context: "+args.getContext();
+			System.out.println(result);
+			return result;
 		}
 
 		@CommandRoute(value="sayWords", args={"words","callId"})
-		public void sayWord(final String words,final String callId){
+		public void sayWord(final CommandArgs args){
 			try {
 				new java.util.Timer().schedule(new java.util.TimerTask() {
 					@Override
 					public void run() {
 						try {
-							String tmpFileName="/tmp/"+callId+".wav";
-							saveAudio(words, tmpFileName);
-							//UserAgent userAgent,
-							//userAgent.sendAudioFile(botsManager.getSipRequest(callId),tmpFileName);
+							String tmpFileName="/tmp/"+args.get("callId")+".wav";
+							saveAudio(args.get("words"), tmpFileName);
+
+							args.getContext(AudioPlugin.class).playAudioFile(args.get("callId"), tmpFileName);
 						} catch (SynthesisException | InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
-				},300);
+				},200);
 			} catch (SecurityException| IllegalArgumentException e) {
 				e.printStackTrace();
 			}

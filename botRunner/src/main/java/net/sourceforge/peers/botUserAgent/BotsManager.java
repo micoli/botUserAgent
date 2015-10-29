@@ -34,9 +34,10 @@ import org.micoli.api.PluginsManager;
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
-import org.micoli.api.commandRunner.ExecutorRouter;
+import org.micoli.botUserAgent.BotsManagerApi;
 import org.micoli.http.Client;
-public class BotsManager implements CliLoggerOutput,CommandRunner  {
+
+public class BotsManager implements CliLoggerOutput,CommandRunner,BotsManagerApi  {
 	private HashMap<String, String>		loadedScripts;
 	private HashMap<String, BotAgent>	botAgents;
 	private Iterator<PeerConfig>		iterator;
