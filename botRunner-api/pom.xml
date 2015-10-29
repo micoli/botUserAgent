@@ -44,6 +44,11 @@
 			<artifactId>reflections</artifactId>
 			<version>0.9.9-RC1</version>
 		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.peers</groupId>
+			<artifactId>peers-lib</artifactId>
+			<version>0.5.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 </project>

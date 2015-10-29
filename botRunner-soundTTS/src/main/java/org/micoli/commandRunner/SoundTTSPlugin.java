@@ -1,6 +1,7 @@
 package org.micoli.commandRunner;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,26 +12,25 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
-//import org.micoli.botUserAgent.BotExtension;
-
-
-
-import org.micoli.api.commandRunner.CommandRoute;
-import org.micoli.botUserAgent.BotExtension;
-
 import marytts.LocalMaryInterface;
 import marytts.MaryInterface;
+import marytts.config.MaryConfig;
 import marytts.exceptions.MaryConfigurationException;
 import marytts.exceptions.SynthesisException;
 
-//import org.micoli.botUserAgent.BotExtension;
+import org.micoli.api.commandRunner.CommandRoute;
+import org.micoli.botUserAgent.AudioPlugin;
+import org.micoli.botUserAgent.BotExtension;
 
-import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.Plugin;
 import ro.fortsoft.pf4j.PluginWrapper;
+//import org.micoli.botUserAgent.BotExtension;
+import ro.fortsoft.pf4j.Extension;
+//import org.micoli.botUserAgent.BotExtension;
 
 public class SoundTTSPlugin extends Plugin {
 	private static MaryInterface marytts;
+
 	public SoundTTSPlugin(PluginWrapper wrapper) {
 		super(wrapper);
 	}
@@ -39,8 +39,15 @@ public class SoundTTSPlugin extends Plugin {
 	public void start() {
 		System.out.println("SoundTTSPlugin.start()");
 		try {
+			String configFile;
+			//configFile = System.getProperty("pf4j.pluginsDir")+""+this.wrapper.getPluginPath()+"/marytts/config/marybase.config";
+			//System.out.println(configFile);
+			configFile = "../botRunner-soundTTS/conf/marybase.config";
+			System.out.println(configFile);
+
+			MaryConfig.addConfig(new TTSConfig(new FileInputStream(new File(configFile))));
 			marytts = new LocalMaryInterface();
-		} catch (MaryConfigurationException e) {
+		} catch (MaryConfigurationException | FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
@@ -60,6 +67,11 @@ public class SoundTTSPlugin extends Plugin {
 
 		public void sayWord(String words){
 			sayWord(words,"lastCallId");
+		}
+
+		@CommandRoute(value="print", args={"text"})
+		public void print(String text){
+			System.out.println("PRINT::"+text);
 		}
 
 		@CommandRoute(value="sayWords", args={"words","callId"})
@@ -93,7 +105,7 @@ public class SoundTTSPlugin extends Plugin {
 				}
 			}
 		}
-
+		@CommandRoute(value="saveAudio", args={"words","filename"})
 		public void saveAudio(String words,String outFileName) throws SynthesisException, InterruptedException{
 			//dumpToFile(marytts.generateAudio(words),outFileName);
 			convert(marytts.generateAudio(words),outFileName);

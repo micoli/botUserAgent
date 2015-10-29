@@ -1,8 +1,8 @@
 <!--
- Describes the plugin archive
+Describes the plugin archive
 
- @author Decebal Suiu
- @version 1.0
+@author Decebal Suiu
+@version 1.0
 -->
 <assembly>
 	<id>plugin</id>
@@ -12,26 +12,34 @@
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<dependencySets>
 		<dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <scope>runtime</scope>
+			<useProjectArtifact>false</useProjectArtifact>
+			<scope>runtime</scope>
 			<outputDirectory>lib</outputDirectory>
 			<includes>
 				<include>*:jar:*</include>
 			</includes>
 		</dependencySet>
 	</dependencySets>
-    <!--
-    <fileSets>
-        <fileSet>
-            <directory>target/classes</directory>
-            <outputDirectory>classes</outputDirectory>
-        </fileSet>
-    </fileSets>
-    -->
+	<!--
+	<fileSets>
+		<fileSet>
+			<directory>target/classes</directory>
+			<outputDirectory>classes</outputDirectory>
+		</fileSet>
+	</fileSets>
+	-->
 	<fileSets>
 		<fileSet>
 			<directory>target/plugin-classes</directory>
 			<outputDirectory>classes</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>target/plugin-classes/marytts</directory>
+			<outputDirectory>marytts</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>target/plugin-classes/META-INF</directory>
+			<outputDirectory>META-INF</outputDirectory>
 		</fileSet>
 	</fileSets>
 </assembly>

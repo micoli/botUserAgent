@@ -13,7 +13,7 @@ import ro.fortsoft.pf4j.PluginManager;
 
 public class PluginsManager {
 	static List<GenericCommands> genericCommands = null;;
-	static List<Extension> botExtensions = null;;
+	static List<BotExtension> botExtensions = null;;
 	static PluginManager pluginManager;
 
 	public static void init(){
@@ -34,7 +34,7 @@ public class PluginsManager {
 	}
 
 	public static void startGenericCommands(CommandRunner commandRunner,String mask){
-		ExecutorRouter executorRouter = new ExecutorRouter(commandRunner);
+		ExecutorRouter executorRouter = new ExecutorRouter(commandRunner,false);
 
 		genericCommands = pluginManager.getExtensions(GenericCommands.class);
 		String pluginList="";
@@ -53,11 +53,11 @@ public class PluginsManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<Extension> getExtensionsbyClass(@SuppressWarnings("rawtypes") Class extensionPointClass){
+	public static List<BotExtension> getExtensionsbyClass(@SuppressWarnings("rawtypes") Class extensionPointClass){
 		if(botExtensions == null){
 			botExtensions = pluginManager.getExtensions(extensionPointClass);
 			String pluginList="";
-			for (Extension botExtension : botExtensions) {
+			for (BotExtension botExtension : botExtensions) {
 				pluginList=pluginList+(pluginList.equals("")?"":",")+ botExtension.getClass().getSimpleName();
 			}
 			System.out.println(String.format("Found %d extensions for extension point '%s': %s", botExtensions.size(), extensionPointClass.getSimpleName(),pluginList));
@@ -68,7 +68,7 @@ public class PluginsManager {
 	public static void bindExtensionByClass(@SuppressWarnings("rawtypes") Class extensionPointClass ,CommandRunner commandRunner){
 		botExtensions = getExtensionsbyClass(extensionPointClass);
 
-		for (Extension botExtension : botExtensions) {
+		for (BotExtension botExtension : botExtensions) {
 			((BotExtension) botExtension).bind(commandRunner);
 		}
 	}

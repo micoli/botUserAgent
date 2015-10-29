@@ -1,10 +1,8 @@
 package net.sourceforge.peers.botUserAgent;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -36,7 +34,7 @@ import org.micoli.api.PluginsManager;
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
-import org.micoli.api.commandRunner.GenericCommands;
+import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.http.Client;
 public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	private HashMap<String, String>		loadedScripts;
@@ -109,11 +107,11 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 	public void run() throws IOException, ParseException {
 		File workingDirectory;
 		Bindings engineScope;
-		logger = new CliLogger(this);
+		logger				= new CliLogger(this);
 		this.sipRequests	= new HashMap<String, SipRequest>();
 		workingDirectory	= new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
 		loadedScripts		= new HashMap<String, String> ();
-		botAgents		= new HashMap<String, BotAgent> ();
+		botAgents			= new HashMap<String, BotAgent> ();
 		engine				= new ScriptEngineManager().getEngineByName("nashorn");
 		engineScope			= engine.getBindings(ScriptContext.ENGINE_SCOPE);
 		executorService		= Executors.newCachedThreadPool();
@@ -195,7 +193,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 
 	//CliLoggerOutput
 	public void javaLog(final String message) {
-		this.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				JSExec("javaLog", new Object[]{message});
 			}
@@ -204,7 +202,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 
 	//CliLoggerOutput
 	public void javaNetworkLog(final String message) {
-		this.getExecutorService().submit(new Runnable() {
+		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
 				JSExec("javaNetworkLog", new Object[]{message});
 			}
@@ -222,7 +220,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "unused", "rawtypes", "serial" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@CommandRoute(value="list")
 	public String list(CommandArgs args) {
 		JSONArray list = new JSONArray();
@@ -246,14 +244,6 @@ public class BotsManager implements CliLoggerOutput,CommandRunner  {
 			list.add(bot);
 		}
 		return list.toJSONString();
-	}
-
-	private static BufferedReader getOutput(Process p) {
-		return new BufferedReader(new InputStreamReader(p.getInputStream()));
-	}
-
-	private static BufferedReader getError(Process p) {
-		return new BufferedReader(new InputStreamReader(p.getErrorStream()));
 	}
 
 	/*private static void test() {

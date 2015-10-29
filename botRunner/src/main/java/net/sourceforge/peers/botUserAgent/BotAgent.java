@@ -17,6 +17,7 @@ import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 import net.sourceforge.peers.javaxsound.BotSoundManager;
 import net.sourceforge.peers.media.MediaManager;
 import net.sourceforge.peers.media.MediaMode;
+import net.sourceforge.peers.media.SoundSource;
 import net.sourceforge.peers.sip.Utils;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldName;
@@ -33,8 +34,9 @@ import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
 import org.micoli.api.commandRunner.ExecutorRouter;
+import org.micoli.botUserAgent.AudioPlugin;
 
-public class BotAgent implements SipListener,CommandRunner {
+public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 	private BotsManager					botsManager;
 	private ScheduledExecutorService	scheduledExecutor;
 	private BotUserAgent				userAgent;
@@ -48,7 +50,7 @@ public class BotAgent implements SipListener,CommandRunner {
 		this.botsManager	= botsManager;
 		this.logger			= logger;
 		this.config			= config;
-		this.executorRouter	= new ExecutorRouter(this);
+		this.executorRouter	= new ExecutorRouter(this,true);
 
 		BotSoundManager javaxSoundManager = new BotSoundManager(logger);
 		setAnswerFile("/tmp/null.raw");
@@ -204,7 +206,6 @@ public class BotAgent implements SipListener,CommandRunner {
 				}
 			}
 		});
-
 	}
 
 	public void unregister() {
@@ -431,6 +432,19 @@ public class BotAgent implements SipListener,CommandRunner {
 	@CommandRoute(value="ping", args={"to"})
 	public String ping(CommandArgs commandArgs) {
 		return "pong: "+commandArgs.getDefault("to", "-");
+	}
+
+	@Override
+	public void streamAudioFile(SipRequest sipRequest, String filename) {
+		try {
+			userAgent.sendAudioFile(sipRequest, filename);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void streamAudioSource(SipRequest sipRequest, SoundSource source) {
 	}
 
 	/*public boolean sendCommand(String command, CommandArgs commandArgs) {

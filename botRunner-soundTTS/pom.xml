@@ -16,7 +16,7 @@
 
 	<properties>
 		<plugin.id>botrunner-soundTTS</plugin.id>
-		<plugin.class>org.micoli.commandRunner.soundTTSPlugin</plugin.class>
+		<plugin.class>org.micoli.commandRunner.SoundTTSPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
 		<plugin.provider>micoli</plugin.provider>
 		<plugin.dependencies />
@@ -115,6 +115,11 @@
 	</build>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.google.auto.service</groupId>
+			<artifactId>auto-service</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.peers</groupId>
 			<artifactId>botRunner-api</artifactId>

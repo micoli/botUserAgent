@@ -8,23 +8,34 @@ import java.util.List;
 import org.micoli.api.PluginsManager;
 import org.micoli.botUserAgent.BotExtension;
 
-import ro.fortsoft.pf4j.Extension;
-
 public class ExecutorRouter {
-	protected String lastCommand = "bot action=call from=6000 to=6001";
-	protected HashMap<String, Method> routes;
-	protected CommandRunner commandRunner = null;
+	private class ContextMethod{
+		Object context;
+		Method method;
+		public ContextMethod(Object o,Method m){
+			context=o;
+			method=m;
+		}
+	}
+	//protected String lastCommand = "bot action=call from=6000 to=6001";
+	protected String lastCommand = "bot from=6000 action=print text=aaaa";
+	protected HashMap<String, ContextMethod> routes;
+	//protected CommandRunner commandRunner = null;
 
-	public ExecutorRouter(CommandRunner commandRunner){
-		this.commandRunner= commandRunner;
+	public ExecutorRouter(CommandRunner commandRunner,boolean attachBotExtension){
+		//this.commandRunner= commandRunner;
 		try {
-			attachRoutes(commandRunner.getClass());
+			System.out.println("new ExecutorRouter " + commandRunner.getClass().getSimpleName());
+			this.routes = new HashMap<String, ContextMethod>();
+			attachRoutes(commandRunner.getClass(),commandRunner);
 
-			List<Extension> botExtensions = PluginsManager.getExtensionsbyClass(BotExtension.class);
-			for (Extension botExtension : botExtensions) {
-				attachRoutes(botExtension.getClass());
+			//FIXME : change botExtension to class <T>
+			if (attachBotExtension){
+				List<BotExtension> botExtensions = PluginsManager.getExtensionsbyClass(BotExtension.class);
+				for (BotExtension botExtension : botExtensions) {
+					attachRoutes(botExtension.getClass(),botExtension);
+				}
 			}
-
 			//PluginsManager.bindExtension(BotExtension.class,commandRunner);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -35,13 +46,15 @@ public class ExecutorRouter {
 		return routes.containsKey(route);
 	}
 
-	public Method getCommand(String route){
+	public ContextMethod getCommand(String route){
 		return routes.get(route);
 	}
 
 	public String execute(String route,CommandArgs map){
 		try {
-			return (String) getCommand(route).invoke(commandRunner, map);
+			ContextMethod cm = getCommand(route);
+			System.out.println("Running "+cm.context.getClass().getSimpleName().toString()+"::"+route+" "+cm.method.getName()+" "+cm.context.getClass().getSimpleName()+" "+ map.toString() );
+			return (String) cm.method.invoke(cm.context, map);
 		} catch (IllegalAccessException | IllegalArgumentException| InvocationTargetException e) {
 			e.printStackTrace();
 		}
@@ -64,13 +77,14 @@ public class ExecutorRouter {
 		}
 	}
 
-	public void attachRoutes(Class<?> clazz) throws Exception {
-		this.routes = new HashMap<String, Method>();
-		for (Method method : clazz.getMethods()){
+	public void attachRoutes(Class<?> cls,Object context) throws Exception {
+		System.out.println("    Attaching routes: "+cls.getSimpleName().toString());
+		for (Method method : cls.getMethods()){
 			if (method.isAnnotationPresent(CommandRoute.class)) {
 				CommandRoute route = method.getAnnotation(CommandRoute.class);
 				try {
-					routes.put(route.value(), method);
+					System.out.println("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+context.getClass().getSimpleName());
+					routes.put(route.value(), new ContextMethod(context,method));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
