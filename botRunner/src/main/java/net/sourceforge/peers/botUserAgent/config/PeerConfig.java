@@ -26,7 +26,6 @@ public class PeerConfig implements Config {
 	public InetAddress getLocalInetAddress() {
 		if(this.localIpAddress== null){
 			try {
-				//inetAddress = InetAddress.getByName("10.90.0.203");
 				//inetAddress = InetAddress.getLocalHost();
 				this.localIpAddress = InetAddress.getByName("0.0.0.0");
 			} catch (UnknownHostException e) {
@@ -144,7 +143,6 @@ public class PeerConfig implements Config {
 	public void setRtpPort(int rtpPort) {
 		this.rtpPort=rtpPort;
 	}
-
 	public void save() {
 	}
 }

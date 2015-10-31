@@ -1,5 +1,8 @@
+
 this.behaviours.answerHangup = this.behaviours._default.extnd({
 	preInit: function() {
+		//Java.type("org.micoli.processes.syncExec").exec("/bin/ls /tmp/");;
+		syncExec.exec("/bin/ls /tmp/");;
 		var that = this;
 		var aNbr=['zero','un','deux','trois','quatres','cinq','six','sept','huit','neuf'];
 		that.audioFile="/tmp/" + that.id + ".raw";
@@ -46,7 +49,15 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 					var lng = getRandomInt(4000,10000);
 					botLog(that.id,"acceptCallByCallId ",coloredCallid , "will hang in " + lng);
 					that.ua.acceptCallByCallId(callId);
-					///////that.ua.execute("sayWord",new CommandArgs({"callId":callId,"words":"bonjour monsieur"}));
+					try{
+						console.log('error1');
+						that.ua.execute("sayWords",new CommandArgs({"callId":callId,"words":"bonjour monsieur"}));
+						console.log('error2');
+					}catch(e){
+						console.log('error3');
+						console.log(e);
+					}
+
 					setTimeout(function(){
 						botLog(that.id,"terminateByCallId",coloredCallid);
 						that.ua.terminateByCallId(callId);
@@ -54,7 +65,7 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 				}
 			},lng1);
 		}
-	},
+	}
 
 	/*promiseIncomingCall : function(sipRequest,provResponse,callId){
 		var that = this;

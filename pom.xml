@@ -36,6 +36,16 @@
 		<java.version>1.7</java.version>
 	</properties>
 
+	<modules>
+		<module>botRunner-api</module>
+		<module>botRunner</module>
+		<module>plugin-webCommands</module>
+		<module>plugin-networkCommands</module>
+		<module>plugin-consoleCommands</module>
+		<module>plugin-SoundTTS</module>
+		<module>plugin-jsLib</module>
+	</modules>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -51,34 +61,8 @@
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.3.2</version>
+				<version>2.1</version><!--$NO-MVN-MAN-VER$-->
 				<configuration>
 					<goals>deploy</goals>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
@@ -103,7 +87,32 @@
 					</archive>
 				</configuration>
 			</plugin>
+
 			<!--
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -124,13 +133,4 @@
 			-->
 		</plugins>
 	</build>
-
-	<modules>
-		<module>botRunner-api</module>
-		<module>botRunner-webCommands</module>
-		<module>botRunner-networkCommands</module>
-		<module>botRunner-consoleCommands</module>
-<!-- 		<module>botRunner-SoundTTS</module> -->
-		<module>botRunner</module>
-	</modules>
 </project>

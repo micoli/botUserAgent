@@ -4,8 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sourceforge.peers.botUserAgent.Main;
 
@@ -13,6 +16,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -20,38 +25,100 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 
 public class GlobalConfig{
-	public static JSAPResult config;
+	protected final static Logger logger = LoggerFactory.getLogger(Main.class);
+	private static Map<String,FlaggedOption> options = new HashMap<String,FlaggedOption>();
+	private static JSAPResult config;
 	private static JSAP jsap = new JSAP();
-	private static FlaggedOption optPeersConfigFile;
-	private static FlaggedOption optBindAddr;
-	private static FlaggedOption optScriptPath;
-	private static FlaggedOption optScriptOverloadPath;
-	private static FlaggedOption optLogDebug;
-	private static FlaggedOption optLogInfo;
-	private static FlaggedOption optLogError;
-	private static FlaggedOption optLogTraceNetwork;
+
+	public static boolean parseArgs(String[] args) throws JSAPException{
+		init();
+		setConfig(jsap.parse(args));
+
+		if (!getConfig().success()) {
+			showUsage();
+			return false;
+		}
+		return true;
+	}
 
 	@SuppressWarnings("rawtypes")
 	public static void showUsage(){
-		System.err.println();
-		for (java.util.Iterator errs = config.getErrorMessageIterator();
+		for (java.util.Iterator errs = getConfig().getErrorMessageIterator();
 				errs.hasNext();) {
-			System.err.println("Error: " + errs.next());
+			logger.error("Error: " + errs.next());
 		}
 
-		System.err.println();
-		System.err.println("Usage: java "+ Main.class.getName());
-		System.err.println("            "+ jsap.getUsage());
-		System.err.println();
-		System.err.println(jsap.getHelp());
+		logger.error("");
+		logger.error("Usage: java "+ Main.class.getName());
+		logger.error("            "+ jsap.getUsage());
+		logger.error("");
+		logger.error(jsap.getHelp());
+	}
+
+	private static void init() throws JSAPException{
+		options.put("optPeersConfigFile",new FlaggedOption("peersConfigFile")
+			.setStringParser(JSAP.STRING_PARSER)
+			.setDefault("src/main/resources/peers.conf.json")
+			.setShortFlag('p')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get("optPeersConfigFile"));
+
+		options.put("optBindAddr", new FlaggedOption("bindAddr")
+			.setStringParser(JSAP.INETADDRESS_PARSER)
+			.setDefault("0.0.0.0")
+			.setShortFlag('a')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get("optBindAddr"));
+
+		options.put("optScriptPath", new FlaggedOption("scriptPath")
+			.setStringParser(JSAP.STRING_PARSER)
+			.setDefault("src/main/resources/scripts/")
+			.setShortFlag('s')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get("optScriptPath"));
+
+		options.put("optScriptOverloadPath", new FlaggedOption("scriptOverloadPath")
+			.setStringParser(JSAP.STRING_PARSER)
+			.setDefault("src/main/resources/scripts/overload")
+			.setShortFlag('o')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get("optScriptOverloadPath"));
+
+		options.put("optLogDebug", new FlaggedOption("logDebug")
+			.setStringParser(JSAP.BOOLEAN_PARSER)
+			.setDefault("0")
+			.setShortFlag('d')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get("optLogDebug"));
+
+		options.put("optLogInfo", new FlaggedOption("logInfo")
+			.setStringParser(JSAP.BOOLEAN_PARSER)
+			.setDefault("1")
+			.setShortFlag('i')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get("optLogInfo"));
+
+		options.put("optLogError", new FlaggedOption("logError")
+			.setStringParser(JSAP.BOOLEAN_PARSER)
+			.setDefault("1")
+			.setShortFlag('e')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get("optLogError"));
+
+		options.put("optLogTraceNetwork", new FlaggedOption("logTraceNetwork")
+			.setStringParser(JSAP.BOOLEAN_PARSER)
+			.setDefault("0")
+			.setShortFlag('n')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get("optLogTraceNetwork"));
 	}
 
 	@SuppressWarnings("unchecked")
 	public static List<PeerConfig> readPeersConf() throws FileNotFoundException, IOException, ParseException{
 		ArrayList<PeerConfig> peers= new ArrayList<PeerConfig>();
 		JSONParser parser = new JSONParser();
-		String peersConfFilename = GlobalConfig.config.getString("peersConfigFile");
-		System.out.println("Peers conf :: "+peersConfFilename);
+		String peersConfFilename = GlobalConfig.getConfig().getString("peersConfigFile");
+		logger.info("Peers conf :: "+peersConfFilename);
 		Object obj = parser.parse(new FileReader(peersConfFilename));
 
 		JSONObject jsonConf = (JSONObject) obj;
@@ -88,102 +155,55 @@ public class GlobalConfig{
 		}
 	}
 
-	public static boolean parseArgs(String[] args) throws JSAPException{
-		optPeersConfigFile = new FlaggedOption("peersConfigFile")
-			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("src/main/resources/peers.conf.json")
-			.setShortFlag('p')
-			.setLongFlag(JSAP.NO_LONGFLAG);
-		jsap.registerParameter(optPeersConfigFile);
-
-		optBindAddr = new FlaggedOption("bindAddr")
-			.setStringParser(JSAP.INETADDRESS_PARSER)
-			.setDefault("0.0.0.0")
-			.setShortFlag('a')
-			.setLongFlag(JSAP.NO_LONGFLAG);
-		jsap.registerParameter(optBindAddr);
-
-		optScriptPath = new FlaggedOption("scriptPath")
-			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("src/main/resources/scripts/")
-			.setShortFlag('s')
-			.setLongFlag(JSAP.NO_LONGFLAG);
-		jsap.registerParameter(optScriptPath);
-
-		optScriptOverloadPath = new FlaggedOption("scriptOverloadPath")
-			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("src/main/resources/scripts/overload")
-			.setShortFlag('o')
-			.setLongFlag(JSAP.NO_LONGFLAG);
-		jsap.registerParameter(optScriptOverloadPath);
-
-		optLogDebug = new FlaggedOption("logDebug")
-			.setStringParser(JSAP.BOOLEAN_PARSER)
-			.setDefault("0")
-			.setShortFlag('d')
-			.setLongFlag(JSAP.NO_LONGFLAG);
-		jsap.registerParameter(optLogDebug);
-
-		optLogInfo = new FlaggedOption("logInfo")
-			.setStringParser(JSAP.BOOLEAN_PARSER)
-			.setDefault("1")
-			.setShortFlag('i')
-			.setLongFlag(JSAP.NO_LONGFLAG);
-		jsap.registerParameter(optLogInfo);
-
-		optLogError = new FlaggedOption("logError")
-			.setStringParser(JSAP.BOOLEAN_PARSER)
-			.setDefault("1")
-			.setShortFlag('e')
-			.setLongFlag(JSAP.NO_LONGFLAG);
-		jsap.registerParameter(optLogError);
-
-		optLogTraceNetwork = new FlaggedOption("logTraceNetwork")
-			.setStringParser(JSAP.BOOLEAN_PARSER)
-			.setDefault("0")
-			.setShortFlag('n')
-			.setLongFlag(JSAP.NO_LONGFLAG);
-		jsap.registerParameter(optLogTraceNetwork);
-
-		config = jsap.parse(args);
-
-		if (!config.success()) {
-			showUsage();
-			return false;
-		}
-		return true;
-	}
-
 	public static FlaggedOption getOptPeersConfigFile() {
-		return optPeersConfigFile;
+		return options.get("optPeersConfigFile");
 	}
 
 	public static FlaggedOption getOptBindAddr() {
-		return optBindAddr;
+		return options.get("optBindAddr");
 	}
 
 	public static FlaggedOption getOptScriptPath() {
-		return optScriptPath;
+		return options.get("optScriptPath");
 	}
 
 	public static FlaggedOption getOptScriptOverloadPath() {
-		return optScriptOverloadPath;
+		return options.get("optScriptOverloadPath");
 	}
 
 	public static FlaggedOption getOptLogDebug() {
-		return optLogDebug;
+		return options.get("optLogDebug");
 	}
 
 	public static FlaggedOption getOptLogInfo() {
-		return optLogInfo;
+		return options.get("optLogInfo");
 	}
 
 	public static FlaggedOption getOptLogError() {
-		return optLogError;
+		return options.get("optLogError");
 	}
 
 	public static FlaggedOption getOptLogTraceNetwork() {
-		return optLogTraceNetwork;
+		return options.get("optLogTraceNetwork");
+	}
+
+	public static Object getConfigs() {
+		String configStr = "";
+		String sepa = "";
+		for(Entry<String,FlaggedOption> option : options.entrySet()) {
+			//String key = option.getKey();
+			FlaggedOption value = option.getValue();
+			configStr=configStr+sepa+value.getShortFlag()+"::"+value.getLongFlag()+" ["+value.toString()+"]";
+			sepa=", ";
+		}
+		return configStr;
+	}
+
+	public static JSAPResult getConfig() {
+		return GlobalConfig.config;
+	}
+	public static void setConfig(JSAPResult config) {
+		GlobalConfig.config = config;
 	}
 
 

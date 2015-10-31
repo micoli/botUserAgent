@@ -10,7 +10,7 @@ wget https://maven.java.net/content/repositories/public/com/oracle/avatar-js/0.1
 	var workingDirectory='/Users/o.michaud/Documents/workspace/botUserAgent/src/main/resources/scripts';
 	//load(workingDirectory+'/runtime.js');
 	load(workingDirectory+'/libs/context.ext.js');
-	window=this;
+	global=this;
 	load(workingDirectory+'/libs/q.js');
 	print (7);
 	var p = new Promise(function (success, reject){

@@ -8,23 +8,28 @@ import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 
 import org.json.simple.parser.ParseException;
 import org.micoli.api.PluginsManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.martiansoftware.jsap.JSAPException;
 
 public class Main {
+	protected final static Logger logger = LoggerFactory.getLogger(Main.class);
 
 	public static void main(String[] args) throws JSAPException, FileNotFoundException, IOException, ParseException {
+		logger.debug("Initialisation");
 		SipUtils.init();
-
-		System.getProperty("pf4j.pluginsDir", "plugins");
-
-		PluginsManager.init();
-		PluginsManager.start();
 
 		if(!GlobalConfig.parseArgs(args)){
 			System.exit(1);
 		}
-		BotsManager botsManager= new BotsManager();
+		logger.debug("Parse Arguments :",GlobalConfig.getConfigs());
+
+		System.getProperty("pf4j.pluginsDir", "plugins");
+
+		BotsManager botsManager = new BotsManager();
+		PluginsManager.init(botsManager);
+		PluginsManager.start();
 		botsManager.run();
 	}
 }

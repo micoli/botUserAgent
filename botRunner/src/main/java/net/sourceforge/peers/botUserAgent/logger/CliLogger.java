@@ -19,49 +19,46 @@
 
 package net.sourceforge.peers.botUserAgent.logger;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 
-public class CliLogger implements Logger {
+import org.slf4j.LoggerFactory;
 
-	private CliLoggerOutput out;
-	private SimpleDateFormat logFormatter;
+public class CliLogger implements net.sourceforge.peers.Logger{
+	private org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 	private SimpleDateFormat networkFormatter;
-	public boolean logDebug=true;
-	public boolean logInfo=true;
-	public boolean logError=true;
-	public boolean logTraceNetwork=false;
+	//public boolean logDebug=true;
+	//public boolean logInfo=true;
+	//public boolean logError=true;
+	//public boolean logTraceNetwork=false;
 
-	public CliLogger(CliLoggerOutput out) {
-		this.out = out;
-		logFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+	public CliLogger() {
 		networkFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
 	}
 
 	public synchronized void debug(String message) {
-		if(!GlobalConfig.config.getBoolean("logDebug")) return;
-		//System.out.println(genericLog(message.toString(), "DEBUG"));
-		out.javaLog(genericLog(message.toString(), "DEBUG"));
+		logger.debug(message);
+		//if(!GlobalConfig.config.getBoolean("logDebug")) return;
+		//out.javaLog(genericLog(message.toString(), "DEBUG"));
 	}
 
 	public synchronized void info(String message) {
-		if(!GlobalConfig.config.getBoolean("logInfo")) return;
-		//System.out.println(genericLog(message.toString(), "INFO"));
-		out.javaLog(genericLog(message.toString(), "INFO"));
+		logger.info(message);
+		//if(!GlobalConfig.config.getBoolean("logInfo")) return;
+		//out.javaLog(genericLog(message.toString(), "INFO"));
 	}
 
 	public synchronized void error(String message) {
-		if(!GlobalConfig.config.getBoolean("logError")) return;
-		//System.err.println(genericLog(message.toString(), "ERROR"));
-		out.javaLog(genericLog(message.toString(), "ERROR"));
+		logger.error(message);
+		//if(!GlobalConfig.config.getBoolean("logError")) return;
+		//out.javaLog(genericLog(message.toString(), "ERROR"));
 	}
 
 	public synchronized void error(String message, Exception exception) {
+		logger.error(message,exception);
+		/*
 		if(!GlobalConfig.config.getBoolean("logError")) return;
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -71,10 +68,11 @@ public class CliLogger implements Logger {
 		printWriter.flush();
 		System.err.println(stringWriter.toString());
 		out.javaLog(stringWriter.toString());
+		*/
 	}
 
 	public synchronized void traceNetwork(String message, String direction) {
-		if(!GlobalConfig.config.getBoolean("logTraceNetwork")) return;
+		if(!GlobalConfig.getConfig().getBoolean("logTraceNetwork")) return;
 		StringBuffer buf = new StringBuffer();
 		buf.append(networkFormatter.format(new Date()));
 		buf.append(" ");
@@ -83,21 +81,6 @@ public class CliLogger implements Logger {
 		buf.append(Thread.currentThread().getName());
 		buf.append("]\n\n");
 		buf.append(message);
-		buf.append("\n");
-		//System.out.println(buf.toString());
-		out.javaNetworkLog(buf.toString());
-	}
-
-	private final String genericLog(String message, String level) {
-		StringBuffer buf = new StringBuffer();
-		buf.append(logFormatter.format(new Date()));
-		buf.append(" ");
-		buf.append(level);
-		buf.append(" [");
-		buf.append(Thread.currentThread().getName());
-		buf.append("] ");
-		buf.append(message);
-		//buf.append("\n");
-		return buf.toString();
+		logger.debug(buf.toString());
 	}
 }

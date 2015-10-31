@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.net.SocketException;
 
 import net.sourceforge.peers.Config;
-import net.sourceforge.peers.Logger;
+import net.sourceforge.peers.botUserAgent.logger.CliLogger;
 import net.sourceforge.peers.media.AbstractSoundManager;
 import net.sourceforge.peers.media.CaptureRtpSender;
 import net.sourceforge.peers.media.FileReader;
@@ -19,9 +19,14 @@ import net.sourceforge.peers.sip.core.useragent.SipListener;
 import net.sourceforge.peers.sip.core.useragent.UserAgent;
 import net.sourceforge.peers.sip.transport.SipRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BotUserAgent extends UserAgent {
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+
 	public BotUserAgent(SipListener sipListener, Config config, Logger logger,AbstractSoundManager soundManager) throws SocketException {
-		super(sipListener, config, logger, soundManager);
+		super(sipListener, config, new CliLogger(), soundManager);
 	}
 
 	protected Object getFieldFromClass(Object context, Class cls,String fieldName){
@@ -50,7 +55,7 @@ public class BotUserAgent extends UserAgent {
 						Echo
 	 */
 	public void sendAudioFile(SipRequest oSIPRequest,String filename) throws IllegalArgumentException, IllegalAccessException {
-		Logger		logger		= (Logger) getFieldFromClass(this,UserAgent.class,"logger");
+		net.sourceforge.peers.Logger logger = (net.sourceforge.peers.Logger) getFieldFromClass(this,UserAgent.class,"logger");
 		SDPManager	sdpManager	= (SDPManager) getFieldFromClass(this,UserAgent.class,"sdpManager");
 		RtpSession	rtpSession	= (RtpSession) getFieldFromClass(getMediaManager(),MediaManager.class,"rtpSession");
 		try {
@@ -58,19 +63,11 @@ public class BotUserAgent extends UserAgent {
 			MediaDestination mediaDestination = sdpManager.getMediaDestination(sessionDescription);
 			FileReader fileReader = new FileReader(filename, logger);
 
-			System.out.println("logger "			+logger);
-			System.out.println("sdpManager "		+sdpManager);
-			System.out.println("mediaDestination "	+mediaDestination);
-			System.out.println("fileReader "		+fileReader);
-			System.out.println("rtpSession "		+rtpSession);
+			logger.info(String.format("sendAudioFile : logger: %s, sdpManager: %s, mediaDestination: %s, fileReader: %s, rtpSession: %s", logger,sdpManager,mediaDestination,fileReader,rtpSession));
 
-			try {
-				CaptureRtpSender captureRtpSender = new CaptureRtpSender(rtpSession,fileReader, false, mediaDestination.getCodec(), logger,"");
-				captureRtpSender.start();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} catch (NoCodecException e1) {
+			CaptureRtpSender captureRtpSender = new CaptureRtpSender(rtpSession,fileReader, false, mediaDestination.getCodec(), logger,"");
+			captureRtpSender.start();
+		} catch (NoCodecException | IOException e1) {
 			e1.printStackTrace();
 		}
 	}
@@ -103,7 +100,7 @@ public class BotUserAgent extends UserAgent {
 							datagramSocket = new DatagramSocket(rtpPort);
 						}
 					} catch (SocketException e) {
-						System.out.println("cannot create datagram socket ");
+						logger.error("cannot create datagram socket ");
 						e.printStackTrace();
 					}
 
@@ -111,11 +108,11 @@ public class BotUserAgent extends UserAgent {
 				}
 			}
 		);
-		System.out.println("new rtp DatagramSocket " + datagramSocket.hashCode());
+		logger.debug("new rtp DatagramSocket " + datagramSocket.hashCode());
 		try {
 			datagramSocket.setSoTimeout(30000);
 		} catch (SocketException e) {
-			System.out.println("cannot set timeout on datagram socket ");
+			logger.error("cannot set timeout on datagram socket ");
 			e.printStackTrace();
 		}
 		getMediaManager().setDatagramSocket(datagramSocket);
@@ -126,7 +123,7 @@ public class BotUserAgent extends UserAgent {
 		SDPManager _sdpManager = getSDPManager();
 		//RtpSession rtpSession  = ((BotMediaManager) getMediaManager()).getRtpSession();
 		//RtpSession rtpSession  = getMediaManagerRtpSession(getMediaManager());
-		//System.out.println("diff "+(((BotMediaManager) getMediaManager()).getRtpSession())+" "+rtpSession);
+		//logger.debug("diff "+(((BotMediaManager) getMediaManager()).getRtpSession())+" "+rtpSession);
 		RtpSession _rtpSession = null;
 
 		SessionDescription sessionDescription =_sdpManager.parse(oSIPRequest.getBody());
@@ -142,12 +139,12 @@ public class BotUserAgent extends UserAgent {
 			e.printStackTrace();
 		}
 
-		System.out.println("--- "+ _rtpSession +" "+_rtpSession.toString());
+		logger.debug("--- "+ _rtpSession +" "+_rtpSession.toString());
 
 		//Echo echo;
 		//InetAddress remoteAddress= getRtpSessionRemoteAddress(rtpSession);
 		//int remotePort= getRtpSessionRemotePort(rtpSession);
-		//System.out.println("---"+remoteAddress.getHostAddress() );
+		//logger.debug("---"+remoteAddress.getHostAddress() );
 		//echo = new Echo(getMediaManager().getDatagramSocket(), remoteAddress.getHostAddress(), remotePort,logger);
 
 		//IncomingRtpReader incomingRtpReader;
@@ -165,8 +162,7 @@ public class BotUserAgent extends UserAgent {
 			captureRtpSender = new CaptureRtpSender(_rtpSession,fileReader, false, codec, logger,"");
 			captureRtpSender.start();
 		} catch (IOException e) {
-			System.out.println("a input/output error");
-			e.printStackTrace();
+			logger.error("a input/output error",e);
 			return;
 		}
 

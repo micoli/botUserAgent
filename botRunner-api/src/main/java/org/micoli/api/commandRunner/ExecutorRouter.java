@@ -7,8 +7,12 @@ import java.util.List;
 
 import org.micoli.api.PluginsManager;
 import org.micoli.botUserAgent.BotExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExecutorRouter {
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+
 	private class ContextMethod{
 		public Object context;
 		public Method method;
@@ -25,7 +29,7 @@ public class ExecutorRouter {
 	public ExecutorRouter(CommandRunner commandRunner,boolean attachBotExtension){
 		this.commandRunner= commandRunner;
 		try {
-			System.out.println("new ExecutorRouter " + commandRunner.getClass().getSimpleName());
+			logger.info("new ExecutorRouter " + commandRunner.getClass().getSimpleName());
 			this.routes = new HashMap<String, ContextMethod>();
 			attachRoutes(commandRunner.getClass(),commandRunner);
 
@@ -51,29 +55,32 @@ public class ExecutorRouter {
 	}
 
 	public String execute(String route,CommandArgs map){
-		ContextMethod contextMethod = getCommand(route);
-		return execute(contextMethod,map);
+		if(!routes.containsKey(route)){
+			logger.error("Execute error, unknown route : "+route);
+			return "";
+		}
+		return execute(getCommand(route),map);
 	}
 
 	public String execute(ContextMethod contextMethod,CommandArgs map){
 		try {
-			/*System.out.println("Running "+
+			logger.debug("Running "+
 				commandRunner.getClass().getSimpleName()+
 				"-"+
 				contextMethod.method.getDeclaringClass().getSimpleName().toString()+
 				"::"+
-				route
-				+" "+
 				contextMethod.method.getName()+
 				" "+
 				map.toString()
-			);*/
+			);
 			map.setContext(commandRunner);
+
+			logger.debug("Execute contextMethod: "+contextMethod.method.getName()+", context: "+contextMethod.context.getClass().toString());
 			return (String) contextMethod.method.invoke(contextMethod.context, map);
 		} catch (IllegalAccessException | IllegalArgumentException| InvocationTargetException e) {
 			e.printStackTrace();
 		}
-		return "";
+		return "----";
 	}
 
 	public String executeCommand(String commandStr) {
@@ -93,12 +100,12 @@ public class ExecutorRouter {
 	}
 
 	public void attachRoutes(Class<?> cls,Object context) throws Exception {
-		System.out.println("    Attaching routes: "+cls.getSimpleName().toString());
+		logger.info("    Attaching routes: "+cls.getSimpleName().toString());
 		for (Method method : cls.getMethods()){
 			if (method.isAnnotationPresent(CommandRoute.class)) {
 				CommandRoute route = method.getAnnotation(CommandRoute.class);
 				try {
-					System.out.println("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+context.getClass().getSimpleName());
+					logger.info("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+context.getClass().getSimpleName());
 					routes.put(route.value(), new ContextMethod(context,method));
 				} catch (Exception e) {
 					e.printStackTrace();

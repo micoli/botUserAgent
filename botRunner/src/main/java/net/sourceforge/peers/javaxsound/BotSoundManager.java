@@ -19,12 +19,13 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
-import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.media.AbstractSoundManager;
 
-public class BotSoundManager extends AbstractSoundManager {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-	private Logger logger;
+public class BotSoundManager extends AbstractSoundManager {
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	private AudioFormat audioFormat;
 	private TargetDataLine microphoneDataLine;
 	private SourceDataLine speakerDataLine;
@@ -36,8 +37,7 @@ public class BotSoundManager extends AbstractSoundManager {
 	private boolean mediaDebug;
 	private boolean withStream;
 
-	public BotSoundManager(Logger logger) {
-		this.logger		= logger;
+	public BotSoundManager() {
 		this.mediaDebug = false;
 		this.withStream = false;
 		audioFormat		= new AudioFormat(8000, 16, 1, true, false);

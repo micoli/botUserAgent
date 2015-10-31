@@ -18,11 +18,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
-import net.sourceforge.peers.botUserAgent.logger.CliLogger;
-import net.sourceforge.peers.botUserAgent.logger.CliLoggerOutput;
 import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 import net.sourceforge.peers.sip.transactionuser.Dialog;
 import net.sourceforge.peers.sip.transport.SipRequest;
@@ -35,17 +32,35 @@ import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
 import org.micoli.botUserAgent.BotsManagerApi;
-import org.micoli.http.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class BotsManager implements CliLoggerOutput,CommandRunner,BotsManagerApi  {
+public class BotsManager implements CommandRunner,BotsManagerApi{
+	protected final Logger				logger = LoggerFactory.getLogger(getClass());
+
+	private static ExecutorService		executorService;
 	private HashMap<String, String>		loadedScripts;
 	private HashMap<String, BotAgent>	botAgents;
-	private Iterator<PeerConfig>		iterator;
 	private HashMap<String, SipRequest>	sipRequests;
+	private Iterator<PeerConfig>		iterator;
 	private ScriptEngine				engine;
-	private static ExecutorService		executorService;
-	private Logger						logger;
 	private Boolean						customBindAddr;
+	private Bindings					engineScope;
+	private File						workingDirectory;
+
+	public BotsManager() {
+		this.sipRequests	= new HashMap<String, SipRequest>();
+		workingDirectory	= new File(GlobalConfig.getConfig().getString("scriptPath")).getAbsoluteFile();
+		loadedScripts		= new HashMap<String, String> ();
+		botAgents			= new HashMap<String, BotAgent> ();
+		engine				= new ScriptEngineManager().getEngineByName("nashorn");
+		engineScope			= engine.getBindings(ScriptContext.ENGINE_SCOPE);
+		executorService		= Executors.newCachedThreadPool();
+		customBindAddr		= (!GlobalConfig.getConfig().getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
+
+		engineScope.put("workingDirectory"	, workingDirectory);
+		engineScope.put("global"			, engineScope);
+	}
 
 	public static ExecutorService getExecutorService() {
 		return executorService;
@@ -84,10 +99,8 @@ public class BotsManager implements CliLoggerOutput,CommandRunner,BotsManagerApi
 	private void loadScript(String sFilename) throws FileNotFoundException, ScriptException{
 		if(!loadedScripts.containsKey(sFilename)){
 			loadedScripts.put(sFilename,sFilename);
-			System.out.println("load script :: "+sFilename);
+			logger.debug("load script :: "+sFilename);
 			engine.eval("load('"+sFilename+"');");
-			//nodeServer.run(sFilename);
-			//engine.eval(new FileReader(sFilename));
 		}
 	}
 
@@ -106,22 +119,7 @@ public class BotsManager implements CliLoggerOutput,CommandRunner,BotsManagerApi
 	}
 
 	public void run() throws IOException, ParseException {
-		File workingDirectory;
-		Bindings engineScope;
-		logger				= new CliLogger(this);
-		this.sipRequests	= new HashMap<String, SipRequest>();
-		workingDirectory	= new File(GlobalConfig.config.getString("scriptPath")).getAbsoluteFile();
-		loadedScripts		= new HashMap<String, String> ();
-		botAgents			= new HashMap<String, BotAgent> ();
-		engine				= new ScriptEngineManager().getEngineByName("nashorn");
-		engineScope			= engine.getBindings(ScriptContext.ENGINE_SCOPE);
-		executorService		= Executors.newCachedThreadPool();
-		customBindAddr		= (!GlobalConfig.config.getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
-
 		System.setProperty("user.dir"		, workingDirectory.toString());
-		engineScope.put("window"			, engineScope);
-		engineScope.put("workingDirectory"	, workingDirectory);
-		engineScope.put("http"				, new Client(this.logger));
 
 		Runtime.getRuntime().addShutdownHook(this.getCleanUp());
 		List<PeerConfig> peersList = GlobalConfig.readPeersConf();
@@ -139,10 +137,10 @@ public class BotsManager implements CliLoggerOutput,CommandRunner,BotsManagerApi
 			while (iterator.hasNext()) {
 				PeerConfig config = iterator.next();
 				if(customBindAddr){
-					config.setLocalInetAddress(GlobalConfig.config.getInetAddress("bindAddr"));
+					config.setLocalInetAddress(GlobalConfig.getConfig().getInetAddress("bindAddr"));
 				}
 				logger.info(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
-				botAgents.put(config.getId(),new BotAgent(this,config,logger));
+				botAgents.put(config.getId(),new BotAgent(this,config));
 			}
 
 			PluginsManager.startGenericCommands(this);

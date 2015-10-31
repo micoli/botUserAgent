@@ -1,4 +1,5 @@
 //load("nashorn:mozilla_compat.js");
+window=global;
 load(workingDirectory+'/libs/underscore-min.js');
 load(workingDirectory+'/libs/console.js');
 load(workingDirectory+'/libs/context.ext.js');

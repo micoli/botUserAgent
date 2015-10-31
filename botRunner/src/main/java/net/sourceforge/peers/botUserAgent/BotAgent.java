@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.script.ScriptException;
 
-import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
 import net.sourceforge.peers.botUserAgent.sip.SipUtils;
@@ -36,24 +35,25 @@ import org.micoli.api.commandRunner.CommandRunner;
 import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.botUserAgent.AudioPlugin;
 import org.micoli.botUserAgent.BotsManagerApi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
+	protected final Logger				logger = LoggerFactory.getLogger(getClass());
 	private BotsManager					botsManager;
 	private ScheduledExecutorService	scheduledExecutor;
 	private BotUserAgent				userAgent;
-	private Logger						logger;
 	private PeerConfig					config;
 	private ExecutorRouter				executorRouter;
 	private String 						lastStatus;
 	private String						lastCallId;
 
-	public BotAgent(BotsManager botsManager,PeerConfig config,Logger logger) {
+	public BotAgent(BotsManager botsManager,PeerConfig config) {
 		this.botsManager	= botsManager;
-		this.logger			= logger;
 		this.config			= config;
 		this.executorRouter	= new ExecutorRouter(this,true);
 
-		BotSoundManager javaxSoundManager = new BotSoundManager(logger);
+		BotSoundManager javaxSoundManager = new BotSoundManager();
 		setAnswerFile("/tmp/null.raw");
 		try {
 			userAgent = new BotUserAgent(this, this.config, logger, javaxSoundManager);
@@ -95,13 +95,14 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 	}
 
 	public String execute(String route, CommandArgs commandArgs) {
+		logger.debug("route: "+route);
 		return this.executorRouter.execute(route, commandArgs);
 	}
 
 	public void instantiatePeers() {
 		try {
-			String ipAddress = GlobalConfig.config.getInetAddress("bindAddr").toString().replaceAll("/", "");
-			final BotSoundManager soundManager = new BotSoundManager(logger);
+			String ipAddress = GlobalConfig.getConfig().getInetAddress("bindAddr").toString().replaceAll("/", "");
+			final BotSoundManager soundManager = new BotSoundManager();
 			InetAddress inetAddress;
 			try {
 				inetAddress = InetAddress.getByName(ipAddress);
@@ -116,7 +117,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 			BotsManager.getExecutorService().submit(new Runnable() {
 				public void run() {
 					try {
-						userAgent = new BotUserAgent(BotAgent.this, config,logger, soundManager);
+						userAgent = new BotUserAgent(BotAgent.this, config,null, soundManager);
 					} catch (SocketException e) {
 						logger.error(e.getMessage());
 					}
@@ -163,15 +164,17 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 		});
 	}
 
+	public String getLastCallId(){
+		return lastCallId;
+	}
+
 	public void acceptCall(final SipRequest sipRequest) {
 		String callId = Utils.getMessageCallId(sipRequest);
 		lastCallId = callId;
 		this.setLastStatus("acceptCall "+callId);
 		BotsManager.getExecutorService().submit(new Runnable() {
 			public void run() {
-				DialogManager dialogManager = userAgent.getDialogManager();
-				Dialog dialog = dialogManager.getDialog(callId);
-				userAgent.acceptCall(sipRequest, dialog);
+				userAgent.acceptCall(sipRequest, userAgent.getDialogManager().getDialog(callId));
 			}
 		});
 	}
@@ -180,13 +183,10 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 		final SipRequest oSIPRequest = botsManager.getSipRequest(callId);
 		lastCallId = callId;
 		this.setLastStatus("acceptCallByCallId "+callId);
-		//sayWord("bonjour dix neuf huit sept ",lastCallId);
 		if(oSIPRequest != null){
 			BotsManager.getExecutorService().submit(new Runnable() {
 				public void run() {
-					DialogManager dialogManager = userAgent.getDialogManager();
-					Dialog dialog = dialogManager.getDialog(callId);
-					userAgent.acceptCall(oSIPRequest, dialog);
+					userAgent.acceptCall(oSIPRequest, userAgent.getDialogManager().getDialog(callId));
 				}
 			});
 		}

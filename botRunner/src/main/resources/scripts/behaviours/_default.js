@@ -1,4 +1,4 @@
-this.behaviours._default = window.Class.extnd({
+this.behaviours._default = global.Class.extnd({
 	id		: '',
 	config	: null,
 	ua		: null,
