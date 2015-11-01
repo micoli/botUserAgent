@@ -18,7 +18,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
 import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 import net.sourceforge.peers.sip.transactionuser.Dialog;
@@ -32,6 +31,7 @@ import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
 import org.micoli.botUserAgent.BotsManagerApi;
+import org.micoli.botUserAgent.GlobalConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,13 +50,13 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 
 	public BotsManager() {
 		this.sipRequests	= new HashMap<String, SipRequest>();
-		workingDirectory	= new File(GlobalConfig.getConfig().getString("scriptPath")).getAbsoluteFile();
+		workingDirectory	= new File(GlobalConfig.getConfig().getString(GlobalConfig.optScriptPath)).getAbsoluteFile();
 		loadedScripts		= new HashMap<String, String> ();
 		botAgents			= new HashMap<String, BotAgent> ();
 		engine				= new ScriptEngineManager().getEngineByName("nashorn");
 		engineScope			= engine.getBindings(ScriptContext.ENGINE_SCOPE);
 		executorService		= Executors.newCachedThreadPool();
-		customBindAddr		= (!GlobalConfig.getConfig().getInetAddress("bindAddr").equals(GlobalConfig.getOptBindAddr().getDefault()));
+		customBindAddr		= (!GlobalConfig.getConfig().getInetAddress(GlobalConfig.optBindAddr).equals(GlobalConfig.getOptBindAddr().getDefault()));
 
 		engineScope.put("workingDirectory"	, workingDirectory);
 		engineScope.put("global"			, engineScope);
@@ -122,7 +122,7 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 		System.setProperty("user.dir"		, workingDirectory.toString());
 
 		Runtime.getRuntime().addShutdownHook(this.getCleanUp());
-		List<PeerConfig> peersList = GlobalConfig.readPeersConf();
+		List<PeerConfig> peersList = PeerConfig.readPeersConf();
 		try{
 			loadScript(workingDirectory.toString() + "/run.js");
 			loadScript(workingDirectory.toString() + "/behaviours/_default.js");
@@ -137,7 +137,7 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 			while (iterator.hasNext()) {
 				PeerConfig config = iterator.next();
 				if(customBindAddr){
-					config.setLocalInetAddress(GlobalConfig.getConfig().getInetAddress("bindAddr"));
+					config.setLocalInetAddress(GlobalConfig.getConfig().getInetAddress(GlobalConfig.optBindAddr));
 				}
 				logger.info(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
 				botAgents.put(config.getId(),new BotAgent(this,config));

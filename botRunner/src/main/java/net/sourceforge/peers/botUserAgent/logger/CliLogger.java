@@ -22,8 +22,7 @@ package net.sourceforge.peers.botUserAgent.logger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
-
+import org.micoli.botUserAgent.GlobalConfig;
 import org.slf4j.LoggerFactory;
 
 public class CliLogger implements net.sourceforge.peers.Logger{
@@ -72,7 +71,7 @@ public class CliLogger implements net.sourceforge.peers.Logger{
 	}
 
 	public synchronized void traceNetwork(String message, String direction) {
-		if(!GlobalConfig.getConfig().getBoolean("logTraceNetwork")) return;
+		if(!GlobalConfig.getConfig().getBoolean(GlobalConfig.optLogTraceNetwork)) return;
 		StringBuffer buf = new StringBuffer();
 		buf.append(networkFormatter.format(new Date()));
 		buf.append(" ");

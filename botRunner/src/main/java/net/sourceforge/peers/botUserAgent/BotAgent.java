@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.script.ScriptException;
 
-import net.sourceforge.peers.botUserAgent.config.GlobalConfig;
 import net.sourceforge.peers.botUserAgent.config.PeerConfig;
 import net.sourceforge.peers.botUserAgent.sip.SipUtils;
 import net.sourceforge.peers.javaxsound.BotSoundManager;
@@ -35,6 +34,7 @@ import org.micoli.api.commandRunner.CommandRunner;
 import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.botUserAgent.AudioPlugin;
 import org.micoli.botUserAgent.BotsManagerApi;
+import org.micoli.botUserAgent.GlobalConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +101,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 
 	public void instantiatePeers() {
 		try {
-			String ipAddress = GlobalConfig.getConfig().getInetAddress("bindAddr").toString().replaceAll("/", "");
+			String ipAddress = GlobalConfig.getConfig().getInetAddress(GlobalConfig.optBindAddr).toString().replaceAll("/", "");
 			final BotSoundManager soundManager = new BotSoundManager();
 			InetAddress inetAddress;
 			try {
