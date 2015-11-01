@@ -9,10 +9,9 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>net.sourceforge.peers</groupId>
+	<name>BotRunner plugin consoleCommands</name>
 	<artifactId>botRunner-consoleCommands</artifactId>
 	<packaging>jar</packaging>
-	<name>BotRunner plugin consoleCommands</name>
 
 	<properties>
 		<plugin.id>botrunner-consoleCommands</plugin.id>

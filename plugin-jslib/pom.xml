@@ -9,10 +9,9 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>net.sourceforge.peers</groupId>
+	<name>BotRunner plugin Javascript Lib</name>
 	<artifactId>botRunner-jsLib</artifactId>
 	<packaging>jar</packaging>
-	<name>BotRunner plugin Javascript Lib</name>
 
 	<properties>
 		<plugin.id>botrunner-jslib</plugin.id>

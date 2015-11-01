@@ -9,9 +9,9 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
+	<name>BotRunner plugin networkCommands</name>
 	<artifactId>botRunner-networkCommands</artifactId>
 	<packaging>jar</packaging>
-	<name>BotRunner plugin networkCommands</name>
 
 	<properties>
 		<plugin.id>botrunner-networkCommands</plugin.id>

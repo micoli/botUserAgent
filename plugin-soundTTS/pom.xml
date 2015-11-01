@@ -9,10 +9,9 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>net.sourceforge.peers</groupId>
+	<name>BotRunner plugin soundTTS</name>
 	<artifactId>botRunner-soundTTS</artifactId>
 	<packaging>jar</packaging>
-	<name>BotRunner plugin soundTTS</name>
 
 	<properties>
 		<plugin.id>botrunner-soundTTS</plugin.id>

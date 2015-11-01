@@ -15,16 +15,10 @@ import com.martiansoftware.jsap.JSAPResult;
 public class GlobalConfig{
 	protected final static Logger logger = LoggerFactory.getLogger(GlobalConfig.class);
 	private static Map<String,FlaggedOption> options = new HashMap<String,FlaggedOption>();
+
 	private static JSAPResult config;
 	private static JSAP jsap = new JSAP();
 	private static String mainName = "main";
-	final public static String optPeersConfigFile		= "peersConfigFile";
-	final public static String optBindAddr				= "bindAddr";
-	final public static String optScriptPath			= "scriptPath";
-	final public static String optScriptOverloadPath	= "scriptOverloadPath";
-	final public static String optLog4jproperties		= "log4jproperties";
-	final public static String optLogTraceNetwork		= "logTraceNetwork";
-	final public static String optPluginPath			= "pluginPath";
 
 	public static boolean parseArgs(String _mainName,String[] args) throws JSAPException{
 		mainName = _mainName;
@@ -70,6 +64,10 @@ public class GlobalConfig{
 		GlobalConfig.config = config;
 	}
 
+	/**
+	 *
+	 */
+	final public static String optPeersConfigFile = "peersConfigFile";
 	public static FlaggedOption getOptPeersConfigFile() {
 		return options.get(optPeersConfigFile);
 	}
@@ -82,6 +80,10 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optPeersConfigFile));
 	}
 
+	/**
+	 *
+	 */
+	final public static String optBindAddr = "bindAddr";
 	public static FlaggedOption getOptBindAddr() {
 		return options.get(optBindAddr);
 	}
@@ -94,6 +96,10 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optBindAddr));
 	}
 
+	/**
+	 *
+	 */
+	final public static String optScriptPath = "scriptPath";
 	public static FlaggedOption getOptScriptPath() {
 		return options.get(optScriptPath);
 	}
@@ -106,6 +112,10 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optScriptPath));
 	}
 
+	/**
+	 *
+	 */
+	final public static String optScriptOverloadPath = "scriptOverloadPath";
 	public static FlaggedOption getOptScriptOverloadPath() {
 		return options.get(optScriptOverloadPath);
 	}
@@ -118,6 +128,10 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optScriptOverloadPath));
 	}
 
+	/**
+	 *
+	 */
+	final public static String optLog4jproperties = "log4jproperties";
 	public static FlaggedOption getOptLog4jproperties() {
 		return options.get(optLog4jproperties);
 	}
@@ -130,6 +144,10 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optLog4jproperties));
 	}
 
+	/**
+	 *
+	 */
+	final public static String optPluginPath = "pluginPath";
 	public static FlaggedOption getOptPluginPath() {
 		return options.get(optPluginPath);
 	}
@@ -142,6 +160,10 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optPluginPath));
 	}
 
+	/**
+	 *
+	 */
+	final public static String optLogTraceNetwork = "logTraceNetwork";
 	public static FlaggedOption getOptLogTraceNetwork() {
 		return options.get(optLogTraceNetwork);
 	}
