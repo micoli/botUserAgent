@@ -12,9 +12,6 @@
 			<includes>
 				<include>*:jar:*</include>
 			</includes>
-			<excludes>
-				<exclude>commons-logging:commons-logging</exclude>
-			</excludes>
 		</dependencySet>
 	</dependencySets>
 	<fileSets>

@@ -1,21 +1,15 @@
 package org.micoli.commandRunner;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -27,6 +21,7 @@ import marytts.config.MaryConfig;
 import marytts.exceptions.MaryConfigurationException;
 import marytts.exceptions.SynthesisException;
 
+import org.micoli.api.ServiceProviderTools;
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.botUserAgent.AudioPlugin;
@@ -49,43 +44,13 @@ public class SoundTTSPlugin extends Plugin {
 	@Override
 	public void start() {
 		logger.debug("SoundTTSPlugin.start()");
-		String sPath = System.getProperty("pf4j.pluginsDir")+""+this.wrapper.getPluginPath()+"/lib";
-		File dir = new File(sPath);
-		final Set<String> MaryConfigClasses = new HashSet<String>();
-
-		dir.listFiles(new FilenameFilter(){
-			public boolean accept(File dir, String name){
-				if(name.endsWith(".jar")){
-					logger.debug("Globbing "+dir.getAbsolutePath()+"/"+name);
-					try {
-						JarFile jarFile = new JarFile(dir.getAbsolutePath()+"/"+name);
-						ZipEntry jarEntry = jarFile.getJarEntry("META-INF/services/marytts.config.MaryConfig");
-						if(jarEntry!=null){
-							BufferedReader reader = new BufferedReader(new InputStreamReader(jarFile.getInputStream(jarEntry)));
-							String line;
-							while ((line = reader.readLine()) != null){
-								logger.debug("Found " + line +" in marytts.config.MaryConfig@"+name);
-								MaryConfigClasses.add(line);
-							}
-							reader.close();
-						}
-						jarFile.close();
-						return true;
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-				return false;
-			}
-		});
+		final Set<String> MaryConfigClasses = ServiceProviderTools.getProviders(System.getProperty("pf4j.pluginsDir")+""+this.wrapper.getPluginPath()+"/lib","marytts.config.MaryConfig");
 
 		try {
-			//String configFile;
-			//configFile = "../botRunner-soundTTS/conf/marybase.config";
 			logger.debug("Init MaryConfig classes");
 			for(String configClass : MaryConfigClasses){
 				try {
-					logger.debug("Load MaryConfig classe: "+configClass);
+					logger.debug("Load MaryConfig class: "+configClass);
 					MaryConfig.addConfig((MaryConfig) Class.forName(configClass).getConstructor().newInstance());
 				} catch (InstantiationException | IllegalAccessException
 						| IllegalArgumentException | InvocationTargetException
@@ -163,7 +128,45 @@ public class SoundTTSPlugin extends Plugin {
 			convert(marytts.generateAudio(words),outFileName);
 		}
 
+		/*private AudioInputStream getAudioInputStream(AudioFormat.Encoding targ,AudioInputStream ais){
+s			Iterator i=ServiceFactory.lookupProviders(FormatConversionProvider.class);
+			while (i.hasNext()) {
+				FormatConversionProvider prov=(FormatConversionProvider)i.next();
+				if (!prov.isConversionSupported(targ,ais.getFormat()))     continue;
+				return prov.getAudioInputStream(targ,ais);
+			}
+			throw new IllegalArgumentException("encoding not supported for stream");
+		}*/
+
 		private void convert(AudioInputStream inStream,String outFileName){
+			//   - Channels: 1 (Mono)
+			//   - Sampling frequency of default: 8000 Hz
+			//   - Default Sample Format: 16 bits
+			//AudioFormat.Encoding targ = AudioFormat.Encoding.ALAW
+			//AudioSystem.write(inStream,AudioFileFormat.Type.WAVE, outFile);
+
+			File outputFile = new File(outFileName);
+			byte[] buf = new byte[1024];
+			try{
+				int bytes_read = 0;
+				FileOutputStream out = new FileOutputStream(outputFile);
+
+				do {
+					bytes_read = inStream.read(buf, 0, buf.length);
+					if (bytes_read > 0){
+						out.write(buf, 0, bytes_read);
+					}
+
+				} while (bytes_read >= 0);
+
+				out.close();
+
+			} catch (IOException e) {
+				e.printStackTrace(System.err);
+			}
+		}
+
+		public void convertOld(AudioInputStream inStream,String outFileName){
 			File outputFile = new File(outFileName);
 			byte[] buf = new byte[1024];
 			try{

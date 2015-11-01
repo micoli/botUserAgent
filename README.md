@@ -60,8 +60,12 @@ Usage: java net.sourceforge.peers.botUserAgent.Main
 
 ##Todo
 	* server configuration in json
-	* tts methods
+	* TTS methods
 	* http server configuration
 	* websocket server functionnal
 	* external agents without registration
 	* extraction of internal scripts/services/behaviours
+
+
+	* log4j.properties
+	* voice RAW
