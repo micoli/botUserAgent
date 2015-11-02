@@ -1,25 +1,9 @@
 
 this.behaviours.answerHangup = this.behaviours._default.extnd({
 	preInit: function() {
-		//Java.type("org.micoli.processes.syncExec").exec("/bin/ls /tmp/");;
 		syncExec.exec("/bin/ls /tmp/");;
 		var that = this;
 		var aNbr=['zero','un','deux','trois','quatres','cinq','six','sept','huit','neuf'];
-		that.audioFile="/tmp/" + that.id + ".raw";
-		if(!(new java.io.File(that.audioFile)).exists()){
-			var txt = "poste "+that.id+".";
-			for (var i in aNbr){
-				txt = txt.replace(new RegExp(i, 'g')," "+aNbr[i]);
-			}
-			txt = txt.replace(/ /g,'%20');
-			var bin = workingDirectory+"/behaviours/tts.sh "+that.audioFile+"  \"" +txt+ "\" ";
-			botLog(that.id, "preInit",bin);
-			try{
-				Packages.org.micoli.processes.syncExec.exec(bin);
-			}catch(e){
-				print (e);
-			}
-		}
 	},
 
 	registerSuccessful : function(sipResponse,config){
