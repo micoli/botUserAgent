@@ -67,7 +67,7 @@ public class SoundTTSPlugin extends Plugin {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static String getDownloadableList(){
+	private static JSONObject getDownloadableList(){
 		int idx;
 
 		InstallFileParser installFileParser =  getInstallationConfig();
@@ -114,7 +114,7 @@ public class SoundTTSPlugin extends Plugin {
 		JSONObject jsonResult = new JSONObject();
 		jsonResult.put("voices"		, voicesList);
 		jsonResult.put("languages"	, languagesList);
-		return jsonResult.toJSONString();
+		return jsonResult;
 	}
 
 	@Override
@@ -159,7 +159,25 @@ public class SoundTTSPlugin extends Plugin {
 
 		@CommandRoute(value="getdwns", args={})
 		public String getDwns(CommandArgs args){
-			return getDownloadableList();
+			return getDownloadableList().toString();
+		}
+
+		@CommandRoute(value="getdwnstxt", args={})
+		public String getDwnstxt(CommandArgs args){
+			String result="";
+			JSONObject main = getDownloadableList();
+			result=result+"Voices:\n";
+			for(Object object: ((JSONArray) main.get("voices")).toArray()){
+				JSONObject voice = (JSONObject) object;
+				result=result+String.format("  - %s [%s,%d] %s",voice.get("description"),voice.get("packageFilename"),voice.get("packageSize"))+"\n";
+
+			}
+			result=result+"Languages:\n";
+			for(Object object: ((JSONArray) main.get("voices")).toArray()){
+				JSONObject language = (JSONObject) object;
+				result=result+String.format("  - %s [%s,%d] %s",language.get("description"),language.get("packageFilename"),language.get("packageSize"))+"\n";
+			}
+			return result;
 		}
 
 		@CommandRoute(value="dwn", args={"code"})
