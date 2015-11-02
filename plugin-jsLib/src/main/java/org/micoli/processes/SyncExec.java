@@ -23,10 +23,8 @@ public class SyncExec {
 			new Thread(fluxSortie).start();
 			new Thread(fluxErreur).start();
 			p.waitFor();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		} catch (IOException | InterruptedException e) {
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 }

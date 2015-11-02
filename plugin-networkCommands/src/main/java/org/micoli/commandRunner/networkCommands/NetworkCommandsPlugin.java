@@ -1,4 +1,4 @@
-package org.micoli.commandRunner;
+package org.micoli.commandRunner.networkCommands;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -49,9 +49,9 @@ public class NetworkCommandsPlugin extends Plugin {
 							new NetworkCommandsClient(CSoc,executorRouter);
 						}
 					} catch (IOException e) {
-						e.printStackTrace();
+						logger.error(e.getClass().getSimpleName(), e);
 					} catch (Exception e) {
-						e.printStackTrace();
+						logger.error(e.getClass().getSimpleName(), e);
 					}
 				}
 			};

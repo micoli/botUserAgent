@@ -10,12 +10,12 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<name>BotRunner plugin Javascript Lib</name>
-	<artifactId>botRunner-jsLib</artifactId>
+	<artifactId>plugin-jsLib</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
 		<plugin.id>botrunner-jslib</plugin.id>
-		<plugin.class>org.micoli.botRunner.jsLibPlugin</plugin.class>
+		<plugin.class>org.micoli.botRunner.jsLib.JsLibPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
 		<plugin.provider>micoli</plugin.provider>
 		<plugin.dependencies />

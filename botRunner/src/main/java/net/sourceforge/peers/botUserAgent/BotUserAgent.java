@@ -35,7 +35,7 @@ public class BotUserAgent extends UserAgent {
 			field.setAccessible(true);
 			return field.get(context);
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 		return null;
 	}
@@ -67,8 +67,8 @@ public class BotUserAgent extends UserAgent {
 
 			CaptureRtpSender captureRtpSender = new CaptureRtpSender(rtpSession,fileReader, false, mediaDestination.getCodec(), logger,"");
 			captureRtpSender.start();
-		} catch (NoCodecException | IOException e1) {
-			e1.printStackTrace();
+		} catch (NoCodecException | IOException e) {
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 }
@@ -101,7 +101,7 @@ public class BotUserAgent extends UserAgent {
 						}
 					} catch (SocketException e) {
 						logger.error("cannot create datagram socket ");
-						e.printStackTrace();
+						logger.error(e.getClass().getSimpleName(), e);
 					}
 
 					return datagramSocket;
@@ -113,7 +113,7 @@ public class BotUserAgent extends UserAgent {
 			datagramSocket.setSoTimeout(30000);
 		} catch (SocketException e) {
 			logger.error("cannot set timeout on datagram socket ");
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 		getMediaManager().setDatagramSocket(datagramSocket);
 
@@ -136,7 +136,7 @@ public class BotUserAgent extends UserAgent {
 
 			_rtpSession = new RtpSession(localAddress,datagramSocket,false, logger, "");
 		} catch (SecurityException | NoCodecException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 
 		logger.debug("--- "+ _rtpSession +" "+_rtpSession.toString());
@@ -194,7 +194,7 @@ SessionDescription sessionDescription =_sdpManager.parse(sipResponse.getBody());
 try {
 	_mediaDestination = _sdpManager.getMediaDestination(sessionDescription);
 } catch (NoCodecException e) {
-	e.printStackTrace();
+	logger.error(e.getClass().getSimpleName(), e);
 }
 String remoteAddress = _mediaDestination.getDestination();
 int remotePort = _mediaDestination.getPort();
@@ -212,7 +212,7 @@ private RtpSender getCaptureRtpSender(){
 	try {
 		return  (RtpSender) getCaptureRtpSenderField().get(this);
 	} catch (IllegalArgumentException | IllegalAccessException| NoSuchFieldException | SecurityException e) {
-		e.printStackTrace();
+		logger.error(e.getClass().getSimpleName(), e);
 	}
 	return null;
 }
@@ -224,7 +224,7 @@ protected Codec getCaptureRtpSenderCodec(){
 		codecField.setAccessible(true);
 		return (Codec) codecField.get(getCaptureRtpSender());
 	} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-		e.printStackTrace();
+		logger.error(e.getClass().getSimpleName(), e);
 	}
 	return null;
 }
@@ -236,7 +236,7 @@ protected DatagramSocket getMediaManagerDatagramSocket(){
 		datagramSocketField.setAccessible(true);
 		return (DatagramSocket) datagramSocketField.get(getMediaManager());
 	} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-		e.printStackTrace();
+		logger.error(e.getClass().getSimpleName(), e);
 	}
 	return null;
 }
@@ -251,7 +251,7 @@ private ChallengeManager getChallengeManager(){
 	try {
 		return (ChallengeManager) getChallengeManagerField().get(this);
 	} catch (IllegalArgumentException | IllegalAccessException| NoSuchFieldException | SecurityException e) {
-		e.printStackTrace();
+		logger.error(e.getClass().getSimpleName(), e);
 	}
 	return null;
 }
@@ -272,7 +272,7 @@ try {
 	remoteAddressField.setAccessible(true);
 	return (InetAddress) remoteAddressField.get(rtpSession);
 } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-	e.printStackTrace();
+	logger.error(e.getClass().getSimpleName(), e);
 }
 return null;
 }
@@ -283,7 +283,7 @@ try {
 	remotePortField.setAccessible(true);
 	return (int) remotePortField.get(rtpSession);
 } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-	e.printStackTrace();
+	logger.error(e.getClass().getSimpleName(), e);
 }
 return 0;
 }*/
@@ -291,7 +291,7 @@ return 0;
 try {
 	return (SDPManager) getFieldFromClass(UserAgent.class,"sdpManager").get(this);
 } catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
-	e.printStackTrace();
+	logger.error(e.getClass().getSimpleName(), e);
 }
 return null;
 }*/
@@ -300,7 +300,7 @@ return null;
 try {
 	return (RtpSession) getFieldFromClass(MediaManager.class,"rtpSession").get(mediaManager);
 } catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
-	e.printStackTrace();
+	logger.error(e.getClass().getSimpleName(), e);
 }
 return null;
 }*/
@@ -309,7 +309,7 @@ return null;
 try {
 	return (Logger) getFieldFromClass(UserAgent.class,"logger").get(this);
 } catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
-	e.printStackTrace();
+	logger.error(e.getClass().getSimpleName(), e);
 }
 return null;
 }*/

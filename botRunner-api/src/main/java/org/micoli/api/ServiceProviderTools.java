@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public class ServiceProviderTools {
 	protected final static Logger logger = LoggerFactory.getLogger(ServiceProviderTools.class);
 
-	public static Set<String> getProviders(String sPath, final String className){
+	public static Set<String> getProvidersFromJar(String sPath, final String className){
 		final Set<String> classesList = new HashSet<String>();
 		File dir = new File(sPath);
 
@@ -33,15 +34,17 @@ public class ServiceProviderTools {
 								BufferedReader reader = new BufferedReader(new InputStreamReader(jarFile.getInputStream(jarEntry)));
 								String line;
 								while ((line = reader.readLine()) != null){
-									logger.debug("Found " + line +" in "+className+"@"+name);
-									classesList.add(line);
+									if(!line.trim().matches("^#(.*)")){
+										logger.debug("Found " + line +" in "+className+"@"+name);
+										classesList.add(line);
+									}
 								}
 								reader.close();
 							}
 							jarFile.close();
 							return true;
 						} catch (IOException e) {
-							e.printStackTrace();
+							logger.error(e.getClass().getSimpleName(), e);
 						}
 					}
 					return false;
@@ -49,6 +52,28 @@ public class ServiceProviderTools {
 			});
 		}else{
 			logger.debug(sPath+" is not a directory or does not exists");
+		}
+		return classesList;
+	}
+
+	public static Set<String> getProvidersFromClassLoader(ClassLoader loader, final String className){
+		final Set<String> classesList = new HashSet<String>();
+
+		InputStream inputStream = loader.getResourceAsStream("META-INF/services/"+className);
+		if(inputStream!=null){
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+			String line;
+			try {
+				while ((line = reader.readLine()) != null){
+					if(!line.trim().matches("^#(.*)")){
+						logger.debug("Found [" + line.trim() +"] in "+className+"@"+loader.toString());
+						classesList.add(line);
+					}
+				}
+				reader.close();
+			} catch (IOException e) {
+				logger.error(e.getClass().getSimpleName(), e);
+			}
 		}
 		return classesList;
 	}

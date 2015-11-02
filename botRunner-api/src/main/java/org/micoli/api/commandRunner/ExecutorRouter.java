@@ -42,7 +42,7 @@ public class ExecutorRouter {
 			}
 			//PluginsManager.bindExtension(BotExtension.class,commandRunner);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 
@@ -78,7 +78,7 @@ public class ExecutorRouter {
 			logger.debug("Execute contextMethod: "+contextMethod.method.getName()+", context: "+contextMethod.context.getClass().toString());
 			return (String) contextMethod.method.invoke(contextMethod.context, map);
 		} catch (IllegalAccessException | IllegalArgumentException| InvocationTargetException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 		return "----";
 	}
@@ -108,7 +108,7 @@ public class ExecutorRouter {
 					logger.info("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+context.getClass().getSimpleName());
 					routes.put(route.value(), new ContextMethod(context,method));
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error(e.getClass().getSimpleName(), e);
 				}
 			}
 		}

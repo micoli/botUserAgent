@@ -37,7 +37,7 @@
 		<module>plugin-webCommands</module>
 		<module>plugin-networkCommands</module>
 		<module>plugin-consoleCommands</module>
-		<module>plugin-SoundTTS</module>
+		<module>plugin-soundTTS</module>
 		<module>plugin-jsLib</module>
 	</modules>
 

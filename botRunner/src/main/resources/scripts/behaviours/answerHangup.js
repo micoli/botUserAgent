@@ -51,7 +51,7 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 					that.ua.acceptCallByCallId(callId);
 					try{
 						console.log('error1');
-						that.ua.execute("sayWords",new CommandArgs({"callId":callId,"words":"bonjour monsieur"}));
+						that.ua.execute("sayWords",new CommandArgs({"callId":callId,"words":"bonjour monsieur, Hello sir"}));
 						console.log('error2');
 					}catch(e){
 						console.log('error3');

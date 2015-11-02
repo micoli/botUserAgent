@@ -1,4 +1,4 @@
-package org.micoli.commandRunner;
+package org.micoli.commandRunner.webCommands;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package org.micoli.commandRunner;
+package org.micoli.commandRunner.webCommands;
 
 import java.io.IOException;
 
@@ -40,7 +40,7 @@ public class WebCommandsPlugin extends Plugin {
 						WebCommandsHttpServer webCommandsHttpServer = new WebCommandsHttpServer(executor,8081);
 						webCommandsHttpServer.start();
 					} catch (IOException e) {
-						e.printStackTrace();
+						logger.error(e.getClass().getSimpleName(), e);
 					}
 				}
 			};

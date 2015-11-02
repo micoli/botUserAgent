@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class StreamDisplayer implements Runnable {
+import org.slf4j.LoggerFactory;
 
+public class StreamDisplayer implements Runnable {
+	private org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 	private final InputStream inputStream;
 
 	StreamDisplayer(InputStream inputStream) {
@@ -26,7 +28,7 @@ public class StreamDisplayer implements Runnable {
 				System.out.println(ligne);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 }

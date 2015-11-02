@@ -56,11 +56,11 @@ public class Client {
 				obj.put("errorLineNumber"	, thr.getStackTrace()[0].getLineNumber());
 				obj.put("errorMethod"		, thr.getStackTrace()[0].getMethodName());
 				obj.put("errorMessage"		, thr.getMessage().replace("\n", " ").replace("\r", " "));
-				thr.printStackTrace();
+				logger.error(thr.getClass().getSimpleName(), thr);
 			}
 			obj.put("uri"			, response.getUri().toASCIIString());
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 		return obj;
 	}

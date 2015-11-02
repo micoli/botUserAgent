@@ -1,4 +1,4 @@
-package org.micoli.commandRunner;
+package org.micoli.commandRunner.webCommands;
 
 import java.io.IOException;
 
@@ -45,7 +45,7 @@ public class WebCommandsWSSocket extends WebSocket {
 
 	@Override
 	protected void onException(IOException e) {
-		e.printStackTrace();
+		logger.error(e.getClass().getSimpleName(), e);
 	}
 
 	@Override

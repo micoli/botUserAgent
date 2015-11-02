@@ -1,4 +1,4 @@
-package org.micoli.commandRunner;
+package org.micoli.commandRunner.networkCommands;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -48,8 +48,8 @@ class NetworkCommandsClient extends ManagedThread{
 				}
 			}
 			ClientSocket.close();
-		}catch(Exception ex){
-			ex.printStackTrace();
+		}catch(Exception e){
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 }

@@ -58,7 +58,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 		try {
 			userAgent = new BotUserAgent(this, this.config, logger, javaxSoundManager);
 		} catch (SocketException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 
 		botsManager.JSExec("initBot",new Object[] {this.config.getId(), this.config,this});
@@ -125,7 +125,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 			});
 		} catch (SecurityException e) {
 			logger.error(e.getMessage());
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 
@@ -135,7 +135,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 				try {
 					userAgent.register();
 				} catch (SipUriSyntaxException e) {
-					e.printStackTrace();
+					logger.error(e.getClass().getSimpleName(), e);
 				}
 			}
 		});
@@ -158,7 +158,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 				try {
 					botsManager.storeSipRequest(userAgent.invite(callee, null));
 				} catch (SipUriSyntaxException e) {
-					e.printStackTrace();
+					logger.error(e.getClass().getSimpleName(), e);
 				}
 			}
 		});
@@ -370,9 +370,9 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 		try {
 			botsManager.getInvocableEngine().invokeFunction("botCb",config.getId(),method, arrayToJson(arguments));
 		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		} catch (ScriptException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 
@@ -440,7 +440,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 		try {
 			userAgent.sendAudioFile(this.botsManager.getSipRequest(callId), filename);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 

@@ -92,7 +92,7 @@ public class PeerConfig implements Config {
 				//inetAddress = InetAddress.getLocalHost();
 				this.localIpAddress = InetAddress.getByName("0.0.0.0");
 			} catch (UnknownHostException e) {
-				e.printStackTrace();
+				logger.error(e.getClass().getSimpleName(), e);
 				return null;
 			}
 		}

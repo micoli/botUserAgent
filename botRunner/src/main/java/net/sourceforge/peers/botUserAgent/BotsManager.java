@@ -146,11 +146,11 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 			PluginsManager.startGenericCommands(this);
 
 		} catch (NullPointerException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		} catch (ScriptException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 
@@ -212,10 +212,10 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 		try {
 			this.getInvocableEngine().invokeFunction(method, arguments);
 		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		} catch (ScriptException e) {
 			System.err.println("JS Error : "+ method + ", args " + arguments+" "+e.getFileName()+"("+e.getLineNumber()+','+e.getColumnNumber() +")");
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 
@@ -250,7 +250,7 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 		try {
 			mary.saveAudio("bonjour, ceci est un test 123 quatre cinq six", "/tmp/toto1234.wav");
 		} catch (SynthesisException | InterruptedException e) {
-			e.printStackTrace();
+			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}*/
 }

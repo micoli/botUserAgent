@@ -15,7 +15,7 @@
 
 	<properties>
 		<plugin.id>botrunner-networkCommands</plugin.id>
-		<plugin.class>org.micoli.commandRunner.NetworkCommandsPlugin</plugin.class>
+		<plugin.class>org.micoli.commandRunner.networkCommands.NetworkCommandsPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
 		<plugin.provider>micoli</plugin.provider>
 		<plugin.dependencies />

@@ -15,7 +15,7 @@
 
 	<properties>
 		<plugin.id>botrunner-webCommands</plugin.id>
-		<plugin.class>org.micoli.commandRunner.WebCommandsPlugin</plugin.class>
+		<plugin.class>org.micoli.commandRunner.webCommands.WebCommandsPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
 		<plugin.provider>micoli</plugin.provider>
 		<plugin.dependencies />

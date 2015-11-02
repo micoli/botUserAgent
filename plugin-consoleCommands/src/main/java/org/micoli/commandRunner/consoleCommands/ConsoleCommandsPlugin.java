@@ -1,4 +1,4 @@
-package org.micoli.commandRunner;
+package org.micoli.commandRunner.consoleCommands;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class ConsoleCommandsPlugin extends Plugin {
 						try {
 							command = bufferedReader.readLine();
 						} catch (IOException e) {
-							e.printStackTrace();
+							logger.error(e.getClass().getSimpleName(), e);
 							break;
 						}
 						String exe = executorRouter.executeCommand(command.trim());
