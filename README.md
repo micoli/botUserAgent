@@ -9,53 +9,59 @@
 * NanoHttpd
   * git clone https://github.com/NanoHttpd/nanohttpd.git
   * cd nanohttpd
-  * mvn install;cd..
+  * mvn install;cd ..
+
+* google-auto
+  * git clone https://github.com/google/auto.git
+  * cd auto/service
+  * mvn install;cd ../..
 
 * Mary TTS
   * git clone https://github.com/micoli/marytts.git
   * cd marytts
-  * mvn install;cd..
+  * mvn install;cd ..
 
 * Pf4J (plugin framework for java)
   * git clone https://github.com/decebals/pf4j.git
   * cd pf4j
-  * mvn install;cd..
+  * mvn install;cd ..
+
 
 * botUserAgent
   * git clone https://github.com/micoli/botUserAgent.git
   * mvn package
-
+  * cd botRunner
+  * mkdir plugins
+  * cd plugins
+  * ln -s ../../plugin-*/target/*.zip .
+  * cd ..
+  * java -jar target/botRunner-0.5.1-SNAPSHOT.jar -a XXX.YYY.ZZZ.AAA
+  * (XXX.YYY.ZZZ.AAA = visible IP for sip user agents)
 
 ##Execution
-$> java -jar target/botUserAgent-0.5.1-SNAPSHOT.jar
+$> java -jar target/botRunner-0.5.1-SNAPSHOT.jar
 
-Usage: java net.sourceforge.peers.botUserAgent.Main
-			[-p <peersConfigFile>] [-a <bindAddr>] [-s <scriptPath>] [-o <scriptOverloadPath>] [-d <logDebug>] [-i <logInfo>] [-e <logError>] [-n <logTraceNetwork>]
-
-	[-p <peersConfigFile>]
+Usage: java net.sourceforge.peers.botUserAgent.Main [-p <peersConfigFile>] [-a <bindAddr>] [-s <scriptPath>] [-o <scriptOverloadPath>] [-l <log4jproperties>] [-h <pluginPath>] [-n <logTraceNetwork>]
+[-p <peersConfigFile>]
 		(default: src/main/resources/peers.conf.json)
 
-	[-a <bindAddr>]
+[-a <bindAddr>]
 		(default: 0.0.0.0)
 
-	[-s <scriptPath>]
+[-s <scriptPath>]
 		(default: src/main/resources/scripts/)
 
-	[-o <scriptOverloadPath>]
+[-o <scriptOverloadPath>]
 		(default: src/main/resources/scripts/overload)
 
-	[-d <logDebug>]
+[-l <log4jproperties>]
+		(default: )
+
+[-h <pluginPath>]
+		(default: plugins)
+
+[-n <logTraceNetwork>]
 		(default: 0)
-
-	[-i <logInfo>]
-		(default: 1)
-
-	[-e <logError>]
-		(default: 1)
-
-	[-n <logTraceNetwork>]
-		(default: 0)
-
 
 
 ##Todo
