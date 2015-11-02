@@ -29,7 +29,7 @@ public class ExecutorRouter {
 	public ExecutorRouter(CommandRunner commandRunner,boolean attachBotExtension){
 		this.commandRunner= commandRunner;
 		try {
-			logger.info("new ExecutorRouter " + commandRunner.getClass().getSimpleName());
+			logger.debug("new ExecutorRouter " + commandRunner.getClass().getSimpleName());
 			this.routes = new HashMap<String, ContextMethod>();
 			attachRoutes(commandRunner.getClass(),commandRunner);
 
@@ -100,17 +100,21 @@ public class ExecutorRouter {
 	}
 
 	public void attachRoutes(Class<?> cls,Object context) throws Exception {
-		logger.info("    Attaching routes: "+cls.getSimpleName().toString());
+		String sRoutes="";
+		logger.debug("    Attaching routes: "+cls.getSimpleName().toString());
+		sRoutes += "Attaching routes for "+cls.getSimpleName().toString();
 		for (Method method : cls.getMethods()){
 			if (method.isAnnotationPresent(CommandRoute.class)) {
 				CommandRoute route = method.getAnnotation(CommandRoute.class);
 				try {
-					logger.info("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+context.getClass().getSimpleName());
+					logger.debug("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+context.getClass().getSimpleName());
 					routes.put(route.value(), new ContextMethod(context,method));
+					sRoutes += route.value()+"@"+context.getClass().getSimpleName()+", ";
 				} catch (Exception e) {
 					logger.error(e.getClass().getSimpleName(), e);
 				}
 			}
 		}
+		logger.info(sRoutes);
 	}
 }

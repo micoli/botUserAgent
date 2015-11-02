@@ -1,7 +1,7 @@
 
 this.behaviours.answerHangup = this.behaviours._default.extnd({
 	preInit: function() {
-		syncExec.exec("/bin/ls /tmp/");;
+		//syncExec.exec("/bin/ls /tmp/");;
 		var that = this;
 		var aNbr=['zero','un','deux','trois','quatres','cinq','six','sept','huit','neuf'];
 	},
