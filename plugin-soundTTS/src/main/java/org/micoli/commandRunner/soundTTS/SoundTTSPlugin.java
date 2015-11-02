@@ -169,13 +169,13 @@ public class SoundTTSPlugin extends Plugin {
 			result=result+"Voices:\n";
 			for(Object object: ((JSONArray) main.get("voices")).toArray()){
 				JSONObject voice = (JSONObject) object;
-				result=result+String.format("  - %s [%s,%d] %s",voice.get("description"),voice.get("packageFilename"),voice.get("packageSize"))+"\n";
+				result=result+String.format("  - %s [%s,%s] %s",voice.get("code"),voice.get("packageFilename"),voice.get("packageSize"),voice.get("description"))+"\n";
 
 			}
 			result=result+"Languages:\n";
-			for(Object object: ((JSONArray) main.get("voices")).toArray()){
+			for(Object object: ((JSONArray) main.get("languages")).toArray()){
 				JSONObject language = (JSONObject) object;
-				result=result+String.format("  - %s [%s,%d] %s",language.get("description"),language.get("packageFilename"),language.get("packageSize"))+"\n";
+				result=result+String.format("  - %s [%s,%s] %s",language.get("code"),language.get("packageFilename"),language.get("packageSize"),language.get("description"))+"\n";
 			}
 			return result;
 		}

@@ -137,11 +137,6 @@
 		</dependency>
 		<dependency>
 			<groupId>de.dfki.mary</groupId>
-			<artifactId>marytts-lang-fr</artifactId>
-			<version>5.2-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>de.dfki.mary</groupId>
 			<artifactId>marytts-lang-it</artifactId>
 			<version>5.2-SNAPSHOT</version>
 		</dependency>

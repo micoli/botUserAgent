@@ -65,6 +65,7 @@ Usage: java net.sourceforge.peers.botUserAgent.Main [-p <peersConfigFile>] [-a <
 
 
 ##Todo
+	* add a route parameter to execute a route globally or only for a bot
 	* server configuration in json
 	* TTS methods
 	* http server configuration
@@ -72,6 +73,4 @@ Usage: java net.sourceforge.peers.botUserAgent.Main [-p <peersConfigFile>] [-a <
 	* external agents without registration
 	* extraction of internal scripts/services/behaviours
 
-
-	* log4j.properties
 	* voice RAW
