@@ -27,7 +27,6 @@ import marytts.tools.install.ComponentDescription;
 import marytts.tools.install.InstallFileParser;
 import marytts.tools.install.LanguageComponentDescription;
 import marytts.tools.install.VoiceComponentDescription;
-import marytts.util.MaryUtils;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -61,7 +60,7 @@ public class SoundTTSPlugin extends Plugin {
 		URL url;
 		try {
 			url = new URL("https://raw.github.com/marytts/marytts/master/download/marytts-components.xml");
-			System.setProperty("mary.installedDir"	,System.getProperty("pf4j.pluginsDir")+""+pluginPath );
+			System.setProperty("mary.installedDir"	,System.getProperty("pf4j.pluginsDir")+pluginPath );
 			System.setProperty("mary.downloadDir"	,"/tmp/") ;
 			System.setProperty("mary.base"			,System.getProperty("mary.installedDir"));
 			return new InstallFileParser(url);
@@ -125,34 +124,14 @@ public class SoundTTSPlugin extends Plugin {
 	@Override
 	public void start() {
 		logger.debug("SoundTTSPlugin.start()");
-		loadConfigs();
+		loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/lib");
+		loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/../voices");
+		displayConfigs();
 		logger.debug("End initialisation");
 	}
 
-	public static void loadConfigs() {
-		final Set<String> MaryConfigClasses = ServiceProviderTools.getProvidersFromJar(System.getProperty("pf4j.pluginsDir")+""+pluginPath+"/lib","marytts.config.MaryConfig");
-
-		try {
-			logger.debug("Init MaryConfig classes");
-			for(String configClass : MaryConfigClasses){
-				try {
-					logger.info("Load MaryConfig class: "+configClass);
-					boolean found=false;
-					for(MaryConfig maryConfig : MaryConfig.getConfigs()){
-						if(maryConfig.getClass().getName().equals(configClass)){
-							found=true;
-						}
-					}
-					if(!found){
-						MaryConfig.addConfig((MaryConfig) Class.forName(configClass).getConstructor().newInstance());
-					}
-				} catch (InstantiationException | IllegalAccessException
-						| IllegalArgumentException | InvocationTargetException
-						| NoSuchMethodException | SecurityException
-						| ClassNotFoundException e) {
-					logger.error(e.getClass().getSimpleName(), e);
-				}
-			}
+	public static void displayConfigs() {
+		try{
 			marytts = new LocalMaryInterface();
 			for(Locale locale : marytts.getAvailableLocales()){
 				logger.info("Locale "+locale.getCountry()+"-"+locale.getDisplayLanguage()+"::"+locale.getDisplayName());
@@ -162,6 +141,31 @@ public class SoundTTSPlugin extends Plugin {
 			}
 		} catch (MaryConfigurationException e) {
 			logger.error(e.getClass().getSimpleName(), e);
+		}
+	}
+
+	public static void loadConfigs(String path) {
+		final Set<String> MaryConfigClasses = ServiceProviderTools.getProvidersFromJar(path,"marytts.config.MaryConfig",true);
+
+		logger.debug("Init MaryConfig classes");
+		for(String configClass : MaryConfigClasses){
+			try {
+				logger.info("Load MaryConfig class: "+configClass);
+				boolean found=false;
+				for(MaryConfig maryConfig : MaryConfig.getConfigs()){
+					if(maryConfig.getClass().getName().equals(configClass)){
+						found=true;
+					}
+				}
+				if(!found){
+					MaryConfig.addConfig((MaryConfig) Class.forName(configClass).getConstructor().newInstance());
+				}
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException
+					| ClassNotFoundException e) {
+				logger.error(e.getClass().getSimpleName(), e);
+			}
 		}
 	}
 
@@ -281,12 +285,12 @@ public class SoundTTSPlugin extends Plugin {
 	@Extension
 	public static class MaryTTS implements GlobalExtension{*/
 		private static boolean isDownloading = false;
-		@CommandRoute(value="getdwns", args={},global=true)
+		@CommandRoute(value="getdwns", args={})
 		public String getDwns(CommandArgs args){
 			return getDownloadableList().toString();
 		}
 
-		@CommandRoute(value="getdwnstxt", args={},global=true)
+		@CommandRoute(value="getdwnstxt", args={})
 		// bot from=6000 action=getdwnstxt
 		// bot from=6000 action=dwn code=v40
 		public String getDwnstxt(CommandArgs args){
@@ -306,7 +310,7 @@ public class SoundTTSPlugin extends Plugin {
 			return result;
 		}
 
-		@CommandRoute(value="dwn", args={"code"},global=true)
+		@CommandRoute(value="dwn", args={"code"})
 		public String dwn(CommandArgs args){
 			getDownloadableList();
 
@@ -336,7 +340,9 @@ public class SoundTTSPlugin extends Plugin {
 					}
 					try {
 						componentDescription.install(true);
-						loadConfigs();
+						loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/../voices");
+						displayConfigs();
+
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
