@@ -285,12 +285,12 @@ public class SoundTTSPlugin extends Plugin {
 	@Extension
 	public static class MaryTTS implements GlobalExtension{*/
 		private static boolean isDownloading = false;
-		@CommandRoute(value="getdwns", args={})
+		@CommandRoute(value="getdwns", args={},global=true)
 		public String getDwns(CommandArgs args){
 			return getDownloadableList().toString();
 		}
 
-		@CommandRoute(value="getdwnstxt", args={})
+		@CommandRoute(value="getdwnstxt", args={},global=true)
 		// bot from=6000 action=getdwnstxt
 		// bot from=6000 action=dwn code=v40
 		public String getDwnstxt(CommandArgs args){
@@ -310,7 +310,7 @@ public class SoundTTSPlugin extends Plugin {
 			return result;
 		}
 
-		@CommandRoute(value="dwn", args={"code"})
+		@CommandRoute(value="dwn", args={"code"},global=true)
 		public String dwn(CommandArgs args){
 			getDownloadableList();
 
@@ -342,7 +342,6 @@ public class SoundTTSPlugin extends Plugin {
 						componentDescription.install(true);
 						loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/../voices");
 						displayConfigs();
-
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
