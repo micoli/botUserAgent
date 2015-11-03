@@ -144,6 +144,7 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 			}
 
 			PluginsManager.startGenericCommands(this);
+			//START global extensions
 
 		} catch (NullPointerException e) {
 			logger.error(e.getClass().getSimpleName(), e);

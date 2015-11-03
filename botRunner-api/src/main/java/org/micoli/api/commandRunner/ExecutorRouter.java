@@ -31,13 +31,13 @@ public class ExecutorRouter {
 		try {
 			logger.debug("new ExecutorRouter " + commandRunner.getClass().getSimpleName());
 			this.routes = new HashMap<String, ContextMethod>();
-			attachRoutes(commandRunner.getClass(),commandRunner);
+			attachRoutes(commandRunner.getClass(),commandRunner,commandRunner);
 
 			//FIXME : change botExtension to class <T>
 			if (attachBotExtension){
 				List<BotExtension> botExtensions = PluginsManager.getExtensionsbyClass(BotExtension.class);
 				for (BotExtension botExtension : botExtensions) {
-					attachRoutes(botExtension.getClass(),botExtension);
+					attachRoutes(botExtension.getClass(),botExtension,commandRunner);
 				}
 			}
 			//PluginsManager.bindExtension(BotExtension.class,commandRunner);
@@ -99,7 +99,7 @@ public class ExecutorRouter {
 		}
 	}
 
-	public void attachRoutes(Class<?> cls,Object context) throws Exception {
+	public void attachRoutes(Class<?> cls,Object context,Object globalContext) throws Exception {
 		String sRoutes="";
 		logger.debug("    Attaching routes: "+cls.getSimpleName().toString());
 		sRoutes += "Attaching routes for "+cls.getSimpleName().toString();
@@ -107,9 +107,10 @@ public class ExecutorRouter {
 			if (method.isAnnotationPresent(CommandRoute.class)) {
 				CommandRoute route = method.getAnnotation(CommandRoute.class);
 				try {
-					logger.debug("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+context.getClass().getSimpleName());
+					logger.debug("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+(route.global()?globalContext:context).getClass().getSimpleName());
+					//routes.put(route.value(), new ContextMethod(route.global()?globalContext:context,method));
 					routes.put(route.value(), new ContextMethod(context,method));
-					sRoutes += route.value()+"@"+context.getClass().getSimpleName()+", ";
+					sRoutes += route.value()+"@"+(route.global()?globalContext:context).getClass().getSimpleName()+", ";
 				} catch (Exception e) {
 					logger.error(e.getClass().getSimpleName(), e);
 				}

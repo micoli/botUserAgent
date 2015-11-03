@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface CommandRoute {
 	String value() default "";
 	String[] args() default {};
+	boolean global() default false;
 }

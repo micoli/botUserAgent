@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,6 +23,7 @@ import marytts.MaryInterface;
 import marytts.config.MaryConfig;
 import marytts.exceptions.MaryConfigurationException;
 import marytts.exceptions.SynthesisException;
+import marytts.tools.install.ComponentDescription;
 import marytts.tools.install.InstallFileParser;
 import marytts.tools.install.LanguageComponentDescription;
 import marytts.tools.install.VoiceComponentDescription;
@@ -49,16 +49,21 @@ import ro.fortsoft.pf4j.PluginWrapper;
 public class SoundTTSPlugin extends Plugin {
 	protected final static Logger logger = LoggerFactory.getLogger(SoundTTSPlugin.class);
 	private static MaryInterface marytts;
-	private static Map<String,String> urls = new HashMap<String,String>();
+	private static Map<String,ComponentDescription> components = new HashMap<String,ComponentDescription>();
+	protected static String pluginPath;
 
 	public SoundTTSPlugin(PluginWrapper wrapper) {
 		super(wrapper);
+		pluginPath = getWrapper().getPluginPath();
 	}
 
 	private static InstallFileParser getInstallationConfig(){
 		URL url;
 		try {
 			url = new URL("https://raw.github.com/marytts/marytts/master/download/marytts-components.xml");
+			System.setProperty("mary.installedDir"	,System.getProperty("pf4j.pluginsDir")+""+pluginPath );
+			System.setProperty("mary.downloadDir"	,"/tmp/") ;
+			System.setProperty("mary.base"			,System.getProperty("mary.installedDir"));
 			return new InstallFileParser(url);
 		} catch (IOException | SAXException e) {
 			e.printStackTrace();
@@ -87,7 +92,7 @@ public class SoundTTSPlugin extends Plugin {
 			jsonVoice.put("url"				, locations);
 			if(locations.size()>0){
 				jsonVoice.put("code"		, code);
-				urls.put(code, locations.get(0).toString());
+				components.put(code, voiceDescription);
 			}
 			voicesList.add(jsonVoice);
 			idx++;
@@ -107,7 +112,7 @@ public class SoundTTSPlugin extends Plugin {
 			jsonVoice.put("url"				, languageDescription.getLocations());
 			if(locations.size()>0){
 				jsonVoice.put("code"		, code);
-				urls.put(code, locations.get(0).toString());
+				components.put(code, languageDescription);
 			}
 			languagesList.add(jsonVoice);
 		}
@@ -120,14 +125,27 @@ public class SoundTTSPlugin extends Plugin {
 	@Override
 	public void start() {
 		logger.debug("SoundTTSPlugin.start()");
-		final Set<String> MaryConfigClasses = ServiceProviderTools.getProvidersFromJar(System.getProperty("pf4j.pluginsDir")+""+this.wrapper.getPluginPath()+"/lib","marytts.config.MaryConfig");
+		loadConfigs();
+		logger.debug("End initialisation");
+	}
+
+	public static void loadConfigs() {
+		final Set<String> MaryConfigClasses = ServiceProviderTools.getProvidersFromJar(System.getProperty("pf4j.pluginsDir")+""+pluginPath+"/lib","marytts.config.MaryConfig");
 
 		try {
 			logger.debug("Init MaryConfig classes");
 			for(String configClass : MaryConfigClasses){
 				try {
 					logger.info("Load MaryConfig class: "+configClass);
-					MaryConfig.addConfig((MaryConfig) Class.forName(configClass).getConstructor().newInstance());
+					boolean found=false;
+					for(MaryConfig maryConfig : MaryConfig.getConfigs()){
+						if(maryConfig.getClass().getName().equals(configClass)){
+							found=true;
+						}
+					}
+					if(!found){
+						MaryConfig.addConfig((MaryConfig) Class.forName(configClass).getConstructor().newInstance());
+					}
 				} catch (InstantiationException | IllegalAccessException
 						| IllegalArgumentException | InvocationTargetException
 						| NoSuchMethodException | SecurityException
@@ -137,13 +155,11 @@ public class SoundTTSPlugin extends Plugin {
 			}
 			marytts = new LocalMaryInterface();
 			for(Locale locale : marytts.getAvailableLocales()){
-				logger.debug("Locale "+locale.getCountry()+"-"+locale.getDisplayLanguage()+"::"+locale.getDisplayName());
+				logger.info("Locale "+locale.getCountry()+"-"+locale.getDisplayLanguage()+"::"+locale.getDisplayName());
 			}
 			for(String voice : marytts.getAvailableVoices()){
-				logger.debug("Voice "+voice);
+				logger.info("Voice "+voice);
 			}
-
-			logger.debug("End initialisation");
 		} catch (MaryConfigurationException e) {
 			logger.error(e.getClass().getSimpleName(), e);
 		}
@@ -157,73 +173,6 @@ public class SoundTTSPlugin extends Plugin {
 	@Extension
 	public static class SoundTTS implements BotExtension{
 
-		@CommandRoute(value="getdwns", args={})
-		public String getDwns(CommandArgs args){
-			return getDownloadableList().toString();
-		}
-
-		@CommandRoute(value="getdwnstxt", args={})
-		public String getDwnstxt(CommandArgs args){
-			String result="";
-			JSONObject main = getDownloadableList();
-			result=result+"Voices:\n";
-			for(Object object: ((JSONArray) main.get("voices")).toArray()){
-				JSONObject voice = (JSONObject) object;
-				result=result+String.format("  - %s [%s,%s] %s",voice.get("code"),voice.get("packageFilename"),voice.get("packageSize"),voice.get("description"))+"\n";
-
-			}
-			result=result+"Languages:\n";
-			for(Object object: ((JSONArray) main.get("languages")).toArray()){
-				JSONObject language = (JSONObject) object;
-				result=result+String.format("  - %s [%s,%s] %s",language.get("code"),language.get("packageFilename"),language.get("packageSize"),language.get("description"))+"\n";
-			}
-			return result;
-		}
-
-		@CommandRoute(value="dwn", args={"code"})
-		public String dwn(CommandArgs args){
-			getDownloadableList();
-			if(urls.containsKey(args.get("code"))){
-				String url = urls.get(args.get("code"));
-				String[] tmps = url.split("/");
-				String tmpFile = "/tmp/"+tmps[tmps.length-1];;
-				new Downloader(){
-					public void rbcProgressCallback(RBCWrapper rbc, double progress) {
-						logger.info( String.format( "Download progress for %s : %d bytes received, %.02f%%",rbc.getUrl(), rbc.getReadSoFar(), progress));
-					}
-				}.start(tmpFile,url);
-
-				return "OK";
-			}else{
-				return "Not OK";
-			}
-		}
-
-		@CommandRoute(value="print", args={"text"})
-		public String print(CommandArgs args){
-			String result = "PRINT: "+args.get("text")+", context: "+args.getContext();
-			logger.info(result);
-			return result;
-		}
-
-		@CommandRoute(value="listdwns", args={})
-		public String listDownables(CommandArgs args){
-			URL url;
-			String result="-";
-			try {
-				url = new URL("https://raw.github.com/marytts/marytts/master/download/marytts-components.xml");
-				//ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-				//FileOutputStream fos = new FileOutputStream("/tmp/marytts-components.xml");
-				//fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-				result = url.toString();
-				logger.info(result);
-			} catch (MalformedURLException e) {
-				logger.error(e.getClass().getSimpleName(), e);
-			}
-			return result;
-		}
-
-
 		@CommandRoute(value="sayWords", args={"words","callId"})
 		public void sayWord(final CommandArgs args){
 			try {
@@ -236,11 +185,14 @@ public class SoundTTSPlugin extends Plugin {
 					public void run() {
 						try {
 							//logger.debug("Voice "+marytts.getLocale().getLanguage()+"::"+marytts.getLocale().toLanguageTag());
-							marytts.setLocale(new Locale(MaryUtils.string2locale("fr").getLanguage()));
+							//marytts.setLocale(new Locale(MaryUtils.string2locale("fr").getLanguage()));
 							logger.info(String.format("Generating %s for callId: %s, saying '%s' in '%s'",tmpFileName,args.get("callId"),args.get("words"),marytts.getLocale().toLanguageTag()));
-							saveAudio(args.get("words"), tmpFileName);
+
+							//PCM 8kHz, 16 bits signed, mono-channel, little endian
+							saveToFile(getAudioInputStream(new AudioFormat(8000, 16,1,true,false), marytts.generateAudio(args.get("words"))),tmpFileName);
+
 							args.getContext(AudioPlugin.class).playAudioFile(args.get("callId"), tmpFileName);
-						} catch (SynthesisException | InterruptedException e) {
+						} catch (SynthesisException e) {
 							logger.error(e.getClass().getSimpleName(), e);
 						}
 					}
@@ -248,6 +200,11 @@ public class SoundTTSPlugin extends Plugin {
 			} catch (SecurityException| IllegalArgumentException | NoSuchAlgorithmException e) {
 				logger.error(e.getClass().getSimpleName(), e);
 			}
+		}
+
+		@CommandRoute(value="setVoice", args={"voice"})
+		public void setVoice(final CommandArgs args){
+			setVoice(args.get("voice"));
 		}
 
 		public void setVoice(String name){
@@ -259,11 +216,6 @@ public class SoundTTSPlugin extends Plugin {
 					marytts.setVoice(voiceName);
 				}
 			}
-		}
-
-		private void saveAudio(String words,String outFileName) throws SynthesisException, InterruptedException{
-			//PCM 8kHz, 16 bits signed, mono-channel, little endian
-			saveToFile(getAudioInputStream(new AudioFormat(8000, 16,1,true,false), marytts.generateAudio(words)),outFileName);
 		}
 
 		private AudioInputStream getAudioInputStream(AudioFormat targ,AudioInputStream ais){
@@ -323,6 +275,84 @@ public class SoundTTSPlugin extends Plugin {
 			} catch (IOException e) {
 				e.printStackTrace(System.err);
 			}
+		}
+	/*}
+	 *
+	@Extension
+	public static class MaryTTS implements GlobalExtension{*/
+		private static boolean isDownloading = false;
+		@CommandRoute(value="getdwns", args={},global=true)
+		public String getDwns(CommandArgs args){
+			return getDownloadableList().toString();
+		}
+
+		@CommandRoute(value="getdwnstxt", args={},global=true)
+		// bot from=6000 action=getdwnstxt
+		// bot from=6000 action=dwn code=v40
+		public String getDwnstxt(CommandArgs args){
+			String result="";
+			JSONObject main = getDownloadableList();
+			result=result+"Voices:\n";
+			for(Object object: ((JSONArray) main.get("voices")).toArray()){
+				JSONObject voice = (JSONObject) object;
+				result=result+String.format("  - %s [%s,%s] %s",voice.get("code"),voice.get("packageFilename"),voice.get("packageSize"),voice.get("description"))+"\n";
+			}
+			result=result+"Languages:\n";
+			for(Object object: ((JSONArray) main.get("languages")).toArray()){
+				JSONObject language = (JSONObject) object;
+				result=result+String.format("  - %s [%s,%s] %s",language.get("code"),language.get("packageFilename"),language.get("packageSize"),language.get("description"))+"\n";
+			}
+
+			return result;
+		}
+
+		@CommandRoute(value="dwn", args={"code"},global=true)
+		public String dwn(CommandArgs args){
+			getDownloadableList();
+
+			if(components.containsKey(args.get("code"))){
+				ComponentDescription componentDescription = components.get(args.get("code"));
+
+				String url = componentDescription.getLocations().get(0).toString();
+				String[] tmps = url.split("/");
+				String tmpFile = System.getProperty("mary.downloadDir")+tmps[tmps.length-1];;
+				if(isDownloading){
+					return "Already in downloading";
+				}else{
+					File oFile = new File(tmpFile);
+					if(oFile.exists() && oFile.length()==componentDescription.getPackageSize()){
+						logger.info("Already downloaded");
+					}else{
+						try{
+							isDownloading=true;
+							new Downloader(){
+								public void rbcProgressCallback(RBCWrapper rbc, double progress) {
+									logger.info( String.format( "Download progress for %s : %d bytes received, %.02f%%",rbc.getUrl(), rbc.getReadSoFar(), progress));
+								}
+							}.start(tmpFile,url);
+						}finally{
+							isDownloading=false;
+						}
+					}
+					try {
+						componentDescription.install(true);
+						loadConfigs();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+
+					return "OK";
+				}
+			}else{
+				return "Not OK, Unknown code";
+			}
+		}
+
+		@CommandRoute(value="print", args={"text"})
+		public String print(CommandArgs args){
+			String result = "PRINT: "+args.get("text")+", context: "+args.getContext();
+			logger.info(result);
+			return result;
 		}
 	}
 }
