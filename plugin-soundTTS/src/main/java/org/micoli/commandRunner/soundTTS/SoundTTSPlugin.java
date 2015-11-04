@@ -41,6 +41,7 @@ import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.botUserAgent.AudioPlugin;
 import org.micoli.botUserAgent.BotExtension;
+import org.micoli.botUserAgent.BotsManagerExtension;
 import org.micoli.commandRunner.soundTTS.http.Downloader;
 import org.micoli.commandRunner.soundTTS.http.RBCWrapper;
 import org.slf4j.Logger;
@@ -401,12 +402,16 @@ public class SoundTTSPlugin extends Plugin {
 				return "Not OK, Unknown code";
 			}
 		}
+	}
 
+	@Extension
+	public static class globalSoundTTS implements BotsManagerExtension{
 		@CommandRoute(value="print", args={"text"})
 		public String print(CommandArgs args){
 			String result = "PRINT: "+args.get("text")+", context: "+args.getContext();
 			logger.info(result);
 			return result;
 		}
+
 	}
 }

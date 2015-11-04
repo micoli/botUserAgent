@@ -104,9 +104,12 @@ public class ExecutorRouter {
 		logger.debug("    Attaching routes: "+cls.getSimpleName().toString());
 		sRoutes += "Attaching routes for "+cls.getSimpleName().toString();
 		for (Method method : cls.getMethods()){
+			logger.info("##Attach for cls "+cls.getName()+" "+method.getName());
 			if (method.isAnnotationPresent(CommandRoute.class)) {
+				logger.info("##Attach isAnnotationPresent for cls "+cls.getName()+" "+method.getName());
 				CommandRoute route = method.getAnnotation(CommandRoute.class);
 				try {
+					logger.info("##Attach route for cls "+cls.getName()+" "+method.getName()+" "+route.value());
 					logger.debug("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+(route.global()?globalContext:context).getClass().getSimpleName());
 					//routes.put(route.value(), new ContextMethod(route.global()?globalContext:context,method));
 					routes.put(route.value(), new ContextMethod(context,method));
@@ -116,6 +119,6 @@ public class ExecutorRouter {
 				}
 			}
 		}
-		logger.info(sRoutes);
+		logger.info("END"+sRoutes);
 	}
 }
