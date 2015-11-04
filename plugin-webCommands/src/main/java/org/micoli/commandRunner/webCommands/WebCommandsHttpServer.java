@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.ExecutorRouter;
@@ -45,8 +46,12 @@ public class WebCommandsHttpServer extends NanoWebSocketServer {
 		if(uri.startsWith(cmdPrefix)){
 			String subMethod = uri.replace(cmdPrefix, "");
 
-			if(executorRouter.hasCommand(subMethod)){
-				String res = executorRouter.execute(subMethod, new CommandArgs(session.getParms()));
+			Map<String, String> parms = session.getParms();
+			if(!parms.containsKey("from")){
+				parms.put("from", "000");
+			}
+			if(executorRouter.hasCommand(parms.get("from"),subMethod)){
+				String res = executorRouter.execute(parms.get("from"),subMethod, new CommandArgs(parms));
 				html = res;
 				logger.debug("Console command execute :"+html+":"+session.getParms()+":"+res);
 			}else{

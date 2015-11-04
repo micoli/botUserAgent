@@ -3,68 +3,74 @@ package org.micoli.api.commandRunner;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map.Entry;
 
 import org.micoli.api.PluginsManager;
-import org.micoli.botUserAgent.BotExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ro.fortsoft.pf4j.ExtensionPoint;
 
 public class ExecutorRouter {
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private class ContextMethod{
-		public Object context;
-		public Method method;
-		public ContextMethod(Object object,Method method){
-			this.context	= object;
-			this.method	= method;
+		private Object context;
+		private Object globalContext;
+		public Object getContext() {
+			return context;
+		}
+		public Object getGlobalContext() {
+			return globalContext;
+		}
+		public Method getMethod() {
+			return method;
+		}
+		private Method method;
+		public ContextMethod(Object context, Method method, Object globalContext){
+			this.context		= context;
+			this.method			= method;
+			this.globalContext	= globalContext;
 		}
 	}
+
 	//protected String lastCommand = "bot action=call from=6000 to=6001";
 	protected String lastCommand = "bot from=6000 action=print text=aaaa";
-	protected HashMap<String, ContextMethod> routes;
-	protected CommandRunner commandRunner = null;
+	protected HashMap<String,HashMap<String, ContextMethod>> routes = new HashMap<String, HashMap<String,ContextMethod>>();
 
-	public ExecutorRouter(CommandRunner commandRunner,boolean attachBotExtension){
-		this.commandRunner= commandRunner;
-		try {
-			logger.debug("new ExecutorRouter " + commandRunner.getClass().getSimpleName());
-			this.routes = new HashMap<String, ContextMethod>();
-			attachRoutes(commandRunner.getClass(),commandRunner,commandRunner);
+	public ExecutorRouter(){
+	}
 
-			//FIXME : change botExtension to class <T>
-			if (attachBotExtension){
-				List<BotExtension> botExtensions = PluginsManager.getExtensionsbyClass(BotExtension.class);
-				for (BotExtension botExtension : botExtensions) {
-					attachRoutes(botExtension.getClass(),botExtension,commandRunner);
-				}
+	public void displayRoute(){
+		logger.info("Declared Routes");
+		for (Entry<String, HashMap<String, ContextMethod>> obj : routes.entrySet()) {
+			logger.info(String.format(" - %s",obj.getKey()));
+			for (Entry<String, ContextMethod> route : obj.getValue().entrySet()) {
+				logger.info(String.format("     %s [%s] Context: %s",route.getKey(),route.getValue().method.getName(),route.getValue().context.getClass().getName()));
 			}
-			//PluginsManager.bindExtension(BotExtension.class,commandRunner);
-		} catch (Exception e) {
-			logger.error(e.getClass().getSimpleName(), e);
 		}
+		logger.info("Declared Routes end.");
 	}
 
-	public boolean hasCommand(String route){
-		return routes.containsKey(route);
+	public boolean hasCommand(String Id,String route){
+		return routes.containsKey(Id) && routes.get(Id).containsKey(route);
 	}
 
-	public ContextMethod getCommand(String route){
-		return routes.get(route);
+	public ContextMethod getCommand(String Id,String route){
+		return routes.get(Id).get(route);
 	}
 
-	public String execute(String route,CommandArgs map){
-		if(!routes.containsKey(route)){
+	public String execute(String Id, String route,CommandArgs map){
+		if(!hasCommand(Id,route)){
 			logger.error("Execute error, unknown route : "+route);
 			return "";
 		}
-		return execute(getCommand(route),map);
+		return execute(getCommand(Id,route),map);
 	}
 
 	public String execute(ContextMethod contextMethod,CommandArgs map){
 		try {
-			logger.debug("Running "+
+			/*logger.debug("Running "+
 				commandRunner.getClass().getSimpleName()+
 				"-"+
 				contextMethod.method.getDeclaringClass().getSimpleName().toString()+
@@ -72,11 +78,11 @@ public class ExecutorRouter {
 				contextMethod.method.getName()+
 				" "+
 				map.toString()
-			);
-			map.setContext(commandRunner);
+			);*/
+			map.setContext(contextMethod.getGlobalContext());
 
-			logger.debug("Execute contextMethod: "+contextMethod.method.getName()+", context: "+contextMethod.context.getClass().toString());
-			return (String) contextMethod.method.invoke(contextMethod.context, map);
+			logger.debug("Execute contextMethod: "+contextMethod.getMethod().getName()+", context: "+contextMethod.getContext().getClass().toString());
+			return (String) contextMethod.getMethod().invoke(contextMethod.getGlobalContext(), map);
 		} catch (IllegalAccessException | IllegalArgumentException| InvocationTargetException e) {
 			logger.error(e.getClass().getSimpleName(), e);
 		}
@@ -92,33 +98,54 @@ public class ExecutorRouter {
 
 		lastCommand = commandStr;
 		String subMethod = args.getDefault("method","[none]");
-		if(hasCommand(subMethod)){
-			return execute(subMethod, args);
+		if(hasCommand(args.get("from"),subMethod)){
+			return execute(args.get("from"),subMethod, args);
 		}else{
 			return "No such command : "+subMethod;
 		}
 	}
 
-	public void attachRoutes(Class<?> cls,Object context,Object globalContext) throws Exception {
+	private void setRoute(String id,String route,ContextMethod contextMethod){
+		if(!routes.containsKey(id)){
+			routes.put(id,new HashMap<String, ContextMethod>());
+		}
+		if(routes.get(id).containsKey(route)){
+			logger.error(String.format("Route %s already defined for %s",route,id));
+		}else{
+			routes.get(id).put(route, contextMethod);
+		}
+	}
+
+	public void attachRouteForExtension(String Id,@SuppressWarnings("rawtypes") Class extensionClass,CommandRunner commandRunner){
+		attachRoutes(Id,commandRunner.getClass(),commandRunner,commandRunner);
+		for (ExtensionPoint extension : PluginsManager.getExtensionsbyClass(extensionClass)) {
+			//logger.info(String.format("attachRouteForExtension %s : %s, %s",extensionClass.getName(),extension.getClass().getName(),commandRunner.getClass().getName()));
+			//logger.info(String.format("attachRouteForExtension %s : %s, %s",extensionClass.getName(),commandRunner.getClass().getName(),commandRunner.getClass().getName()));
+			//logger.info(String.format("attachRouteForExtension end"));
+			attachRoutes(Id,extension.getClass(),extension,commandRunner);
+		}
+	}
+
+	public void attachRoutes(String id,Class<?> cls,Object context,Object globalContext) {
 		String sRoutes="";
-		logger.debug("    Attaching routes: "+cls.getSimpleName().toString());
-		sRoutes += "Attaching routes for "+cls.getSimpleName().toString();
+		//logger.info(">--------------->");
+		//logger.info("    Attaching routes: "+cls.getSimpleName().toString());
+		sRoutes += "Attaching routes for "+cls.getSimpleName().toString()+"::";
 		for (Method method : cls.getMethods()){
-			logger.info("##Attach for cls "+cls.getName()+" "+method.getName());
+			//logger.info("    Attaching routes: "+cls.getSimpleName().toString()+" method "+ method.getName());
 			if (method.isAnnotationPresent(CommandRoute.class)) {
-				logger.info("##Attach isAnnotationPresent for cls "+cls.getName()+" "+method.getName());
+				//logger.info("    Attaching routes: "+cls.getSimpleName().toString()+" method "+ method.getName()+" isPresent");
 				CommandRoute route = method.getAnnotation(CommandRoute.class);
 				try {
-					logger.info("##Attach route for cls "+cls.getName()+" "+method.getName()+" "+route.value());
-					logger.debug("        Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+(route.global()?globalContext:context).getClass().getSimpleName());
-					//routes.put(route.value(), new ContextMethod(route.global()?globalContext:context,method));
-					routes.put(route.value(), new ContextMethod(context,method));
-					sRoutes += route.value()+"@"+(route.global()?globalContext:context).getClass().getSimpleName()+", ";
+					//logger.debug(" Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+(route.global()?globalContext:context).getClass().getSimpleName());
+					sRoutes += route.value()+"@"+context.getClass().getSimpleName()+"/"+globalContext.getClass().getSimpleName()+", ";
+					setRoute(id,route.value(), new ContextMethod(context,method,globalContext));
 				} catch (Exception e) {
 					logger.error(e.getClass().getSimpleName(), e);
 				}
 			}
 		}
-		logger.info("END"+sRoutes);
+		logger.info(sRoutes);
+		//logger.info("<---------------<");
 	}
 }

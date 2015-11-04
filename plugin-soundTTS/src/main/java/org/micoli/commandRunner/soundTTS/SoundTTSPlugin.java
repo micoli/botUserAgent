@@ -406,7 +406,7 @@ public class SoundTTSPlugin extends Plugin {
 
 	@Extension
 	public static class globalSoundTTS implements BotsManagerExtension{
-		@CommandRoute(value="print", args={"text"})
+		@CommandRoute(value="print2", args={"text"})
 		public String print(CommandArgs args){
 			String result = "PRINT: "+args.get("text")+", context: "+args.getContext();
 			logger.info(result);

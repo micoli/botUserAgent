@@ -31,7 +31,6 @@ import org.json.simple.JSONValue;
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
-import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.botUserAgent.AudioPlugin;
 import org.micoli.botUserAgent.BotsManagerApi;
 import org.micoli.botUserAgent.GlobalConfig;
@@ -44,15 +43,13 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 	private ScheduledExecutorService	scheduledExecutor;
 	private BotUserAgent				userAgent;
 	private PeerConfig					config;
-	private ExecutorRouter				executorRouter;
+	//private ExecutorRouter			executorRouter;
 	private String 						lastStatus;
 	private String						lastCallId;
 
 	public BotAgent(BotsManager botsManager,PeerConfig config) {
 		this.botsManager	= botsManager;
 		this.config			= config;
-		this.executorRouter	= new ExecutorRouter(this,true);
-
 		BotSoundManager javaxSoundManager = new BotSoundManager();
 		setAnswerFile("/tmp/null.raw");
 		try {
@@ -96,7 +93,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 
 	public String execute(String route, CommandArgs commandArgs) {
 		logger.debug("route: "+route);
-		return this.executorRouter.execute(route, commandArgs);
+		return this.botsManager.getExecutorRouter().execute(this.config.getId() ,route, commandArgs);
 	}
 
 	public void instantiatePeers() {

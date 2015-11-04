@@ -30,7 +30,10 @@ import org.micoli.api.PluginsManager;
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
 import org.micoli.api.commandRunner.CommandRunner;
+import org.micoli.api.commandRunner.ExecutorRouter;
+import org.micoli.botUserAgent.BotExtension;
 import org.micoli.botUserAgent.BotsManagerApi;
+import org.micoli.botUserAgent.BotsManagerExtension;
 import org.micoli.botUserAgent.GlobalConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +50,8 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 	private Boolean						customBindAddr;
 	private Bindings					engineScope;
 	private File						workingDirectory;
+
+	private ExecutorRouter	executorRouter;
 
 	public BotsManager() {
 		this.sipRequests	= new HashMap<String, SipRequest>();
@@ -143,9 +148,15 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 				botAgents.put(config.getId(),new BotAgent(this,config));
 			}
 
-			PluginsManager.startGenericCommands(this);
-			PluginsManager.startBotsExtension(this);
+			setExecutorRouter(new ExecutorRouter());
 
+			PluginsManager.startGenericCommands(getExecutorRouter(),this);
+
+			getExecutorRouter().attachRouteForExtension("000", BotsManagerExtension.class, this);
+			for (Map.Entry<String, BotAgent> botAgentKV : botAgents.entrySet()) {
+				getExecutorRouter().attachRouteForExtension(botAgentKV.getKey(), BotExtension.class, botAgentKV.getValue());
+			}
+			getExecutorRouter().displayRoute();
 			//START global extensions
 
 		} catch (NullPointerException e) {
@@ -157,7 +168,7 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 		}
 	}
 
-	@CommandRoute(value="bot",args={"from","action"})
+	/*@CommandRoute(value="bot",args={"from","action"})
 	public String runBotCommand(CommandArgs commandArgs) {
 		String botId = commandArgs.getDefault("from", "0");
 		if(!botAgents.containsKey(botId)){
@@ -168,7 +179,7 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 		}catch(Exception e){
 			return "Error : " + e.getMessage();
 		}
-	}
+	}*/
 
 	/*
 	public String runCommand(String command) {
@@ -248,12 +259,12 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 		return list.toJSONString();
 	}
 
-	/*private static void test() {
-		MaryTTS mary = new MaryTTS();
-		try {
-			mary.saveAudio("bonjour, ceci est un test 123 quatre cinq six", "/tmp/toto1234.wav");
-		} catch (SynthesisException | InterruptedException e) {
-			logger.error(e.getClass().getSimpleName(), e);
-		}
-	}*/
+	public ExecutorRouter getExecutorRouter() {
+		return executorRouter;
+	}
+
+	private void setExecutorRouter(ExecutorRouter executorRouter) {
+		this.executorRouter = executorRouter;
+	}
+
 }

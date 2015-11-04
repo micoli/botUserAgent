@@ -49,9 +49,9 @@ public class ConsoleCommandsPlugin extends Plugin {
 							logger.error(e.getClass().getSimpleName(), e);
 							break;
 						}
-						String exe = executorRouter.executeCommand(command.trim());
-						System.out.println(exe);
-						logger.debug("Console command execute :"+command.trim()+":"+exe);
+						String out = executorRouter.executeCommand(command.trim());
+						System.out.println(out);
+						logger.debug("Console command execute :"+command.trim()+":"+out);
 					}
 				}
 			};

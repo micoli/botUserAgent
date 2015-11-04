@@ -62,7 +62,7 @@ angular
 
 	$scope.call = function(callData){
 		$scope.callResult = {};
-		$scope.callUrl = '/cmd/bot?action=call&from='+callData.from+'&to='+callData.to;
+		$scope.callUrl = '/cmd/call?from='+callData.from+'&to='+callData.to;
 		$http
 		.get($scope.callUrl)
 		.success(function (data, status) {

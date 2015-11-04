@@ -5,7 +5,6 @@ import java.util.List;
 import org.micoli.api.commandRunner.CommandRunner;
 import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.api.commandRunner.GenericCommands;
-import org.micoli.botUserAgent.BotExtension;
 import org.micoli.botUserAgent.BotsManagerApi;
 import org.micoli.botUserAgent.BotsManagerExtension;
 import org.micoli.botUserAgent.BotsManagerPlugin;
@@ -13,15 +12,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ro.fortsoft.pf4j.DefaultPluginManager;
+import ro.fortsoft.pf4j.ExtensionPoint;
 import ro.fortsoft.pf4j.Plugin;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginWrapper;
 
 public class PluginsManager {
 	protected final static Logger logger = LoggerFactory.getLogger(PluginsManager.class);
-	static List<GenericCommands> genericCommands = null;;
+	static List<ExtensionPoint> genericCommands = null;;
 	static List<BotsManagerExtension> botsManagerExtensions = null;;
-	static List<BotExtension> botExtensions = null;;
+	//static List<BotExtension> botExtensions = null;;
 	static PluginManager pluginManager;
 	static BotsManagerApi botsManagerApi;
 
@@ -47,31 +47,27 @@ public class PluginsManager {
 		pluginManager.stopPlugins();
 	}
 
-	public static void startGenericCommands(CommandRunner commandRunner){
-		startGenericCommands(commandRunner,"*");
+	public static void startGenericCommands(ExecutorRouter executorRouter,CommandRunner commandRunner){
+		genericCommands = getExtensionsbyClass(GenericCommands.class);
+		for (ExtensionPoint command : genericCommands) {
+			logger.info("Start interface "+command.getClass().getName());
+			((GenericCommands) command).launch(executorRouter);
+		}
 	}
 
-	public static void startGenericCommands(CommandRunner commandRunner,String mask){
-		ExecutorRouter executorRouter = new ExecutorRouter(commandRunner,false);
-
-		genericCommands = pluginManager.getExtensions(GenericCommands.class);
+	@SuppressWarnings("unchecked")
+	public static List<ExtensionPoint> getExtensionsbyClass(@SuppressWarnings("rawtypes") Class extensionPointClass){
 		String pluginList="";
-		for (GenericCommands command : genericCommands) {
-			pluginList=pluginList+(pluginList.equals("")?"":",")+ command.getClass().getSimpleName();
+		List<ExtensionPoint> extensions = pluginManager.getExtensions(extensionPointClass);
+		for (Object extension : extensions) {
+			pluginList=pluginList+(pluginList.equals("")?"":",")+ extension.getClass().getSimpleName();
 		}
-		logger.info(String.format("Found %d extensions for extension point '%s': %s", genericCommands.size(), GenericCommands.class.getSimpleName(),pluginList));
-
-		mask = mask.toLowerCase();
-		for (GenericCommands command : genericCommands) {
-			if(mask.equalsIgnoreCase("*") || command.getClass().getSimpleName().toLowerCase().contains(mask)){
-				logger.info("Start interface "+command.getClass().getName());
-				command.launch(executorRouter);
-			}
-		}
+		logger.info(String.format("Found %d extensions for extension point '%s': %s", extensions.size(), extensionPointClass.getSimpleName(),pluginList));
+		return extensions;
 	}
 
-	public static void startBotsExtension(CommandRunner commandRunner){
-		ExecutorRouter executorRouter = new ExecutorRouter(commandRunner,false);
+	/*public static void startBotsManagerExtension(CommandRunner commandRunner){
+
 		botsManagerExtensions = pluginManager.getExtensions(BotsManagerExtension.class);
 		String pluginList="";
 		for (BotsManagerExtension globalExtension : botsManagerExtensions) {
@@ -82,33 +78,11 @@ public class PluginsManager {
 		for (BotsManagerExtension botsManagerExtension : botsManagerExtensions) {
 			logger.info("Start BotsManagerExtension "+botsManagerExtension.getClass().getName());
 			try {
-				executorRouter.attachRoutes(botsManagerExtension.getClass(), commandRunner, commandRunner);
+				new ExecutorRouter(commandRunner,false);
+				//executorRouter.attachRoutes(botsManagerExtension.getClass(), commandRunner, commandRunner);
 			} catch (Exception e) {
-				logger.error(e.getClass().getSimpleName(), e);
+				e.printStackTrace();
 			}
 		}
-		//logger.info(String.format("startBotsExtension end for %s", commandRunner.getClass().toString()));
-	}
-
-	@SuppressWarnings("unchecked")
-	public static List<BotExtension> getExtensionsbyClass(@SuppressWarnings("rawtypes") Class extensionPointClass){
-		if(botExtensions == null){
-			botExtensions = pluginManager.getExtensions(extensionPointClass);
-			String pluginList="";
-			for (BotExtension botExtension : botExtensions) {
-				pluginList=pluginList+(pluginList.equals("")?"":",")+ botExtension.getClass().getSimpleName();
-			}
-			logger.info(String.format("Found %d extensions for extension point '%s': %s", botExtensions.size(), extensionPointClass.getSimpleName(),pluginList));
-		}
-		return botExtensions;
-	}
-
-	/*
-	public static void bindExtensionByClass(@SuppressWarnings("rawtypes") Class extensionPointClass ,CommandRunner commandRunner){
-		botExtensions = getExtensionsbyClass(extensionPointClass);
-		for (BotExtension botExtension : botExtensions) {
-			//((BotExtension) botExtension).bind(commandRunner);
-		}
-	}
-	*/
+	}*/
 }

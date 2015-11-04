@@ -36,6 +36,7 @@ public class CommandArgs {
 			String k = (String) keys.next();
 			args.put(k,json.get(k).toString());
 		}
+		setDefault("from","000");
 	}
 
 	public CommandArgs(String commandStr){
@@ -50,8 +51,15 @@ public class CommandArgs {
 				args.put(e.trim(), "");
 			}
 		}
-
+		setDefault("from","000");
 	}
+
+	public void setDefault(String key,String value){
+		if(!has(key)){
+			put(key,value);
+		}
+	}
+
 	public CommandArgs(Map<String, String> parms) {
 		args = parms;
 	}
@@ -62,6 +70,10 @@ public class CommandArgs {
 
 	public String get(String key){
 		return args.get(key);
+	}
+
+	public String put(String key,String value){
+		return args.put(key,value);
 	}
 
 	public String getDefault(String key,String defolt){
