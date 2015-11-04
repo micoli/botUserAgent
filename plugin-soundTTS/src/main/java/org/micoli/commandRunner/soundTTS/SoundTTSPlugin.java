@@ -2,8 +2,10 @@ package org.micoli.commandRunner.soundTTS;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,8 +16,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
 import marytts.LocalMaryInterface;
@@ -27,9 +31,11 @@ import marytts.tools.install.ComponentDescription;
 import marytts.tools.install.InstallFileParser;
 import marytts.tools.install.LanguageComponentDescription;
 import marytts.tools.install.VoiceComponentDescription;
+import marytts.util.MaryUtils;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.micoli.api.ClassPathHacker;
 import org.micoli.api.ServiceProviderTools;
 import org.micoli.api.commandRunner.CommandArgs;
 import org.micoli.api.commandRunner.CommandRoute;
@@ -50,19 +56,26 @@ public class SoundTTSPlugin extends Plugin {
 	private static MaryInterface marytts;
 	private static Map<String,ComponentDescription> components = new HashMap<String,ComponentDescription>();
 	protected static String pluginPath;
+	protected static PluginWrapper pluginWrapper;
 
 	public SoundTTSPlugin(PluginWrapper wrapper) {
 		super(wrapper);
 		pluginPath = getWrapper().getPluginPath();
+		pluginWrapper = getWrapper();
+	}
+
+	private static void init(){
+		System.setProperty("mary.installedDir"	,System.getProperty("pf4j.pluginsDir")+pluginPath );
+		System.setProperty("mary.downloadDir"	,"/tmp/") ;
+		System.setProperty("mary.base"			,System.getProperty("mary.installedDir"));
+		logger.info("Init : pluginPath :"+System.getProperty("pf4j.pluginsDir")+pluginPath);
 	}
 
 	private static InstallFileParser getInstallationConfig(){
 		URL url;
 		try {
+			init();
 			url = new URL("https://raw.github.com/marytts/marytts/master/download/marytts-components.xml");
-			System.setProperty("mary.installedDir"	,System.getProperty("pf4j.pluginsDir")+pluginPath );
-			System.setProperty("mary.downloadDir"	,"/tmp/") ;
-			System.setProperty("mary.base"			,System.getProperty("mary.installedDir"));
 			return new InstallFileParser(url);
 		} catch (IOException | SAXException e) {
 			e.printStackTrace();
@@ -124,30 +137,58 @@ public class SoundTTSPlugin extends Plugin {
 	@Override
 	public void start() {
 		logger.debug("SoundTTSPlugin.start()");
-		loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/lib");
-		loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/../voices");
+		init();
+		loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/lib",false);
+		ClassPathHacker.setClassLoader(this.getWrapper().getPluginClassLoader());
+
+		//System.setProperty("mary.base"			,"/tmp/voices");
+		//loadVoices();
+		//loadConfigs("/tmp/voices/lib",false);
+		//ClassPathHacker.resetClassLoader();
+
 		displayConfigs();
 		logger.debug("End initialisation");
+	}
+
+	public static void loadVoices() {
+		File dir = new File("/tmp/voices/lib");
+		logger.debug("Scanning /tmp/voices, looking for voice providers");
+		if(dir.exists() && dir.isDirectory()){
+			dir.listFiles(new FilenameFilter(){
+				public boolean accept(File dir, String name){
+					if(name.endsWith(".jar")){
+						try {
+							logger.debug("add file /tmp/voices/lib/"+name);
+							ClassPathHacker.addFile("/tmp/voices/lib/"+name);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					return false;
+				}
+			});
+		}
 	}
 
 	public static void displayConfigs() {
 		try{
 			marytts = new LocalMaryInterface();
 			for(Locale locale : marytts.getAvailableLocales()){
-				logger.info("Locale "+locale.getCountry()+"-"+locale.getDisplayLanguage()+"::"+locale.getDisplayName());
+				logger.info("### Locale "+locale.getCountry()+"-"+locale.getDisplayLanguage()+"::"+locale.getDisplayName());
 			}
 			for(String voice : marytts.getAvailableVoices()){
-				logger.info("Voice "+voice);
+				logger.info("### Voice "+voice);
 			}
 		} catch (MaryConfigurationException e) {
 			logger.error(e.getClass().getSimpleName(), e);
 		}
 	}
 
-	public static void loadConfigs(String path) {
-		final Set<String> MaryConfigClasses = ServiceProviderTools.getProvidersFromJar(path,"marytts.config.MaryConfig",true);
+	public static void loadConfigs(String path,boolean loadJar) {
+		logger.debug("Init MaryConfig classes :"+path+", "+loadJar );
+		final Set<String> MaryConfigClasses = ServiceProviderTools.getProvidersFromJar(path,"marytts.config.MaryConfig",loadJar);
 
-		logger.debug("Init MaryConfig classes");
+		logger.debug("Init MaryConfig classes :"+MaryConfigClasses.size() );
 		for(String configClass : MaryConfigClasses){
 			try {
 				logger.info("Load MaryConfig class: "+configClass);
@@ -182,21 +223,26 @@ public class SoundTTSPlugin extends Plugin {
 			try {
 				MessageDigest md5 = MessageDigest.getInstance("MD5");
 				md5.update(args.get("callId").getBytes(),0,args.get("callId").length());
-				final String tmpFileName="/tmp/"+md5.digest()+".wav";
+				final String tmpFileName="/tmp/"+String.format("%032x", new BigInteger(1, md5.digest()))+".raw";
 
 				new java.util.Timer().schedule(new java.util.TimerTask() {
 					@Override
 					public void run() {
 						try {
 							//logger.debug("Voice "+marytts.getLocale().getLanguage()+"::"+marytts.getLocale().toLanguageTag());
-							//marytts.setLocale(new Locale(MaryUtils.string2locale("fr").getLanguage()));
+							marytts.setLocale(new Locale(MaryUtils.string2locale("fr").getLanguage()));
 							logger.info(String.format("Generating %s for callId: %s, saying '%s' in '%s'",tmpFileName,args.get("callId"),args.get("words"),marytts.getLocale().toLanguageTag()));
 
 							//PCM 8kHz, 16 bits signed, mono-channel, little endian
 							saveToFile(getAudioInputStream(new AudioFormat(8000, 16,1,true,false), marytts.generateAudio(args.get("words"))),tmpFileName);
-
+							AudioSystem.write(
+									marytts.generateAudio(args.get("words"))
+								,AudioFileFormat.Type.WAVE
+								,new File(tmpFileName+".wav"));
 							args.getContext(AudioPlugin.class).playAudioFile(args.get("callId"), tmpFileName);
 						} catch (SynthesisException e) {
+							logger.error(e.getClass().getSimpleName(), e);
+						} catch (IOException e) {
 							logger.error(e.getClass().getSimpleName(), e);
 						}
 					}
@@ -212,12 +258,15 @@ public class SoundTTSPlugin extends Plugin {
 		}
 
 		public void setVoice(String name){
+			logger.debug("setVoice "+name);
 			Set<String> voices = marytts.getAvailableVoices();
 			Iterator<String> iterator = voices.iterator();
 			while (iterator.hasNext()){
 				String voiceName = iterator.next();
 				if(voiceName.equals(name)){
+					logger.debug("setVoice found "+name);
 					marytts.setVoice(voiceName);
+					return;
 				}
 			}
 		}
@@ -340,7 +389,7 @@ public class SoundTTSPlugin extends Plugin {
 					}
 					try {
 						componentDescription.install(true);
-						loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/../voices");
+						loadConfigs(System.getProperty("pf4j.pluginsDir")+pluginPath+"/lib",false);
 						displayConfigs();
 					} catch (Exception e) {
 						e.printStackTrace();

@@ -16,7 +16,7 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 		var lng1 = getRandomInt(2000,4000);
 		var coloredCallid = "{{color_yellow}}"+callId+"{{reset}}";
 		//that.ua.setAnswerFile(that.audioFile);
-		//that.ua.execute("setVoice",new CommandArgs({voice:"upmc-jessica-hsmm"}));
+		that.ua.execute("setVoice",new CommandArgs({voice:"upmc-jessica"}));
 
 		var activeCall = that.ua.getActiveCall();
 		if(activeCall){
@@ -37,7 +37,7 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 					that.ua.acceptCallByCallId(callId);
 					try{
 						console.log('error1');
-						that.ua.execute("sayWords",new CommandArgs({"callId":callId,"words":"bonjour monsieur, Hello sir"}));
+						that.ua.execute("sayWords",new CommandArgs({"callId":callId,"words":"bonjour monsieur, madame. poste "+that.id}));
 						console.log('error2');
 					}catch(e){
 						console.log('error3');

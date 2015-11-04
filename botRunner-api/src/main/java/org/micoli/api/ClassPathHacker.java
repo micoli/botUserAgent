@@ -11,6 +11,16 @@ import org.slf4j.LoggerFactory;
 
 public class ClassPathHacker {
 	protected final static Logger logger = LoggerFactory.getLogger(ClassPathHacker.class);
+	static URLClassLoader sysloader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+	static ClassLoader classLoader=null;
+
+	public static void setClassLoader(ClassLoader classLoader){
+		sysloader = (URLClassLoader) classLoader;
+	}
+
+	public static void resetClassLoader(){
+		sysloader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+	}
 	/**
 	 * Parameters of the method to add an URL to the System classes.
 	 */
