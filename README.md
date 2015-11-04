@@ -22,7 +22,7 @@
   * mvn install;cd ..
 
 * Pf4J (plugin framework for java)
-  * git clone https://github.com/decebals/pf4j.git
+  * git clone https://github.com/micoli/pf4j.git
   * cd pf4j
   * mvn install;cd ..
 
