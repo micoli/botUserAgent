@@ -36,7 +36,7 @@ public class CommandArgs {
 			String k = (String) keys.next();
 			args.put(k,json.get(k).toString());
 		}
-		setDefault("from","000");
+		setDefault("from",ExecutorRouter.root);
 	}
 
 	public CommandArgs(String commandStr){
@@ -51,7 +51,7 @@ public class CommandArgs {
 				args.put(e.trim(), "");
 			}
 		}
-		setDefault("from","000");
+		setDefault("from",ExecutorRouter.root);
 	}
 
 	public void setDefault(String key,String value){

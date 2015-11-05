@@ -13,6 +13,7 @@ import ro.fortsoft.pf4j.ExtensionPoint;
 
 public class ExecutorRouter {
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	final public static String root="_";
 
 	private class ContextMethod{
 		private Object context;
@@ -79,10 +80,11 @@ public class ExecutorRouter {
 				" "+
 				map.toString()
 			);*/
-			map.setContext(contextMethod.getGlobalContext());
+			//map.setContext(contextMethod.getGlobalContext());
 
-			logger.debug("Execute contextMethod: "+contextMethod.getMethod().getName()+", context: "+contextMethod.getContext().getClass().toString());
-			return (String) contextMethod.getMethod().invoke(contextMethod.getGlobalContext(), map);
+			logger.info("Execute contextMethod: "+contextMethod.getMethod().getName()+", context: "+contextMethod.getContext().getClass().toString()+", globalContext:"+contextMethod.getGlobalContext().getClass().toString());
+
+			return (String) contextMethod.getMethod().invoke(contextMethod.getContext(), map);
 		} catch (IllegalAccessException | IllegalArgumentException| InvocationTargetException e) {
 			logger.error(e.getClass().getSimpleName(), e);
 		}
@@ -119,10 +121,10 @@ public class ExecutorRouter {
 	public void attachRouteForExtension(String Id,@SuppressWarnings("rawtypes") Class extensionClass,CommandRunner commandRunner){
 		attachRoutes(Id,commandRunner.getClass(),commandRunner,commandRunner);
 		for (ExtensionPoint extension : PluginsManager.getExtensionsbyClass(extensionClass)) {
+			attachRoutes(Id,extension.getClass(),extension,commandRunner);
 			//logger.info(String.format("attachRouteForExtension %s : %s, %s",extensionClass.getName(),extension.getClass().getName(),commandRunner.getClass().getName()));
 			//logger.info(String.format("attachRouteForExtension %s : %s, %s",extensionClass.getName(),commandRunner.getClass().getName(),commandRunner.getClass().getName()));
 			//logger.info(String.format("attachRouteForExtension end"));
-			attachRoutes(Id,extension.getClass(),extension,commandRunner);
 		}
 	}
 

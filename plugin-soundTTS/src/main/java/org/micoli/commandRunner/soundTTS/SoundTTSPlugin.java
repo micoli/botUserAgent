@@ -330,17 +330,18 @@ public class SoundTTSPlugin extends Plugin {
 				e.printStackTrace(System.err);
 			}
 		}
-	/*}
-	 *
+	}
+
 	@Extension
-	public static class MaryTTS implements GlobalExtension{*/
+	public static class globalSoundTTS implements BotsManagerExtension{
 		private static boolean isDownloading = false;
-		@CommandRoute(value="getdwns", args={},global=true)
+
+		@CommandRoute(value="getdwns", args={})
 		public String getDwns(CommandArgs args){
 			return getDownloadableList().toString();
 		}
 
-		@CommandRoute(value="getdwnstxt", args={},global=true)
+		@CommandRoute(value="getdwnstxt", args={})
 		// bot from=6000 action=getdwnstxt
 		// bot from=6000 action=dwn code=v40
 		public String getDwnstxt(CommandArgs args){
@@ -360,7 +361,7 @@ public class SoundTTSPlugin extends Plugin {
 			return result;
 		}
 
-		@CommandRoute(value="dwn", args={"code"},global=true)
+		@CommandRoute(value="dwn", args={"code"})
 		public String dwn(CommandArgs args){
 			getDownloadableList();
 
@@ -402,16 +403,12 @@ public class SoundTTSPlugin extends Plugin {
 				return "Not OK, Unknown code";
 			}
 		}
-	}
 
-	@Extension
-	public static class globalSoundTTS implements BotsManagerExtension{
 		@CommandRoute(value="print2", args={"text"})
 		public String print(CommandArgs args){
 			String result = "PRINT: "+args.get("text")+", context: "+args.getContext();
 			logger.info(result);
 			return result;
 		}
-
 	}
 }

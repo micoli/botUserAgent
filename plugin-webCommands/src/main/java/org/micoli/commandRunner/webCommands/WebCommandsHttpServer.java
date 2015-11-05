@@ -48,7 +48,7 @@ public class WebCommandsHttpServer extends NanoWebSocketServer {
 
 			Map<String, String> parms = session.getParms();
 			if(!parms.containsKey("from")){
-				parms.put("from", "000");
+				parms.put("from", ExecutorRouter.root);
 			}
 			if(executorRouter.hasCommand(parms.get("from"),subMethod)){
 				String res = executorRouter.execute(parms.get("from"),subMethod, new CommandArgs(parms));

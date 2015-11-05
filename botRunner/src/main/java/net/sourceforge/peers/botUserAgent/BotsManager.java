@@ -152,7 +152,7 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 
 			PluginsManager.startGenericCommands(getExecutorRouter(),this);
 
-			getExecutorRouter().attachRouteForExtension("000", BotsManagerExtension.class, this);
+			getExecutorRouter().attachRouteForExtension(ExecutorRouter.root, BotsManagerExtension.class, this);
 			for (Map.Entry<String, BotAgent> botAgentKV : botAgents.entrySet()) {
 				getExecutorRouter().attachRouteForExtension(botAgentKV.getKey(), BotExtension.class, botAgentKV.getValue());
 			}
