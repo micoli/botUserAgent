@@ -46,7 +46,7 @@ public class ExecutorRouter {
 		for (Entry<String, HashMap<String, ContextMethod>> obj : routes.entrySet()) {
 			logger.info(String.format(" - %s",obj.getKey()));
 			for (Entry<String, ContextMethod> route : obj.getValue().entrySet()) {
-				logger.info(String.format("     %s [%s] Context: %s",route.getKey(),route.getValue().method.getName(),route.getValue().context.getClass().getName()));
+				logger.info(String.format("    %s [%s@%s]",route.getKey(),route.getValue().method.getName(),route.getValue().context.getClass().getSimpleName()));
 			}
 		}
 		logger.info("Declared Routes end.");
