@@ -15,31 +15,20 @@ public class ExecutorRouter {
 	//protected String lastCommand = "bot action=call from=6000 to=6001";
 	final public static String root ="_";
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
-	protected String lastCommand = "bot from=6000 action=print text=aaaa";
 	protected HashMap<String,HashMap<String, ContextMethod>> routes = new HashMap<String, HashMap<String,ContextMethod>>();
-
-
-	private class ContextMethod{
-		private Object context;
-		private Object globalContext;
-		public Object getContext() {
-			return context;
-		}
-		public Object getGlobalContext() {
-			return globalContext;
-		}
-		public Method getMethod() {
-			return method;
-		}
-		private Method method;
-		public ContextMethod(Object context, Method method, Object globalContext){
-			this.context		= context;
-			this.method			= method;
-			this.globalContext	= globalContext;
-		}
-	}
+	protected String lastCommand = "help";
 
 	public ExecutorRouter(){
+	}
+
+	public static String strJoin(String[] aArr, String sSep) {
+		StringBuilder sbStr = new StringBuilder();
+		for (int i = 0, il = aArr.length; i < il; i++) {
+			if (i > 0)
+				sbStr.append(sSep);
+			sbStr.append(aArr[i]);
+		}
+		return sbStr.toString();
 	}
 
 	public void displayRoute(){
@@ -47,7 +36,7 @@ public class ExecutorRouter {
 		for (Entry<String, HashMap<String, ContextMethod>> obj : routes.entrySet()) {
 			logger.info(String.format(" - %s",obj.getKey()));
 			for (Entry<String, ContextMethod> route : obj.getValue().entrySet()) {
-				logger.info(String.format("    %s [%s@%s]",route.getKey(),route.getValue().method.getName(),route.getValue().context.getClass().getSimpleName()));
+				logger.info(String.format("    %s [%s@%s: %s]",route.getKey(),route.getValue().getMethod().getName(),route.getValue().getContext().getClass().getSimpleName(),String.join(",",route.getValue().getArgs())));
 			}
 		}
 		logger.info("Declared Routes end.");
@@ -131,7 +120,7 @@ public class ExecutorRouter {
 				try {
 					//logger.debug(" Attach route: "+cls.getSimpleName().toString()+" :: "+route.value()+" :: "+(route.global()?globalContext:context).getClass().getSimpleName());
 					sRoutes += route.value()+"@"+context.getClass().getSimpleName()+"/"+globalContext.getClass().getSimpleName()+", ";
-					setRoute(id,route.value(), new ContextMethod(context,method,globalContext));
+					setRoute(id,route.value(), new ContextMethod(context,method,globalContext,route.args()));
 				} catch (Exception e) {
 					logger.error(e.getClass().getSimpleName(), e);
 				}
