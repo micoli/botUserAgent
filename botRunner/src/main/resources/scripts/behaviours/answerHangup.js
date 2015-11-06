@@ -16,7 +16,7 @@ this.behaviours.answerHangup = this.behaviours._default.extnd({
 		var lng1 = getRandomInt(2000,4000);
 		var coloredCallid = "{{color_yellow}}"+callId+"{{reset}}";
 		//that.ua.setAnswerFile(that.audioFile);
-		//that.ua.execute("setVoice",new CommandArgs({voice:"upmc-jessica"}));
+		that.ua.execute("setVoice",new CommandArgs({voice:"upmc-jessica"}));
 
 		var activeCall = that.ua.getActiveCall();
 		if(activeCall){

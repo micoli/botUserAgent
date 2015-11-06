@@ -233,6 +233,12 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 		}
 	}
 
+	@CommandRoute(value="help")
+	public String help(CommandArgs args) {
+		executorRouter.displayRoute();
+		return "--";
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@CommandRoute(value="list")
 	public String list(CommandArgs args) {

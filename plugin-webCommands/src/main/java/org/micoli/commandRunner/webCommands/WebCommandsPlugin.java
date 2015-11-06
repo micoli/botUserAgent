@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import ro.fortsoft.pf4j.Extension;
 import ro.fortsoft.pf4j.Plugin;
 import ro.fortsoft.pf4j.PluginWrapper;
-import ro.fortsoft.pf4j.RuntimeMode;
 
 public class WebCommandsPlugin extends Plugin {
 	protected final static Logger logger = LoggerFactory.getLogger(WebCommandsPlugin.class);

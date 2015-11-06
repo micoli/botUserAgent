@@ -12,8 +12,12 @@ import org.slf4j.LoggerFactory;
 import ro.fortsoft.pf4j.ExtensionPoint;
 
 public class ExecutorRouter {
+	//protected String lastCommand = "bot action=call from=6000 to=6001";
+	final public static String root ="_";
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
-	final public static String root="_";
+	protected String lastCommand = "bot from=6000 action=print text=aaaa";
+	protected HashMap<String,HashMap<String, ContextMethod>> routes = new HashMap<String, HashMap<String,ContextMethod>>();
+
 
 	private class ContextMethod{
 		private Object context;
@@ -35,10 +39,6 @@ public class ExecutorRouter {
 		}
 	}
 
-	//protected String lastCommand = "bot action=call from=6000 to=6001";
-	protected String lastCommand = "bot from=6000 action=print text=aaaa";
-	protected HashMap<String,HashMap<String, ContextMethod>> routes = new HashMap<String, HashMap<String,ContextMethod>>();
-
 	public ExecutorRouter(){
 	}
 
@@ -57,7 +57,7 @@ public class ExecutorRouter {
 		return routes.containsKey(Id) && routes.get(Id).containsKey(route);
 	}
 
-	public ContextMethod getCommand(String Id,String route){
+	private ContextMethod getCommand(String Id,String route){
 		return routes.get(Id).get(route);
 	}
 
@@ -67,28 +67,6 @@ public class ExecutorRouter {
 			return "";
 		}
 		return execute(getCommand(Id,route),map);
-	}
-
-	public String execute(ContextMethod contextMethod,CommandArgs map){
-		try {
-			/*logger.debug("Running "+
-				commandRunner.getClass().getSimpleName()+
-				"-"+
-				contextMethod.method.getDeclaringClass().getSimpleName().toString()+
-				"::"+
-				contextMethod.method.getName()+
-				" "+
-				map.toString()
-			);*/
-			//map.setContext(contextMethod.getGlobalContext());
-
-			logger.info("Execute contextMethod: "+contextMethod.getMethod().getName()+", context: "+contextMethod.getContext().getClass().toString()+", globalContext:"+contextMethod.getGlobalContext().getClass().toString());
-
-			return (String) contextMethod.getMethod().invoke(contextMethod.getContext(), map);
-		} catch (IllegalAccessException | IllegalArgumentException| InvocationTargetException e) {
-			logger.error(e.getClass().getSimpleName(), e);
-		}
-		return "----";
 	}
 
 	public String executeCommand(String commandStr) {
@@ -105,6 +83,18 @@ public class ExecutorRouter {
 		}else{
 			return "No such command : "+subMethod;
 		}
+	}
+
+	private String execute(ContextMethod contextMethod,CommandArgs map){
+		try {
+			logger.debug("Execute contextMethod: "+contextMethod.getMethod().getName()+", context: "+contextMethod.getContext().getClass().toString()+", globalContext:"+contextMethod.getGlobalContext().getClass().toString());
+
+			map.setContext(contextMethod.getGlobalContext());
+			return (String) contextMethod.getMethod().invoke(contextMethod.getContext(), map);
+		} catch (IllegalAccessException | IllegalArgumentException| InvocationTargetException e) {
+			logger.error(e.getClass().getSimpleName(), e);
+		}
+		return "----";
 	}
 
 	private void setRoute(String id,String route,ContextMethod contextMethod){

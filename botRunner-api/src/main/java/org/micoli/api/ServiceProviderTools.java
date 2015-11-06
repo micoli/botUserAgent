@@ -18,10 +18,6 @@ public class ServiceProviderTools {
 	protected final static Logger logger = LoggerFactory.getLogger(ServiceProviderTools.class);
 
 	public static Set<String> getProvidersFromJar(String sPath, final String className){
-		return getProvidersFromJar(sPath,className,false);
-	}
-
-	public static Set<String> getProvidersFromJar(String sPath, final String className,final boolean jarAutoLoad){
 		final Set<String> classesList = new HashSet<String>();
 		File dir = new File(sPath);
 
@@ -34,24 +30,18 @@ public class ServiceProviderTools {
 						try {
 							JarFile jarFile = new JarFile(dir.getAbsolutePath()+"/"+name);
 							ZipEntry jarEntry = jarFile.getJarEntry("META-INF/services/"+className);
-							boolean found=false;
 							if(jarEntry!=null){
 								BufferedReader reader = new BufferedReader(new InputStreamReader(jarFile.getInputStream(jarEntry)));
 								String line;
 								while ((line = reader.readLine()) != null){
 									if(!line.trim().matches("^#(.*)")){
 										logger.info("Found " + line +" in "+className+"@"+name);
-										found=true;
 										classesList.add(line);
 									}
 								}
 								reader.close();
 							}
 							jarFile.close();
-							if(found && jarAutoLoad){
-								logger.info("load Jar "+dir.getAbsolutePath()+"/"+name);
-								ClassPathHacker.addFile(dir.getAbsolutePath()+"/"+name);
-							}
 							return true;
 						} catch (IOException e) {
 							logger.error(e.getClass().getSimpleName(), e);
