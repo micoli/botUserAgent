@@ -98,7 +98,7 @@ public class BotAgent implements SipListener,CommandRunner,AudioPlugin {
 
 	public void instantiatePeers() {
 		try {
-			String ipAddress = GlobalConfig.getConfig().getInetAddress(GlobalConfig.optBindAddr).toString().replaceAll("/", "");
+			String ipAddress = GlobalConfig.getBindAddr().toString().replaceAll("/", "");
 			final BotSoundManager soundManager = new BotSoundManager();
 			InetAddress inetAddress;
 			try {

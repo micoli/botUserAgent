@@ -1,5 +1,6 @@
 package org.micoli.botUserAgent;
 
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -63,102 +64,6 @@ public class GlobalConfig{
 		GlobalConfig.config = config;
 	}
 
-	/**
-	 *
-	 */
-	final public static String optPeersConfigFile = "peersConfigFile";
-	public static FlaggedOption getOptPeersConfigFile() {
-		return options.get(optPeersConfigFile);
-	}
-	private static void setOptPeersConfigFile() throws JSAPException{
-		options.put(optPeersConfigFile,new FlaggedOption(optPeersConfigFile)
-			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("resources/peers.conf.json")
-			.setShortFlag('p')
-			.setLongFlag(JSAP.NO_LONGFLAG));
-		jsap.registerParameter(options.get(optPeersConfigFile));
-	}
-
-	/**
-	 *
-	 */
-	final public static String optBindAddr = "bindAddr";
-	public static FlaggedOption getOptBindAddr() {
-		return options.get(optBindAddr);
-	}
-	private static void setOptBindAddr() throws JSAPException{
-		options.put(optBindAddr, new FlaggedOption(optBindAddr)
-			.setStringParser(JSAP.INETADDRESS_PARSER)
-			.setDefault("0.0.0.0")
-			.setShortFlag('a')
-			.setLongFlag(JSAP.NO_LONGFLAG));
-		jsap.registerParameter(options.get(optBindAddr));
-	}
-
-	/**
-	 *
-	 */
-	final public static String optScriptPath = "scriptPath";
-	public static FlaggedOption getOptScriptPath() {
-		return options.get(optScriptPath);
-	}
-	private static void setOptScriptPath() throws JSAPException{
-		options.put(optScriptPath, new FlaggedOption(optScriptPath)
-			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("resources/scripts/")
-			.setShortFlag('s')
-			.setLongFlag(JSAP.NO_LONGFLAG));
-		jsap.registerParameter(options.get(optScriptPath));
-	}
-
-	/**
-	 *
-	 */
-	final public static String optLog4jproperties = "log4jproperties";
-	public static FlaggedOption getOptLog4jproperties() {
-		return options.get(optLog4jproperties);
-	}
-	private static void setOptLog4jproperties() throws JSAPException{
-		options.put(optLog4jproperties, new FlaggedOption(optLog4jproperties)
-			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("")
-			.setShortFlag('l')
-			.setLongFlag(JSAP.NO_LONGFLAG));
-		jsap.registerParameter(options.get(optLog4jproperties));
-	}
-
-	/**
-	 *
-	 */
-	final public static String optPluginPath = "pluginPath";
-	public static FlaggedOption getOptPluginPath() {
-		return options.get(optPluginPath);
-	}
-	private static void setOptPluginPath() throws JSAPException{
-		options.put(optPluginPath, new FlaggedOption(optPluginPath)
-			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("plugins")
-			.setShortFlag('h')
-			.setLongFlag(JSAP.NO_LONGFLAG));
-		jsap.registerParameter(options.get(optPluginPath));
-	}
-
-	/**
-	 *
-	 */
-	final public static String optLogTraceNetwork = "logTraceNetwork";
-	public static FlaggedOption getOptLogTraceNetwork() {
-		return options.get(optLogTraceNetwork);
-	}
-	private static void setOptLogTraceNetwork() throws JSAPException{
-		options.put(optLogTraceNetwork, new FlaggedOption(optLogTraceNetwork)
-		.setStringParser(JSAP.BOOLEAN_PARSER)
-		.setDefault("0")
-		.setShortFlag('n')
-		.setLongFlag(JSAP.NO_LONGFLAG));
-		jsap.registerParameter(options.get(optLogTraceNetwork));
-	}
-
 	public static Object getConfigs() {
 		String configStr = "";
 		String sepa = "";
@@ -171,4 +76,121 @@ public class GlobalConfig{
 		return configStr;
 	}
 
+	private static String ensureTrailingSlash(String value){
+		return value + (value.substring(value.length() - 1).equals("/")?"":"/");
+	}
+
+	/**
+	 *
+	 */
+	final public static String optPeersConfigFile = "peersConfigFile";
+	private static void setOptPeersConfigFile() throws JSAPException{
+		options.put(optPeersConfigFile,new FlaggedOption(optPeersConfigFile)
+			.setStringParser(JSAP.STRING_PARSER)
+			.setDefault("dist/peers.conf.json")
+			.setShortFlag('p')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get(optPeersConfigFile));
+	}
+	public static FlaggedOption getOptPeersConfigFile() {
+		return options.get(optPeersConfigFile);
+	}
+	public static String getPeersConfigFile() {
+		return GlobalConfig.getConfig().getString(GlobalConfig.optPeersConfigFile);
+	}
+
+	/**
+	 *
+	 */
+	final public static String optBindAddr = "bindAddr";
+	private static void setOptBindAddr() throws JSAPException{
+		options.put(optBindAddr, new FlaggedOption(optBindAddr)
+			.setStringParser(JSAP.INETADDRESS_PARSER)
+			.setDefault("0.0.0.0")
+			.setShortFlag('a')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get(optBindAddr));
+	}
+	public static FlaggedOption getOptBindAddr() {
+		return options.get(optBindAddr);
+	}
+	public static InetAddress getBindAddr() {
+		return GlobalConfig.getConfig().getInetAddress(GlobalConfig.optBindAddr);
+	}
+
+	/**
+	 *
+	 */
+	final public static String optScriptPath = "scriptPath";
+	private static void setOptScriptPath() throws JSAPException{
+		options.put(optScriptPath, new FlaggedOption(optScriptPath)
+			.setStringParser(JSAP.STRING_PARSER)
+			.setDefault("dist/scripts/")
+			.setShortFlag('s')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get(optScriptPath));
+	}
+	public static FlaggedOption getOptScriptPath() {
+		return options.get(optScriptPath);
+	}
+	public static String getScriptPath() {
+		return ensureTrailingSlash(GlobalConfig.getConfig().getString(GlobalConfig.optScriptPath));
+	}
+
+	/**
+	 *
+	 */
+	final public static String optLog4jproperties = "log4jproperties";
+	private static void setOptLog4jproperties() throws JSAPException{
+		options.put(optLog4jproperties, new FlaggedOption(optLog4jproperties)
+			.setStringParser(JSAP.STRING_PARSER)
+			.setDefault("")
+			.setShortFlag('l')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get(optLog4jproperties));
+	}
+	public static FlaggedOption getOptLog4jproperties() {
+		return options.get(optLog4jproperties);
+	}
+	public static String getLog4jproperties() {
+		return GlobalConfig.getConfig().getString(GlobalConfig.optLog4jproperties);
+	}
+
+	/**
+	 *
+	 */
+	final public static String optPluginPath = "pluginPath";
+	private static void setOptPluginPath() throws JSAPException{
+		options.put(optPluginPath, new FlaggedOption(optPluginPath)
+			.setStringParser(JSAP.STRING_PARSER)
+			.setDefault("dist/plugins/")
+			.setShortFlag('h')
+			.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get(optPluginPath));
+	}
+	public static FlaggedOption getOptPluginPath() {
+		return options.get(optPluginPath);
+	}
+	public static String getPluginPath() {
+		return ensureTrailingSlash(GlobalConfig.getConfig().getString(GlobalConfig.optPluginPath));
+	}
+
+	/**
+	 *
+	 */
+	final public static String optLogTraceNetwork = "logTraceNetwork";
+	private static void setOptLogTraceNetwork() throws JSAPException{
+		options.put(optLogTraceNetwork, new FlaggedOption(optLogTraceNetwork)
+		.setStringParser(JSAP.BOOLEAN_PARSER)
+		.setDefault("0")
+		.setShortFlag('n')
+		.setLongFlag(JSAP.NO_LONGFLAG));
+		jsap.registerParameter(options.get(optLogTraceNetwork));
+	}
+	public static FlaggedOption getOptLogTraceNetwork() {
+		return options.get(optLogTraceNetwork);
+	}
+	public static boolean getLogTraceNetwork() {
+		return GlobalConfig.getConfig().getBoolean(GlobalConfig.optLogTraceNetwork);
+	}
 }

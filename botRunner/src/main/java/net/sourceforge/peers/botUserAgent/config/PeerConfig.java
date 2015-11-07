@@ -64,7 +64,7 @@ public class PeerConfig implements Config {
 	public static List<PeerConfig> readPeersConf() throws FileNotFoundException, IOException, ParseException{
 		ArrayList<PeerConfig> peers= new ArrayList<PeerConfig>();
 		JSONParser parser = new JSONParser();
-		String peersConfFilename = GlobalConfig.getConfig().getString(GlobalConfig.optPeersConfigFile);
+		String peersConfFilename = GlobalConfig.getPeersConfigFile();
 		logger.info("Peers conf :: "+peersConfFilename);
 		Object obj = parser.parse(new FileReader(peersConfFilename));
 

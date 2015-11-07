@@ -66,7 +66,7 @@ public class CliLogger implements net.sourceforge.peers.Logger{
 	}
 
 	public synchronized void traceNetwork(String message, String direction) {
-		if(!GlobalConfig.getConfig().getBoolean(GlobalConfig.optLogTraceNetwork)) return;
+		if(!GlobalConfig.getLogTraceNetwork()) return;
 		StringBuffer buf = new StringBuffer();
 		buf.append(networkFormatter.format(new Date()));
 		buf.append(" ");

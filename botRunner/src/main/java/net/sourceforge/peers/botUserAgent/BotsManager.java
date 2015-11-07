@@ -55,13 +55,13 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 
 	public BotsManager() {
 		this.sipRequests	= new HashMap<String, SipRequest>();
-		workingDirectory	= new File(GlobalConfig.getConfig().getString(GlobalConfig.optScriptPath)).getAbsoluteFile();
+		workingDirectory	= new File(GlobalConfig.getScriptPath()).getAbsoluteFile();
 		loadedScripts		= new HashMap<String, String> ();
 		botAgents			= new HashMap<String, BotAgent> ();
 		engine				= new ScriptEngineManager().getEngineByName("nashorn");
 		engineScope			= engine.getBindings(ScriptContext.ENGINE_SCOPE);
 		executorService		= Executors.newCachedThreadPool();
-		customBindAddr		= (!GlobalConfig.getConfig().getInetAddress(GlobalConfig.optBindAddr).equals(GlobalConfig.getOptBindAddr().getDefault()));
+		customBindAddr		= (!GlobalConfig.getBindAddr().equals(GlobalConfig.getOptBindAddr().getDefault()));
 
 		engineScope.put("workingDirectory"	, workingDirectory);
 		engineScope.put("global"			, engineScope);
@@ -116,8 +116,8 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 				for (Map.Entry<String, BotAgent> entry : botAgents.entrySet()) {
 					String sId = entry.getKey();
 					BotAgent botAgent = entry.getValue();
+					logger.info(sId + " to unregister");
 					botAgent.unregister();
-					logger.info(sId + " unregistered ");
 				}
 			}
 		});
@@ -142,7 +142,7 @@ public class BotsManager implements CommandRunner,BotsManagerApi{
 			while (iterator.hasNext()) {
 				PeerConfig config = iterator.next();
 				if(customBindAddr){
-					config.setLocalInetAddress(GlobalConfig.getConfig().getInetAddress(GlobalConfig.optBindAddr));
+					config.setLocalInetAddress(GlobalConfig.getBindAddr());
 				}
 				logger.info(config.getId()+" :: "+config.getUserPart()+"@"+config.getDomain()+":"+config.getSipPort()+" ["+config.getPassword()+"] "+config.getBehaviour());
 				botAgents.put(config.getId(),new BotAgent(this,config));
