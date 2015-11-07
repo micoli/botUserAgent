@@ -59,7 +59,7 @@ Usage: java net.sourceforge.peers.botUserAgent.Main [-h|--help] [-a <bindAddr>] 
 
 ```
 
-##configuration files
+##Configuration files
 	Each plugin has its own configuration files. default values are in plugins/pluginXXX/plugin.properties and can be overloaded by plugins/pluginXXX.properties
 	* botrunner-jslib.conf
 		* none
