@@ -60,27 +60,26 @@ Usage: java net.sourceforge.peers.botUserAgent.Main [-h|--help] [-a <bindAddr>] 
 ```
 
 ##Configuration files
-	Each plugin has its own configuration files. default values are in plugins/pluginXXX/plugin.properties and can be overloaded by plugins/pluginXXX.properties
-	* botrunner-jslib.conf
-		* none
+Each plugin has its own configuration files. default values are in plugins/pluginXXX/plugin.properties and can be overloaded by plugins/pluginXXX.properties
+* botrunner-jslib.conf
+  * none
 
-	* botrunner-consoleCommands.conf
-		* none
+* botrunner-consoleCommands.conf
+  * none
 
-	* botrunner-soundTTS.conf
-		* voicespath (/tmp/voices/)
-		* tmppath (/tmp/)
+* botrunner-soundTTS.conf
+  * voicespath (/tmp/voices/)
+  * tmppath (/tmp/)
 
-	* botrunner-networkCommands.conf
-		* tcpport (5217)
+* botrunner-networkCommands.conf
+  * tcpport (5217)
 
-	* botrunner-webCommands.conf
-		* httpport (8081)
+* botrunner-webCommands.conf
+  * httpport (8081)
 
 ##Todo
-	* websocket server functionnal
-	* external agents without registration
-	* extraction of internal scripts/services/behaviours
+  * websocket server functionnal
+  * external agents without registration
 
 
 
