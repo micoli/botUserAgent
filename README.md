@@ -22,43 +22,41 @@
   * mvn install;cd ..
 
 * Pf4J (plugin framework for java)
-  * git clone https://github.com/micoli/pf4j.git
+  * git clone https://github.com/decebals/pf4j.git
   * cd pf4j
   * mvn install;cd ..
 
 
 * botUserAgent
   * git clone https://github.com/micoli/botUserAgent.git
-  * mvn package
-  * cd botRunner
-  * mkdir plugins
-  * cd plugins
-  * ln -s ../../plugin-*/target/*.zip .
-  * cd ..
+  * bash compile.sh
   * java -jar target/botRunner-0.5.1-SNAPSHOT.jar -a XXX.YYY.ZZZ.AAA
-  * (XXX.YYY.ZZZ.AAA = visible IP for sip user agents)
+	 * (XXX.YYY.ZZZ.AAA = visible IP for sip user agents)
 
 ##Execution
 ```
-$> java -jar target/botRunner-0.5.1-SNAPSHOT.jar
-Usage: java net.sourceforge.peers.botUserAgent.Main [-p <peersConfigFile>] [-a <bindAddr>] [-s <scriptPath>] [-l <log4jproperties>] [-h <pluginPath>] [-n <logTraceNetwork>]
-[-p <peersConfigFile>]
-		(default: resources/peers.conf.json)
+$> java -jar botRunner-0.5.1-SNAPSHOT.jar
+Usage: java net.sourceforge.peers.botUserAgent.Main [-h|--help] [-a <bindAddr>] [-c <peersConfigFile>] [-s <scriptPath>] [-p <pluginPath>] [-l <log4jproperties>] [-n <logTraceNetwork>]
+	[-h|--help]
 
-[-a <bindAddr>]
+	[-a <bindAddr>]
 		(default: 0.0.0.0)
 
-[-s <scriptPath>]
-		(default: resources/scripts/)
+	[-c <peersConfigFile>]
+		(default: dist/peers.conf.json)
 
-[-l <log4jproperties>]
-		(default: none/default file is integrated)
+	[-s <scriptPath>]
+		(default: dist/scripts/)
 
-[-h <pluginPath>]
-		(default: plugins)
+	[-p <pluginPath>]
+		(default: dist/plugins/)
 
-[-n <logTraceNetwork>]
+	[-l <log4jproperties>]
+		(default: )
+
+	[-n <logTraceNetwork>]
 		(default: 0)
+
 ```
 
 ##configuration files

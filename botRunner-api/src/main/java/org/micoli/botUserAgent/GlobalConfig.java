@@ -12,10 +12,12 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Parameter;
+import com.martiansoftware.jsap.Switch;
 
 public class GlobalConfig{
 	protected final static Logger logger = LoggerFactory.getLogger(GlobalConfig.class);
-	private static Map<String,FlaggedOption> options = new HashMap<String,FlaggedOption>();
+	private static Map<String,Parameter> options = new HashMap<String,Parameter>();
 
 	private static JSAPResult config;
 	private static JSAP jsap = new JSAP();
@@ -27,7 +29,7 @@ public class GlobalConfig{
 		init();
 		setConfig(jsap.parse(args));
 
-		if (!getConfig().success()) {
+		if (!getConfig().success() || getShowUsage()) {
 			showUsage();
 			return false;
 		}
@@ -35,11 +37,12 @@ public class GlobalConfig{
 	}
 
 	private static void init() throws JSAPException{
-		setOptPeersConfigFile();
+		setOptShowUsage();
 		setOptBindAddr();
+		setOptPeersConfigFile();
 		setOptScriptPath();
-		setOptLog4jproperties();
 		setOptPluginPath();
+		setOptLog4jproperties();
 		setOptLogTraceNetwork();
 	}
 
@@ -51,10 +54,7 @@ public class GlobalConfig{
 		}
 
 		logger.error("");
-		logger.error("Usage: java "+ mainName);
-		logger.error("            "+ jsap.getUsage());
-		logger.error("");
-		logger.error(jsap.getHelp());
+		logger.error("Usage: java "+ mainName+" "+ jsap.getUsage()+"\n"+jsap.getHelp());
 	}
 
 	public static JSAPResult getConfig() {
@@ -67,10 +67,12 @@ public class GlobalConfig{
 	public static Object getConfigs() {
 		String configStr = "";
 		String sepa = "";
-		for(Entry<String,FlaggedOption> option : options.entrySet()) {
+		for(Entry<String,Parameter> option : options.entrySet()) {
 			//String key = option.getKey();
-			FlaggedOption value = option.getValue();
-			configStr=configStr+sepa+value.getShortFlag()+"::"+value.getLongFlag()+" ["+value.toString()+"]";
+			if(option.getClass().isAssignableFrom(FlaggedOption.class)){
+				FlaggedOption value = (FlaggedOption) option.getValue();
+				configStr=configStr+sepa+value.getShortFlag()+"::"+value.getLongFlag()+" ["+value.toString()+"]";
+			}
 			sepa=", ";
 		}
 		return configStr;
@@ -83,17 +85,32 @@ public class GlobalConfig{
 	/**
 	 *
 	 */
+	final public static String optShowUsage = "help";
+	private static void setOptShowUsage() throws JSAPException{
+		options.put(optShowUsage, new Switch(optShowUsage)
+		.setDefault("0")
+		.setShortFlag('h')
+		.setLongFlag("help"));
+		jsap.registerParameter(options.get(optShowUsage));
+	}
+	public static boolean getShowUsage() {
+		return GlobalConfig.getConfig().getBoolean(GlobalConfig.optShowUsage);
+	}
+
+	/**
+	 *
+	 */
 	final public static String optPeersConfigFile = "peersConfigFile";
 	private static void setOptPeersConfigFile() throws JSAPException{
 		options.put(optPeersConfigFile,new FlaggedOption(optPeersConfigFile)
 			.setStringParser(JSAP.STRING_PARSER)
 			.setDefault("dist/peers.conf.json")
-			.setShortFlag('p')
+			.setShortFlag('c')
 			.setLongFlag(JSAP.NO_LONGFLAG));
 		jsap.registerParameter(options.get(optPeersConfigFile));
 	}
 	public static FlaggedOption getOptPeersConfigFile() {
-		return options.get(optPeersConfigFile);
+		return (FlaggedOption) options.get(optPeersConfigFile);
 	}
 	public static String getPeersConfigFile() {
 		return GlobalConfig.getConfig().getString(GlobalConfig.optPeersConfigFile);
@@ -112,7 +129,7 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optBindAddr));
 	}
 	public static FlaggedOption getOptBindAddr() {
-		return options.get(optBindAddr);
+		return (FlaggedOption) options.get(optBindAddr);
 	}
 	public static InetAddress getBindAddr() {
 		return GlobalConfig.getConfig().getInetAddress(GlobalConfig.optBindAddr);
@@ -131,7 +148,7 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optScriptPath));
 	}
 	public static FlaggedOption getOptScriptPath() {
-		return options.get(optScriptPath);
+		return (FlaggedOption) options.get(optScriptPath);
 	}
 	public static String getScriptPath() {
 		return ensureTrailingSlash(GlobalConfig.getConfig().getString(GlobalConfig.optScriptPath));
@@ -150,7 +167,7 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optLog4jproperties));
 	}
 	public static FlaggedOption getOptLog4jproperties() {
-		return options.get(optLog4jproperties);
+		return (FlaggedOption) options.get(optLog4jproperties);
 	}
 	public static String getLog4jproperties() {
 		return GlobalConfig.getConfig().getString(GlobalConfig.optLog4jproperties);
@@ -164,12 +181,12 @@ public class GlobalConfig{
 		options.put(optPluginPath, new FlaggedOption(optPluginPath)
 			.setStringParser(JSAP.STRING_PARSER)
 			.setDefault("dist/plugins/")
-			.setShortFlag('h')
+			.setShortFlag('p')
 			.setLongFlag(JSAP.NO_LONGFLAG));
 		jsap.registerParameter(options.get(optPluginPath));
 	}
 	public static FlaggedOption getOptPluginPath() {
-		return options.get(optPluginPath);
+		return (FlaggedOption) options.get(optPluginPath);
 	}
 	public static String getPluginPath() {
 		return ensureTrailingSlash(GlobalConfig.getConfig().getString(GlobalConfig.optPluginPath));
@@ -188,9 +205,10 @@ public class GlobalConfig{
 		jsap.registerParameter(options.get(optLogTraceNetwork));
 	}
 	public static FlaggedOption getOptLogTraceNetwork() {
-		return options.get(optLogTraceNetwork);
+		return (FlaggedOption) options.get(optLogTraceNetwork);
 	}
 	public static boolean getLogTraceNetwork() {
 		return GlobalConfig.getConfig().getBoolean(GlobalConfig.optLogTraceNetwork);
 	}
+
 }

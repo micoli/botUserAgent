@@ -10,7 +10,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<name>BotRunner plugin networkCommands</name>
-	<artifactId>botRunner-networkCommands</artifactId>
+	<artifactId>botRunner-plugin-networkCommands</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>

@@ -44,8 +44,6 @@ public class Main {
 		File pluginDir = new File(GlobalConfig.getPluginPath());
 		System.setProperty("pf4j.pluginsDir", pluginDir.getAbsolutePath());
 
-		System.exit(0);
-
 		BotsManager botsManager = new BotsManager();
 		PluginsManager.init(botsManager);
 		PluginsManager.start();

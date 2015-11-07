@@ -16,8 +16,8 @@
 
 mvn clean package -Dmaven.test.skip -DskipTests
 rm -rf dist
-mkdir dist
-ln -s plugin-*/target/*.zip dist/plugins/.
+mkdir -p dist/plugins
+find . -name "botRunner-plugin-*.zip" -exec ln -s ../../{} dist/plugins/. \;
 
 java -jar botRunner/target/botRunner-0.5.1-SNAPSHOT.jar
 
