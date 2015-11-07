@@ -39,38 +39,50 @@
   * (XXX.YYY.ZZZ.AAA = visible IP for sip user agents)
 
 ##Execution
+```
 $> java -jar target/botRunner-0.5.1-SNAPSHOT.jar
-
-Usage: java net.sourceforge.peers.botUserAgent.Main [-p <peersConfigFile>] [-a <bindAddr>] [-s <scriptPath>] [-o <scriptOverloadPath>] [-l <log4jproperties>] [-h <pluginPath>] [-n <logTraceNetwork>]
+Usage: java net.sourceforge.peers.botUserAgent.Main [-p <peersConfigFile>] [-a <bindAddr>] [-s <scriptPath>] [-l <log4jproperties>] [-h <pluginPath>] [-n <logTraceNetwork>]
 [-p <peersConfigFile>]
-		(default: src/main/resources/peers.conf.json)
+		(default: resources/peers.conf.json)
 
 [-a <bindAddr>]
 		(default: 0.0.0.0)
 
 [-s <scriptPath>]
-		(default: src/main/resources/scripts/)
-
-[-o <scriptOverloadPath>]
-		(default: src/main/resources/scripts/overload)
+		(default: resources/scripts/)
 
 [-l <log4jproperties>]
-		(default: )
+		(default: none/default file is integrated)
 
 [-h <pluginPath>]
 		(default: plugins)
 
 [-n <logTraceNetwork>]
 		(default: 0)
+```
 
+##configuration files
+	Each plugin has its own configuration files. default values are in plugins/pluginXXX/plugin.properties and can be overloaded by plugins/pluginXXX.properties
+	* botrunner-jslib.conf
+		* none
+
+	* botrunner-consoleCommands.conf
+		* none
+
+	* botrunner-soundTTS.conf
+		* voicespath (/tmp/voices/)
+		* tmppath (/tmp/)
+
+	* botrunner-networkCommands.conf
+		* tcpport (5217)
+
+	* botrunner-webCommands.conf
+		* httpport (8081)
 
 ##Todo
-	* add a route parameter to execute a route globally or only for a bot
-	* server configuration in json
-	* TTS methods
-	* http server configuration
 	* websocket server functionnal
 	* external agents without registration
 	* extraction of internal scripts/services/behaviours
 
-	* voice RAW
+
+

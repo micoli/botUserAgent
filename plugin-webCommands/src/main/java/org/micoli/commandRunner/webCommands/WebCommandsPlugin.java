@@ -1,7 +1,9 @@
 package org.micoli.commandRunner.webCommands;
 
 import java.io.IOException;
+import java.util.Properties;
 
+import org.micoli.api.DefaultPluginManagerExt;
 import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.api.commandRunner.GenericCommands;
 import org.slf4j.Logger;
@@ -13,9 +15,11 @@ import ro.fortsoft.pf4j.PluginWrapper;
 
 public class WebCommandsPlugin extends Plugin {
 	protected final static Logger logger = LoggerFactory.getLogger(WebCommandsPlugin.class);
+	private static Properties	config;
 
 	public WebCommandsPlugin(PluginWrapper wrapper) {
 		super(wrapper);
+		config = ((DefaultPluginManagerExt) wrapper.getPluginManager()).getPluginConfig(wrapper.getPluginId());
 	}
 
 	@Override
@@ -36,7 +40,7 @@ public class WebCommandsPlugin extends Plugin {
 				@Override
 				public void run() {
 					try {
-						WebCommandsHttpServer webCommandsHttpServer = new WebCommandsHttpServer(executor,8081);
+						WebCommandsHttpServer webCommandsHttpServer = new WebCommandsHttpServer(executor,Integer.parseInt((String)config.getProperty("httpport")));
 						webCommandsHttpServer.start();
 					} catch (IOException e) {
 						logger.error(e.getClass().getSimpleName(), e);

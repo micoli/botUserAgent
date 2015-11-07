@@ -1,9 +1,12 @@
 package org.micoli.botRunner;
 
+import java.util.Properties;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 
+import org.micoli.api.DefaultPluginManagerExt;
 import org.micoli.botUserAgent.BotsManagerApi;
 import org.micoli.botUserAgent.BotsManagerPlugin;
 import org.micoli.http.Client;
@@ -15,9 +18,12 @@ import ro.fortsoft.pf4j.PluginWrapper;
 public class JsLibPlugin extends Plugin implements BotsManagerPlugin{
 	private org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 	private BotsManagerApi botsManagerApi;
+	@SuppressWarnings("unused")
+	private static Properties	config;
 
 	public JsLibPlugin(PluginWrapper wrapper) {
 		super(wrapper);
+		config = ((DefaultPluginManagerExt) wrapper.getPluginManager()).getPluginConfig(wrapper.getPluginId());
 	}
 
 	@Override

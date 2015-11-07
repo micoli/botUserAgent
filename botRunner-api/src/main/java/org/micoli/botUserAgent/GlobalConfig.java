@@ -37,7 +37,6 @@ public class GlobalConfig{
 		setOptPeersConfigFile();
 		setOptBindAddr();
 		setOptScriptPath();
-		setOptScriptOverloadPath();
 		setOptLog4jproperties();
 		setOptPluginPath();
 		setOptLogTraceNetwork();
@@ -74,7 +73,7 @@ public class GlobalConfig{
 	private static void setOptPeersConfigFile() throws JSAPException{
 		options.put(optPeersConfigFile,new FlaggedOption(optPeersConfigFile)
 			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("src/main/resources/peers.conf.json")
+			.setDefault("resources/peers.conf.json")
 			.setShortFlag('p')
 			.setLongFlag(JSAP.NO_LONGFLAG));
 		jsap.registerParameter(options.get(optPeersConfigFile));
@@ -106,26 +105,10 @@ public class GlobalConfig{
 	private static void setOptScriptPath() throws JSAPException{
 		options.put(optScriptPath, new FlaggedOption(optScriptPath)
 			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("src/main/resources/scripts/")
+			.setDefault("resources/scripts/")
 			.setShortFlag('s')
 			.setLongFlag(JSAP.NO_LONGFLAG));
 		jsap.registerParameter(options.get(optScriptPath));
-	}
-
-	/**
-	 *
-	 */
-	final public static String optScriptOverloadPath = "scriptOverloadPath";
-	public static FlaggedOption getOptScriptOverloadPath() {
-		return options.get(optScriptOverloadPath);
-	}
-	private static void setOptScriptOverloadPath() throws JSAPException{
-		options.put(optScriptOverloadPath, new FlaggedOption(optScriptOverloadPath)
-			.setStringParser(JSAP.STRING_PARSER)
-			.setDefault("src/main/resources/scripts/overload")
-			.setShortFlag('o')
-			.setLongFlag(JSAP.NO_LONGFLAG));
-		jsap.registerParameter(options.get(optScriptOverloadPath));
 	}
 
 	/**

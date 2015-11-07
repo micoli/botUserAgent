@@ -16,8 +16,15 @@
 	</dependencySets>
 	<fileSets>
 		<fileSet>
+			<directory>target/plugin-classes/conf</directory>
+			<outputDirectory></outputDirectory>
+		</fileSet>
+		<fileSet>
 			<directory>target/plugin-classes</directory>
 			<outputDirectory>classes</outputDirectory>
+			<excludes>
+				<exclude>conf/plugin.properties</exclude>
+			</excludes>
 		</fileSet>
 	</fileSets>
 </assembly>

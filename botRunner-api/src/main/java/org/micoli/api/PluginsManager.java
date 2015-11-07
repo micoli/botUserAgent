@@ -11,10 +11,8 @@ import org.micoli.botUserAgent.BotsManagerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ro.fortsoft.pf4j.DefaultPluginManager;
 import ro.fortsoft.pf4j.ExtensionPoint;
 import ro.fortsoft.pf4j.Plugin;
-import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginWrapper;
 
 public class PluginsManager {
@@ -22,16 +20,25 @@ public class PluginsManager {
 	static List<ExtensionPoint> genericCommands = null;;
 	static List<BotsManagerExtension> botsManagerExtensions = null;;
 	//static List<BotExtension> botExtensions = null;;
-	static PluginManager pluginManager;
+	static DefaultPluginManagerExt pluginManager;
 	static BotsManagerApi botsManagerApi;
 
 	public static void init(BotsManagerApi _botsManagerApi){
 		botsManagerApi=_botsManagerApi;
-		pluginManager = new DefaultPluginManager();
+		pluginManager = new DefaultPluginManagerExt();
 		pluginManager.loadPlugins();
 	}
 
-	public static void start(){
+	public static void start() {
+		/*
+		for (PluginWrapper pluginWrapper : pluginManager.getResolvedPlugins()) {
+			PluginState pluginState = pluginWrapper.getPluginState();
+			if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
+				PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
+				logger.info("Start plugin '{}:{}'", pluginDescriptor.getPluginId(), pluginDescriptor.getVersion());
+			}
+		}*/
+
 		pluginManager.startPlugins();
 
 		for(PluginWrapper pluginWrapper: pluginManager.getPlugins()){

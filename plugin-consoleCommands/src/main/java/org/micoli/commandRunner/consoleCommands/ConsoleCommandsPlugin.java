@@ -3,7 +3,9 @@ package org.micoli.commandRunner.consoleCommands;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Properties;
 
+import org.micoli.api.DefaultPluginManagerExt;
 import org.micoli.api.commandRunner.ExecutorRouter;
 import org.micoli.api.commandRunner.GenericCommands;
 import org.micoli.threads.ManagedThread;
@@ -17,9 +19,12 @@ import ro.fortsoft.pf4j.PluginWrapper;
 public class ConsoleCommandsPlugin extends Plugin {
 	protected final static Logger logger = LoggerFactory.getLogger(ConsoleCommandsPlugin.class);
 	static ManagedThread thread;
+	@SuppressWarnings("unused")
+	private static Properties	config;
 
 	public ConsoleCommandsPlugin(PluginWrapper wrapper) {
 		super(wrapper);
+		config = ((DefaultPluginManagerExt) wrapper.getPluginManager()).getPluginConfig(wrapper.getPluginId());
 	}
 
 	@Override
